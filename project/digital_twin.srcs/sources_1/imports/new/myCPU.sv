@@ -44,17 +44,17 @@ module myCPU (
     logic [          1:0] NpcOp;
     logic [          1:0] MemToReg;
     logic                 RegWrite;
-    logic [          1:0] OffsetOrigin;
+    logic                 OffsetOrigin;
     logic [DATAWIDTH-1:0] imm;
-    logic [DATAWIDTH-1:0] csr_npc;
+    // logic [DATAWIDTH-1:0] csr_npc;
     logic                 isTrue;
     logic [          6:0] opcode;
     logic [          3:0] funct;
     logic [DATAWIDTH-1:0] A;
     logic [DATAWIDTH-1:0] din;
     logic [DATAWIDTH-1:0] B;
-    logic [         11:0] csr_idx;
-    logic [          3:0] CSRControll;
+    // logic [         11:0] csr_idx;
+    // logic [          3:0] CSRControll;
     logic ALUSrcA, ALUSrcB;
     logic [DATAWIDTH-1:0] ALU_A, ALU_B;
     logic [13:0] ALUControl;
@@ -105,8 +105,7 @@ module myCPU (
         .pcadd4(pcadd4)
     );
 
-    assign offset = {32{OffsetOrigin == 1'b0}} & imm | {32{OffsetOrigin == 1'b1}} & Result;
-
+    assign offset = OffsetOrigin ? Result : imm;
 
     RF #(ADDR_WIDTH, DATAWIDTH) rf_inst (
         .clk     (clk),
