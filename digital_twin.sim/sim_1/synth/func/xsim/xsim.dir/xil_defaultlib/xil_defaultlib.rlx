@@ -1,0 +1,6 @@
+0.7
+2020.2
+Oct 13 2023
+20:47:58
+C:/Users/KTD/Desktop/JYD2025_Contest-rv32i-error/digital_twin.sim/sim_1/synth/func/xsim/tb_myCPU_func_synth.v,1745640020,verilog,,,,CSR;DRAM;DRAM_dist_mem_gen_v8_0_14;DRAM_dist_mem_gen_v8_0_14_synth;DRAM_spram;IROM;IROM_dist_mem_gen_v8_0_14;IROM_dist_mem_gen_v8_0_14_synth;IROM_rom;PC;RF;counter;display_seg;dram_driver;glbl;myCPU;perip_bridge;pll;pll_clk_wiz;student_top;top;twin_controller;uart,,uvm,../../../../../digital_twin.gen/sources_1/ip/pll,,,,,
+C:/Users/KTD/Desktop/JYD2025_Contest-rv32i-error/digital_twin.srcs/sim_1/new/tb_myCPU.sv,1745396250,systemVerilog,,,,tb_myCPU,,uvm,../../../../../digital_twin.gen/sources_1/ip/pll,,,,,

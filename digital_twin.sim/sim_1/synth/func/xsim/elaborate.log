@@ -1,0 +1,52 @@
+Vivado Simulator v2023.2
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: D:/Vivado/2023.2/bin/unwrapped/win64.o/xelab.exe --incr --debug typical --relax --mt 2 -L xil_defaultlib -L uvm -L unisims_ver -L secureip --snapshot tb_myCPU_func_synth xil_defaultlib.tb_myCPU xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module unisims_ver.IBUF
+Compiling module unisims_ver.OBUF
+Compiling module unisims_ver.BUFG
+Compiling module unisims_ver.IBUFDS
+Compiling module unisims_ver.PLLE2_ADV(CLKFBOUT_MULT=17,CLKIN...
+Compiling module xil_defaultlib.pll_clk_wiz
+Compiling module xil_defaultlib.pll
+Compiling module unisims_ver.x_lut3_mux8
+Compiling module unisims_ver.LUT3
+Compiling module unisims_ver.LUT5
+Compiling module unisims_ver.LUT4
+Compiling module unisims_ver.LUT6
+Compiling module unisims_ver.FDCE_default
+Compiling module unisims_ver.x_lut2_mux4
+Compiling module unisims_ver.LUT2
+Compiling module unisims_ver.FDPE_default
+Compiling module xil_defaultlib.CSR
+Compiling module unisims_ver.x_lut1_mux2
+Compiling module unisims_ver.LUT1
+Compiling module unisims_ver.CARRY4
+Compiling module unisims_ver.FDRE_default
+Compiling module xil_defaultlib.PC
+Compiling module unisims_ver.MUXF7
+Compiling module unisims_ver.MUXF8
+Compiling module xil_defaultlib.RF
+Compiling module xil_defaultlib.myCPU
+Compiling module unisims_ver.GND
+Compiling module xil_defaultlib.IROM
+Compiling module xil_defaultlib.counter
+Compiling module unisims_ver.RAM256X1S
+Compiling module xil_defaultlib.DRAM
+Compiling module xil_defaultlib.dram_driver
+Compiling module xil_defaultlib.display_seg
+Compiling module xil_defaultlib.perip_bridge
+Compiling module xil_defaultlib.student_top
+Compiling module xil_defaultlib.twin_controller
+Compiling module xil_defaultlib.uart
+Compiling module xil_defaultlib.top
+Compiling module xil_defaultlib.tb_myCPU
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot tb_myCPU_func_synth

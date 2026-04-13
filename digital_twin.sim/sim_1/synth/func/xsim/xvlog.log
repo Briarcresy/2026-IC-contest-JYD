@@ -1,0 +1,24 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KTD/Desktop/JYD2025_Contest-rv32i-error/digital_twin.sim/sim_1/synth/func/xsim/tb_myCPU_func_synth.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module CSR
+INFO: [VRFC 10-311] analyzing module DRAM
+INFO: [VRFC 10-311] analyzing module IROM
+INFO: [VRFC 10-311] analyzing module PC
+INFO: [VRFC 10-311] analyzing module RF
+INFO: [VRFC 10-311] analyzing module counter
+INFO: [VRFC 10-311] analyzing module display_seg
+INFO: [VRFC 10-311] analyzing module dram_driver
+INFO: [VRFC 10-311] analyzing module myCPU
+INFO: [VRFC 10-311] analyzing module perip_bridge
+INFO: [VRFC 10-311] analyzing module pll
+INFO: [VRFC 10-311] analyzing module pll_clk_wiz
+INFO: [VRFC 10-311] analyzing module student_top
+INFO: [VRFC 10-311] analyzing module top
+INFO: [VRFC 10-311] analyzing module twin_controller
+INFO: [VRFC 10-311] analyzing module uart
+INFO: [VRFC 10-311] analyzing module DRAM_dist_mem_gen_v8_0_14
+INFO: [VRFC 10-311] analyzing module DRAM_dist_mem_gen_v8_0_14_synth
+INFO: [VRFC 10-311] analyzing module DRAM_spram
+INFO: [VRFC 10-311] analyzing module IROM_dist_mem_gen_v8_0_14
+INFO: [VRFC 10-311] analyzing module IROM_dist_mem_gen_v8_0_14_synth
+INFO: [VRFC 10-311] analyzing module IROM_rom
+INFO: [VRFC 10-311] analyzing module glbl

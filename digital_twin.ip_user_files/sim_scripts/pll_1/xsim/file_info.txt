@@ -1,0 +1,3 @@
+pll_clk_wiz.v,verilog,xil_defaultlib,../../../../digital_twin.gen/sources_1/ip/pll/pll_clk_wiz.v,incdir="../../../ipstatic"incdir="../../../../digital_twin.gen/sources_1/ip/pll"
+pll.v,verilog,xil_defaultlib,../../../../digital_twin.gen/sources_1/ip/pll/pll.v,incdir="../../../ipstatic"incdir="../../../../digital_twin.gen/sources_1/ip/pll"
+glbl.v,Verilog,xil_defaultlib,glbl.v

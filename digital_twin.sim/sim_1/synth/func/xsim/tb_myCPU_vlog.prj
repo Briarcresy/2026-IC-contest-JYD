@@ -1,0 +1,9 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../../digital_twin.gen/sources_1/ip/pll" \
+"tb_myCPU_func_synth.v" \
+
+sv xil_defaultlib  --include "../../../../../digital_twin.gen/sources_1/ip/pll" \
+"../../../../../digital_twin.srcs/sim_1/new/tb_myCPU.sv" \
+
+# Do not sort compile order
+nosort
