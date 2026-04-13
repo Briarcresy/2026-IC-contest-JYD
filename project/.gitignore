@@ -1,0 +1,31 @@
+# Vivado generated directories
+*.cache/
+*.gen/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+.Xil/
+
+# Vivado logs / waveform / temp
+*.jou
+*.log
+*.str
+*.wdb
+*.pb
+*.tmp
+*.wpc
+*.wdf
+
+# Generated outputs
+*.bit
+*.bin
+*.dcp
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
