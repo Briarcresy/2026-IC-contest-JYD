@@ -20,18 +20,29 @@
 //////////////////////////////////////////////////////////////////////////////////
 `include "defines.sv"
 
-module Control(
-    input  logic [6:0]  opcode      ,
-    input  logic [2:0]  funct       ,
-    output logic [1:0]  NpcOp       ,
-    output logic        RegWrite    ,
-    output logic [2:0]  MemToReg    ,
-    output logic        MemWrite    ,
-    output logic [1:0]  OffsetOrigin,
-    output logic        ALUSrcA     ,
-    output logic        ALUSrcB
+module Control (
+    input  logic [6:0] opcode,
+    input  logic [2:0] funct,
+    output logic [1:0] NpcOp,
+    output logic       RegWrite,
+    output logic [2:0] MemToReg,
+    output logic       MemWrite,
+    output logic [1:0] OffsetOrigin,
+    output logic       ALUSrcA,
+    output logic       ALUSrcB
 );
-    logic op_jalr, op_branch, op_jal, op_store, op_rtype, op_itype, op_load, op_auipc, op_lui, op_csr, op_call_ret;
+    logic
+        op_jalr,
+        op_branch,
+        op_jal,
+        op_store,
+        op_rtype,
+        op_itype,
+        op_load,
+        op_auipc,
+        op_lui,
+        op_csr,
+        op_call_ret;
 
     assign op_jalr = opcode == `IJ_TYPE;
     assign op_branch = opcode == `B_TYPE;
@@ -42,8 +53,8 @@ module Control(
     assign op_load = opcode == `IL_TYPE;
     assign op_auipc = opcode == `UA_TYPE;
     assign op_lui = opcode == `U_TYPE;
-    assign op_csr = (opcode == `CSR_TYPE) && (funct[2:0] != 3'b0);
-    assign op_call_ret = (opcode == `CSR_TYPE) && (funct[2:0] == 3'b0);
+    assign op_csr = 0;
+    assign op_call_ret = 0;
 
     assign NpcOp = {2{op_jalr}} & 2'b10 |
                 {2{op_call_ret}} & 2'b10 |
@@ -57,8 +68,7 @@ module Control(
                     {3{op_lui}} & 3'b011 |
                     {3{op_csr}} & 3'b100;
     assign MemWrite = op_store;
-    assign OffsetOrigin = {2{op_jalr}} & 2'b01 |
-                {2{op_call_ret}} & 2'b10;
+    assign OffsetOrigin = {2{op_jalr}} & 2'b01 | {2{op_call_ret}} & 2'b10;
     assign ALUSrcA = op_auipc;
     assign ALUSrcB = ~(op_rtype | op_branch);
 
