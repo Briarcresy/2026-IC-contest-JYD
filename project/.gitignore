@@ -32,3 +32,5 @@ Thumbs.db
 
 #.xpr
 *.xpr
+
+*.srcs/constrs_1
