@@ -1,10 +1,10 @@
-# Vivado generated files
-.cache/
-.gen/
-.hw/
-.ip_user_files/
-.runs/
-.sim/
+# Vivado generated directories
+*.cache/
+*.gen/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
 .Xil/
 
 # Logs and temp files
@@ -14,10 +14,14 @@
 *.wdb
 *.pb
 *.tmp
+*.wpc
+*.wdf
 
-# Bitstream / generated output
+# Generated outputs
 *.bit
 *.bin
+*.dcp
+*.mif
 
 # Editor / OS
 .vscode/
