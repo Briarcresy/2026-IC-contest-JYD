@@ -22,7 +22,7 @@
 
 module Control (
     input  logic [6:0] opcode,
-    // input  logic [2:0] funct,
+    input  logic [2:0] funct,
     output logic [1:0] NpcOp,
     output logic       RegWrite,
     output logic [1:0] MemToReg,
