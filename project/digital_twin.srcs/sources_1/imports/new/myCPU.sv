@@ -57,8 +57,9 @@ module myCPU (
     // logic [          3:0] CSRControll;
     logic ALUSrcA, ALUSrcB;
     logic [DATAWIDTH-1:0] ALU_A, ALU_B;
-    logic [13:0] ALUControl;
-    logic [DATAWIDTH-1:0] mdata, csr_wb;
+    logic [         13:0] ALUControl;
+    logic [DATAWIDTH-1:0] mdata;
+    // logic [DATAWIDTH-1:0] csr_wb;
 
     logic [DATAWIDTH-1:0] npc;
     logic [DATAWIDTH-1:0] instr;
