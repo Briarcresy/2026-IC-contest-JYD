@@ -42,7 +42,7 @@ module myCPU (
     logic clk, rst;
     logic [DATAWIDTH-1:0] offset;
     logic [          1:0] NpcOp;
-    logic [          2:0] MemToReg;
+    logic [          1:0] MemToReg;
     logic                 RegWrite;
     logic [          1:0] OffsetOrigin;
     logic [DATAWIDTH-1:0] imm;
@@ -72,10 +72,10 @@ module myCPU (
     logic [         31:0] rR2_data;
     logic [         31:0] dout;
 
-    logic [DATAWIDTH-1:0] pc, instruction;
+    logic [DATAWIDTH-1:0] pc;
 
     assign irom_addr = pc;
-    assign instruction = irom_data;
+    assign instr = irom_data;
 
     assign perip_addr = Result;
     assign perip_wen = MemWrite;
@@ -96,8 +96,6 @@ module myCPU (
         .pc_out (pc)
     );
 
-    assign instr = instruction;
-
     NPC #(DATAWIDTH) npc_inst (
         .isTrue(isTrue),
         .npc_op(NpcOp),
@@ -107,9 +105,7 @@ module myCPU (
         .pcadd4(pcadd4)
     );
 
-    assign offset = {32{OffsetOrigin == 2'b0}} & imm |
-					{32{OffsetOrigin == 2'b01}} & Result |
-					{32{OffsetOrigin == 2'b10}} ;
+    assign offset = {32{OffsetOrigin == 1'b0}} & imm | {32{OffsetOrigin == 1'b1}} & Result;
 
 
     RF #(ADDR_WIDTH, DATAWIDTH) rf_inst (

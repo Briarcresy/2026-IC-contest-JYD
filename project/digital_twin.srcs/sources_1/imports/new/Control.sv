@@ -25,24 +25,16 @@ module Control (
     input  logic [2:0] funct,
     output logic [1:0] NpcOp,
     output logic       RegWrite,
-    output logic [2:0] MemToReg,
+    output logic [1:0] MemToReg,
     output logic       MemWrite,
-    output logic [1:0] OffsetOrigin,
+    output logic       OffsetOrigin,
     output logic       ALUSrcA,
     output logic       ALUSrcB
 );
-    logic
-        op_jalr,
-        op_branch,
-        op_jal,
-        op_store,
-        op_rtype,
-        op_itype,
-        op_load,
-        op_auipc,
-        op_lui,
-        op_csr,
-        op_call_ret;
+    logic op_jalr, op_branch, op_jal, op_store, op_rtype, op_itype, op_load, op_auipc, op_lui;
+
+    // op_csr,
+    // op_call_ret;
 
     assign op_jalr = opcode == `IJ_TYPE;
     assign op_branch = opcode == `B_TYPE;
@@ -53,22 +45,18 @@ module Control (
     assign op_load = opcode == `IL_TYPE;
     assign op_auipc = opcode == `UA_TYPE;
     assign op_lui = opcode == `U_TYPE;
-    assign op_csr = 0;
-    assign op_call_ret = 0;
+    // assign op_csr = 0;
+    // assign op_call_ret = 0;
 
-    assign NpcOp = {2{op_jalr}} & 2'b10 |
-                {2{op_call_ret}} & 2'b10 |
-                {2{op_branch}} & 2'b01 |
-                {2{op_jal}} & 2'b11;
-    assign RegWrite = ~(op_branch | op_store | op_call_ret);
-    assign MemToReg = {3{op_rtype}} & 3'b001 |
-                    {3{op_itype}} & 3'b001 | 
-                    {3{op_auipc}} & 3'b001 | 
-                    {3{op_load}} & 3'b010 |
-                    {3{op_lui}} & 3'b011 |
-                    {3{op_csr}} & 3'b100;
+    assign NpcOp = {2{op_jalr}} & 2'b10 | {2{op_branch}} & 2'b01 | {2{op_jal}} & 2'b11;
+    assign RegWrite = ~(op_branch | op_store);
+    assign MemToReg = {2{op_rtype}} & 2'b01 |
+                    {2{op_itype}} & 2'b01 | 
+                    {2{op_auipc}} & 2'b01 | 
+                    {2{op_load}} & 2'b10 |
+                    {2{op_lui}} & 2'b11;
     assign MemWrite = op_store;
-    assign OffsetOrigin = {2{op_jalr}} & 2'b01 | {2{op_call_ret}} & 2'b10;
+    assign OffsetOrigin = op_jalr;
     assign ALUSrcA = op_auipc;
     assign ALUSrcB = ~(op_rtype | op_branch);
 

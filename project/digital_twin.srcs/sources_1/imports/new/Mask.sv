@@ -1,9 +1,9 @@
-module Mask#(
-    parameter   DATAWIDTH = 32	
-)(
-    input  logic [2:0]             mask   ,
-    input  logic [DATAWIDTH - 1:0] dout	  ,
-	output logic [DATAWIDTH - 1:0] mdata
+module Mask #(
+    parameter DATAWIDTH = 32
+) (
+    input  logic [            2:0] mask,
+    input  logic [DATAWIDTH - 1:0] dout,
+    output logic [DATAWIDTH - 1:0] mdata
 );
     logic op_other, op_lb, op_lh;
 
