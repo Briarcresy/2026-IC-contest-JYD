@@ -19,31 +19,31 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module ALU#(
-    parameter   DATAWIDTH = 32	
-)(
-    input  logic [DATAWIDTH - 1:0]  A           ,
-    input  logic [DATAWIDTH - 1:0]  B           ,
-    input  logic [13:0]             ALUControl  ,
-    output logic [DATAWIDTH - 1:0]  Result      ,
-    output logic                    isTrue        
+module ALU #(
+    parameter DATAWIDTH = 32
+) (
+    input  logic [DATAWIDTH - 1:0] A,
+    input  logic [DATAWIDTH - 1:0] B,
+    input  logic [           13:0] ALUControl,
+    output logic [DATAWIDTH - 1:0] Result,
+    output logic                   isTrue
 );
 
     logic op_add, op_sub, op_and, op_or, op_xor, op_sll, op_srl;
     logic op_sra, op_beq, op_bne, op_blt, op_bge, op_bgeu, op_bltu;
 
-    assign op_add = ALUControl[0];
-    assign op_sub = ALUControl[1];
-    assign op_and = ALUControl[2];
-    assign op_or = ALUControl[3];
-    assign op_xor = ALUControl[4];
-    assign op_sll = ALUControl[5];
-    assign op_srl = ALUControl[6];
-    assign op_sra = ALUControl[7];
-    assign op_beq = ALUControl[8];
-    assign op_bne = ALUControl[9];
-    assign op_blt = ALUControl[10];
-    assign op_bge = ALUControl[11];
+    assign op_add  = ALUControl[0];
+    assign op_sub  = ALUControl[1];
+    assign op_and  = ALUControl[2];
+    assign op_or   = ALUControl[3];
+    assign op_xor  = ALUControl[4];
+    assign op_sll  = ALUControl[5];
+    assign op_srl  = ALUControl[6];
+    assign op_sra  = ALUControl[7];
+    assign op_beq  = ALUControl[8];
+    assign op_bne  = ALUControl[9];
+    assign op_blt  = ALUControl[10];
+    assign op_bge  = ALUControl[11];
     assign op_bgeu = ALUControl[12];
     assign op_bltu = ALUControl[13];
 
@@ -69,7 +69,7 @@ module ALU#(
     assign sra_result = ($signed(A)) >>> B[4:0];
     assign beq_result = {31'b0, A == B};
     assign bne_result = {31'b0, A != B};
-    assign blt_result = {31'b0, (A[31] &  ~B[31]) | ((~A[31] ^ B[31]) & add_sub_result[31])};
+    assign blt_result = {31'b0, (A[31] & ~B[31]) | ((~A[31] ^ B[31]) & add_sub_result[31])};
     assign bge_result = ~blt_result;
     assign bgeu_result = {31'b0, carry};
     assign bltu_result = {31'b0, ~carry};
