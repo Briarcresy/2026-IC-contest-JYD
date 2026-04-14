@@ -19,15 +19,15 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module NPC#(
-    parameter   DATAWIDTH = 32
-)(
-    input  logic                   isTrue   ,
-    input  logic [1:0]             npc_op   ,
-    input  logic [DATAWIDTH - 1:0] pc       ,
-    input  logic [DATAWIDTH - 1:0] offset   ,
-    output logic [DATAWIDTH - 1:0] npc      ,
-    output logic [DATAWIDTH - 1:0] pcadd4  
+module NPC #(
+    parameter DATAWIDTH = 32
+) (
+    input  logic                   isTrue,
+    input  logic [            1:0] npc_op,
+    input  logic [DATAWIDTH - 1:0] pc,
+    input  logic [DATAWIDTH - 1:0] offset,
+    output logic [DATAWIDTH - 1:0] npc,
+    output logic [DATAWIDTH - 1:0] pcadd4
 );
     logic op_branch, op_add4, op_jalr, op_jal;
     logic [DATAWIDTH-1:0] branch_addr, jalr_addr, jal_addr;
@@ -40,7 +40,7 @@ module NPC#(
     assign branch_addr = isTrue ? (pc + offset) : (pc + 4);
     assign jalr_addr = offset & {{DATAWIDTH - 1{1'b1}}, 1'b0};
     assign jal_addr = pc + offset;
-    
+
     assign npc = {32{op_add4}} & pcadd4 |
             {32{op_branch}} & branch_addr |
             {32{op_jalr}} & jalr_addr |
