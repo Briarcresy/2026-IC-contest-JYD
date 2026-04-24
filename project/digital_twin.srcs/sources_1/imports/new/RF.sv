@@ -35,8 +35,8 @@ module RF #(
     end
 
     always_comb begin
-        rR1_data = (rR1 == '0) ? '0 : reg_bank[rR1];
-        rR2_data = (rR2 == '0) ? '0 : reg_bank[rR2];
+        rR1_data = reg_bank[rR1];
+        rR2_data = reg_bank[rR2];
     end
 
 endmodule

@@ -25,40 +25,42 @@ module ACTL (
     input  logic [ 3:0] funct,
     output logic [13:0] ALUControl
 );
-    localparam ADD = 14'h0001;
-    localparam SUB = 14'h0002;
-    localparam AND = 14'h0004;
-    localparam OR = 14'h0008;
-    localparam XOR = 14'h0010;
-    localparam SLL = 14'h0020;
-    localparam SRL = 14'h0040;
-    localparam SRA = 14'h0080;
-    localparam BEQ = 14'h0100;
-    localparam BNE = 14'h0200;
-    localparam BLT = 14'h0400;
-    localparam BGE = 14'h0800;
-    localparam BGEU = 14'h1000;
-    localparam BLTU = 14'h2000;
+    // localparam ADD = 14'h0001;
+    // localparam SUB = 14'h0002;
+    // localparam AND = 14'h0004;
+    // localparam OR = 14'h0008;
+    // localparam XOR = 14'h0010;
+    // localparam SLL = 14'h0020;
+    // localparam SRL = 14'h0040;
+    // localparam SRA = 14'h0080;
+    // localparam BEQ = 14'h0100;
+    // localparam BNE = 14'h0200;
+    // localparam BLT = 14'h0400;
+    // localparam BGE = 14'h0800;
+    // localparam BGEU = 14'h1000;
+    // localparam BLTU = 14'h2000;
 
     localparam ERR = 14'h0;
 
     logic op_add, op_sub, op_and, op_or, op_xor, op_sll, op_srl;
     logic op_sra, op_beq, op_bne, op_blt, op_bge, op_bgeu, op_bltu;
 
-    assign ALUControl = {14{op_add}} & ADD |
-                        {14{op_sub}} & SUB |
-                        {14{op_and}} & AND |
-                        {14{op_or}} & OR |
-                        {14{op_xor}} & XOR |
-                        {14{op_sll}} & SLL |
-                        {14{op_srl}} & SRL |
-                        {14{op_sra}} & SRA |
-                        {14{op_beq}} & BEQ |
-                        {14{op_bne}} & BNE |
-                        {14{op_blt}} & BLT |
-                        {14{op_bge}} & BGE |
-                        {14{op_bgeu}} & BGEU |
-                        {14{op_bltu}} & BLTU;
+    assign ALUControl = {
+        op_bltu,
+        op_bgeu,
+        op_bge,
+        op_blt,
+        op_bne,
+        op_beq,
+        op_sra,
+        op_srl,
+        op_sll,
+        op_xor,
+        op_or,
+        op_and,
+        op_sub,
+        op_add
+    };
 
     logic rtype, itype, load, store, jalr, auipc, branch;
 
@@ -94,4 +96,5 @@ module ACTL (
     assign op_bne = branch && funct[2:0] == 3'b001;
     assign op_bge = branch && funct[2:0] == 3'b101;
     assign op_bgeu = branch && funct[2:0] == 3'b111;
+
 endmodule

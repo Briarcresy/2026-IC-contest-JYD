@@ -94,7 +94,7 @@ module myCPU (
         .clk   (clk) ,
         .rst (rst) ,
         .npc   (npc) ,
-        .pc_out (pc)
+        .pc (pc)
     );
 
     NPC #(DATAWIDTH) npc_inst (

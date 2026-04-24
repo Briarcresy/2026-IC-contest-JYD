@@ -32,19 +32,29 @@ module NPC #(
     logic op_branch, op_add4, op_jalr, op_jal;
     logic [DATAWIDTH-1:0] branch_addr, jalr_addr, jal_addr;
 
-    assign op_add4 = npc_op == 2'b00;
-    assign op_branch = npc_op == 2'b01;
-    assign op_jalr = npc_op == 2'b10;
-    assign op_jal = npc_op == 2'b11;
+    // assign op_add4 = (npc_op == 2'b00);
+    // assign op_branch = (npc_op == 2'b01);
+    // assign op_jalr = (npc_op == 2'b10);
+    // assign op_jal = (npc_op == 2'b11);
 
     assign branch_addr = isTrue ? (pc + offset) : (pc + 4);
-    assign jalr_addr = offset & {{DATAWIDTH - 1{1'b1}}, 1'b0};
+    assign jalr_addr = {offset[DATAWIDTH-1:1], 1'b0};
     assign jal_addr = pc + offset;
 
-    assign npc = {32{op_add4}} & pcadd4 |
-            {32{op_branch}} & branch_addr |
-            {32{op_jalr}} & jalr_addr |
-            {32{op_jal}} & jal_addr;
+    always_comb begin
+        case (npc_op)
+            2'b00:   npc = pcadd4;
+            2'b01:   npc = isTrue ? branch_addr : pcadd4;
+            2'b10:   npc = jalr_addr;
+            2'b11:   npc = jal_addr;
+            default: npc = pcadd4;
+        endcase
+    end
+
+    // assign npc = {32{op_add4}} & pcadd4 |
+    //         {32{op_branch}} & branch_addr |
+    //         {32{op_jalr}} & jalr_addr |
+    //         {32{op_jal}} & jal_addr;
 
     assign pcadd4 = pc + 4;
 endmodule
