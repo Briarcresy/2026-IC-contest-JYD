@@ -65,7 +65,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] instr;
     logic [DATAWIDTH-1:0] pcadd4;
     logic [DATAWIDTH-1:0] wdata;
-    logic [DATAWIDTH-1:0] daddr;
+    logic [DATAWIDTH-1:0] ALU_result;
 
     logic [         31:0] Result;
     logic                 MemWrite;
@@ -85,15 +85,15 @@ module myCPU (
     assign dout = perip_rdata;
 
     assign rR2_data = din;
-    assign Result = daddr;
+    assign Result = ALU_result;
     assign clk = cpu_clk;
     assign rst = cpu_rst;
     assign mask = funct[1:0];
 
     PC #(DATAWIDTH, RESET_VAL) pc_inst (
-        .clk   (clk) ,
-        .rst (rst) ,
-        .npc   (npc) ,
+        .clk(clk),
+        .rst(rst),
+        .npc(npc),
         .pc (pc)
     );
 
@@ -154,7 +154,7 @@ module myCPU (
         .A         (A),
         .B         (B),
         .ALUControl(ALUControl),
-        .Result    (daddr),
+        .Result    (ALU_result),
         .isTrue    (isTrue)
     );
 
@@ -184,7 +184,7 @@ module myCPU (
     MuxKey #(4, 2, DATAWIDTH) mux_alu (
         wdata,
         MemToReg,
-        {2'b00, pcadd4, 2'b01, daddr, 2'b10, mdata, 2'b11, imm}
+        {2'b00, pcadd4, 2'b01, ALU_result, 2'b10, mdata, 2'b11, imm}
     );
 endmodule
 
