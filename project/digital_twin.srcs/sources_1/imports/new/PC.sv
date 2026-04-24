@@ -26,9 +26,8 @@ module PC #(
     input  logic                   clk,
     input  logic                   rst,
     input  logic [DATAWIDTH - 1:0] npc,
-    output logic [DATAWIDTH - 1:0] pc_out
+    output logic [DATAWIDTH - 1:0] pc
 );
-    logic [DATAWIDTH - 1:0] reg_pc;
     logic rst_delay;
 
     always_ff @(posedge clk) begin
@@ -36,9 +35,8 @@ module PC #(
     end
 
     always_ff @(posedge clk, posedge rst) begin
-        if (rst | rst_delay) reg_pc <= 32'h8000_0000;
-        else reg_pc <= npc;
+        if (rst | rst_delay) pc <= RESET_VAL;
+        else pc <= npc;
     end
 
-    assign pc_out = reg_pc;
 endmodule

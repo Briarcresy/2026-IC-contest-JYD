@@ -69,7 +69,7 @@ module ALU #(
     assign sra_result = ($signed(A)) >>> B[4:0];
     assign beq_result = {31'b0, A == B};
     assign bne_result = {31'b0, A != B};
-    assign blt_result = {31'b0, (A[31] & ~B[31]) | ((~A[31] ^ B[31]) & add_sub_result[31])};
+    assign blt_result = {31'b0, $signed(A) < $signed(B)};
     assign bge_result = ~blt_result;
     assign bgeu_result = {31'b0, carry};
     assign bltu_result = {31'b0, ~carry};
