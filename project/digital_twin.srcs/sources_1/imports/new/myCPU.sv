@@ -40,11 +40,11 @@ module myCPU (
     parameter ADDR_WIDTH = 5;
 
     logic clk, rst;
-    logic [DATAWIDTH-1:0] offset;
+    logic [DATAWIDTH-1:0] pc_offset;
     logic [          1:0] NpcOp;
-    logic [          1:0] MemToReg;
+    logic [          1:0] MemToReg_sel;
     logic                 RegWrite;
-    logic                 OffsetOrigin;
+    logic                 pc_offset_sel;
     logic [DATAWIDTH-1:0] imm;
     // logic [DATAWIDTH-1:0] csr_npc;
     logic                 isTrue;
@@ -67,25 +67,23 @@ module myCPU (
     logic [DATAWIDTH-1:0] wdata;
     logic [DATAWIDTH-1:0] ALU_result;
 
-    logic [         31:0] Result;
     logic                 MemWrite;
     logic [          1:0] mask;
     logic [         31:0] rR2_data;
-    logic [         31:0] dout;
+    logic [         31:0] DRAM_rdata;
 
     logic [DATAWIDTH-1:0] pc;
 
     assign irom_addr = pc;
     assign instr = irom_data;
 
-    assign perip_addr = Result;
+    assign perip_addr = ALU_result;
     assign perip_wen = MemWrite;
     assign perip_mask = mask;
     assign perip_wdata = rR2_data;
-    assign dout = perip_rdata;
+    assign DRAM_rdata = perip_rdata;
 
     assign rR2_data = din;
-    assign Result = ALU_result;
     assign clk = cpu_clk;
     assign rst = cpu_rst;
     assign mask = funct[1:0];
@@ -101,12 +99,12 @@ module myCPU (
         .isTrue(isTrue),
         .npc_op(NpcOp),
         .pc    (pc),
-        .offset(offset),
+        .offset(pc_offset),
         .npc   (npc),
         .pcadd4(pcadd4)
     );
 
-    assign offset = OffsetOrigin ? Result : imm;
+    assign pc_offset = pc_offset_sel ? ALU_result : imm;
 
     RF #(ADDR_WIDTH, DATAWIDTH) rf_inst (
         .clk     (clk),
@@ -124,15 +122,15 @@ module myCPU (
     assign A = ALUSrcA ? pc : ALU_A;
 
     Control control_inst (
-        .opcode      (opcode),
-        .funct       (funct[2:0]),
-        .NpcOp       (NpcOp),
-        .RegWrite    (RegWrite),
-        .MemToReg    (MemToReg),
-        .MemWrite    (MemWrite),
-        .OffsetOrigin(OffsetOrigin),
-        .ALUSrcA     (ALUSrcA),
-        .ALUSrcB     (ALUSrcB)
+        .opcode       (opcode),
+        // .funct        (funct[2:0]),
+        .NpcOp        (NpcOp),
+        .RegWrite     (RegWrite),
+        .MemToReg_sel (MemToReg_sel),
+        .MemWrite     (MemWrite),
+        .pc_offset_sel(pc_offset_sel),
+        .ALUSrcA      (ALUSrcA),
+        .ALUSrcB      (ALUSrcB)
     );
 
     IMMGEN #(DATAWIDTH) immgen_inst (
@@ -165,8 +163,8 @@ module myCPU (
     );
 
     Mask #(DATAWIDTH) mask_inst (
-        .mask (funct[2:0]),
-        .dout (dout),
+        .mask (instr[14:12]),
+        .dout (DRAM_rdata),
         .mdata(mdata)
     );
 
@@ -181,10 +179,21 @@ module myCPU (
     //     .csr_wb     (csr_wb)
     // );
 
-    MuxKey #(4, 2, DATAWIDTH) mux_alu (
-        wdata,
-        MemToReg,
-        {2'b00, pcadd4, 2'b01, ALU_result, 2'b10, mdata, 2'b11, imm}
-    );
+    always_comb begin : RegWriteMux
+        case (MemToReg_sel)
+            2'b00:   wdata = pcadd4;
+            2'b01:   wdata = ALU_result;
+            2'b10:   wdata = mdata;
+            2'b11:   wdata = imm;
+            default: wdata = ALU_result;
+        endcase
+
+    end
+
+    // MuxKey #(4, 2, DATAWIDTH) mux_alu (
+    //     wdata,
+    //     MemToReg_sel,
+    //     {2'b00, pcadd4, 2'b01, ALU_result, 2'b10, mdata, 2'b11, imm}
+    // );
 endmodule
 
