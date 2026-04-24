@@ -49,7 +49,7 @@ module Control (
     // assign op_call_ret = 0;
 
     assign NpcOp = {2{op_jalr}} & 2'b10 | {2{op_branch}} & 2'b01 | {2{op_jal}} & 2'b11;
-    assign RegWrite = ~(op_branch | op_store);
+    assign RegWrite = !(op_branch || op_store);
     assign MemToReg = {2{op_rtype}} & 2'b01 |
                     {2{op_itype}} & 2'b01 | 
                     {2{op_auipc}} & 2'b01 | 
