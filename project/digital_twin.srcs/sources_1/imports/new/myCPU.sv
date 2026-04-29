@@ -79,8 +79,8 @@ module myCPU (
     // assign perip_addr = Result;
     // assign perip_wen = MemWrite;
     assign perip_mask = mask;
-    assign perip_wdata = rR2_data;
-    assign dout = perip_rdata;
+    // assign perip_wdata = rR2_data;
+    assign DRAM_rdata = perip_rdata;
 
     // assign rR2_data = din;
     assign Result = daddr;
