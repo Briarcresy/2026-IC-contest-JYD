@@ -15,12 +15,12 @@ module register_if_id #(
 
     always_ff @(posedge clock or negedge reset) begin
         if (!reset) begin
-            register_pc    <= WIDTH'b0;
-            register_instr <= WIDTH'b0;
+            register_pc    <= {WIDTH{1'b0}};
+            register_instr <= {WIDTH{1'b0}};
         end
         else if (flush) begin
-            register_pc    <= WIDTH'b0;
-            register_instr <= WIDTH'b0;
+            register_pc    <= {WIDTH{1'b0}};
+            register_instr <= {WIDTH{1'b0}};
         end
         else if (!stall) begin
             register_pc   <= if_pc;
@@ -29,5 +29,5 @@ module register_if_id #(
     end
 
     assign id_pc    = register_pc;
-    assign id_instr = instr_reg;
+    assign id_instr = register_instr;
 endmodule
