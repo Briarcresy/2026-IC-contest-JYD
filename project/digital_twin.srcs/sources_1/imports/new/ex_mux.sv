@@ -11,12 +11,10 @@ module ex_mux #(
         if (alu_mux == 2'b01) begin
             result = alu;
             trigger_stall = 0;
-        end
-        else if (alu_mux == 2'b11) begin
+        end else if (alu_mux == 2'b11) begin
             result = imm;
             trigger_stall = 0;
-        end
-        else begin
+        end else begin
             result = 32'b0;
             trigger_stall = 1;
         end

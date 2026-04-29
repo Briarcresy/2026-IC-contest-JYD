@@ -34,36 +34,36 @@ module register_id_ex #(
     output logic             ex_mem_write
 );
 
-  always_ff @(posedge clock or negedge reset) begin
-    if (!reset) begin
-      ex_pc <= {WIDTH{1'b0}};
-      ex_rs1v <= {WIDTH{1'b0}};
-      ex_rs2v <= {WIDTH{1'b0}};
-      ex_imm <= {WIDTH{1'b0}};
-      ex_rs1 <= 5'b0;
-      ex_rs2 <= 5'b0;
-      ex_rd <= 5'b0;
-      ex_opcode <= 7'b0;
-      ex_funct4 <= 4'b0;
-      ex_mask <= 3'b0;
-      ex_reg_write <= 1'b0;
-      ex_mem_write <= 1'b0;
-    end else if (id_flush) begin
-      ex_reg_write <= 1'b0;
-    end else if (!id_stall) begin
-      ex_pc        <= id_pc;
-      ex_rs1v      <= id_rs1v;
-      ex_rs2v      <= id_rs2v;
-      ex_imm       <= id_imm;
-      ex_rs1       <= id_rs1;
-      ex_rs2       <= id_rs2;
-      ex_rd        <= id_rd;
-      ex_opcode    <= id_opcode;
-      ex_funct4    <= id_funct4;
-      ex_mask      <= id_mask;
-      ex_reg_write <= id_reg_write;
-      ex_mem_write <= id_mem_write;
-      ex_regwrmux  <= id_regwrmux;
+    always_ff @(posedge clock or negedge reset) begin
+        if (!reset) begin
+            ex_pc <= {WIDTH{1'b0}};
+            ex_rs1v <= {WIDTH{1'b0}};
+            ex_rs2v <= {WIDTH{1'b0}};
+            ex_imm <= {WIDTH{1'b0}};
+            ex_rs1 <= 5'b0;
+            ex_rs2 <= 5'b0;
+            ex_rd <= 5'b0;
+            ex_opcode <= 7'b0;
+            ex_funct4 <= 4'b0;
+            ex_mask <= 3'b0;
+            ex_reg_write <= 1'b0;
+            ex_mem_write <= 1'b0;
+        end else if (id_flush) begin
+            ex_reg_write <= 1'b0;
+        end else if (!id_stall) begin
+            ex_pc        <= id_pc;
+            ex_rs1v      <= id_rs1v;
+            ex_rs2v      <= id_rs2v;
+            ex_imm       <= id_imm;
+            ex_rs1       <= id_rs1;
+            ex_rs2       <= id_rs2;
+            ex_rd        <= id_rd;
+            ex_opcode    <= id_opcode;
+            ex_funct4    <= id_funct4;
+            ex_mask      <= id_mask;
+            ex_reg_write <= id_reg_write;
+            ex_mem_write <= id_mem_write;
+            ex_regwrmux  <= id_regwrmux;
+        end
     end
-  end
 endmodule

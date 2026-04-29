@@ -10,11 +10,9 @@ module mem_mux #(
     always_comb begin
         if (alu_mux == 2'b00) begin
             result = pc_add_4;
-        end
-        else if (alu_mux == 2'b10) begin
+        end else if (alu_mux == 2'b10) begin
             result = mdata;
-        end
-        else begin
+        end else begin
             result = alu_mux;
         end
     end
