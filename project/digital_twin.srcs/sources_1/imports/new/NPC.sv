@@ -44,7 +44,7 @@ module NPC #(
     always_comb begin
         case (npc_op)
             2'b00:   npc = pcadd4;
-            2'b01:   npc = isTrue ? branch_addr : pcadd4;
+            2'b01:   npc = branch_addr;
             2'b10:   npc = jalr_addr;
             2'b11:   npc = jal_addr;
             default: npc = pcadd4;
