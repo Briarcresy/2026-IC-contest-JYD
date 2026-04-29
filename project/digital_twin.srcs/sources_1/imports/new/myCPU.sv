@@ -40,11 +40,11 @@ module myCPU (
     parameter ADDR_WIDTH = 5;
 
     logic clk, rst;
-    logic [DATAWIDTH-1:0] offset;
+    logic [DATAWIDTH-1:0] pc_offset;
     logic [          1:0] NpcOp;
     // logic [          1:0] MemToReg;
     logic                 RegWrite;
-    logic                 OffsetOrigin;
+    logic                 pc_offset_sel;
     logic [DATAWIDTH-1:0] imm;
     // logic [DATAWIDTH-1:0] csr_npc;
     logic                 isTrue;
@@ -64,13 +64,12 @@ module myCPU (
     logic [DATAWIDTH-1:0] instr;
     logic [DATAWIDTH-1:0] pcadd4;
     logic [DATAWIDTH-1:0] wdata;
-    logic [DATAWIDTH-1:0] daddr;
+    logic [DATAWIDTH-1:0] ALU_result;
 
-    logic [         31:0] Result;
     logic                 MemWrite;
     logic [          1:0] mask;
     // logic [         31:0] rR2_data;
-    logic [         31:0] dout;
+    logic [         31:0] DRAM_rdata;
 
     logic [DATAWIDTH-1:0] pc;
 
@@ -80,7 +79,7 @@ module myCPU (
     // assign perip_addr = Result;
     // assign perip_wen = MemWrite;
     assign perip_mask = mask;
-    // assign perip_wdata = rR2_data;
+    assign perip_wdata = rR2_data;
     assign dout = perip_rdata;
 
     // assign rR2_data = din;
@@ -254,9 +253,9 @@ module myCPU (
     // pipilines END
 
     PC #(DATAWIDTH, RESET_VAL) pc_inst (
-        .clk   (clk) ,
-        .rst (rst) ,
-        .npc   (npc) ,
+        .clk(clk),
+        .rst(rst),
+        .npc(npc),
         .pc (pc)
     );
 
@@ -264,7 +263,7 @@ module myCPU (
         .isTrue(isTrue),
         .npc_op(NpcOp),
         .pc    (pc),
-        .offset(offset),
+        .offset(pc_offset),
         .npc   (npc),
         .pcadd4(pcadd4)
     );
@@ -317,7 +316,7 @@ module myCPU (
         .A         (A),
         .B         (B),
         .ALUControl(ALUControl),
-        .Result    (daddr),
+        .Result    (ALU_result),
         .isTrue    (isTrue)
     );
 
@@ -328,8 +327,8 @@ module myCPU (
     );
 
     Mask #(DATAWIDTH) mask_inst (
-        .mask (funct[2:0]),
-        .dout (dout),
+        .mask (instr[14:12]),
+        .dout (DRAM_rdata),
         .mdata(mdata)
     );
 

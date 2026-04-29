@@ -29,7 +29,7 @@ module NPC #(
     output logic [DATAWIDTH - 1:0] npc,
     output logic [DATAWIDTH - 1:0] pcadd4
 );
-    logic op_branch, op_add4, op_jalr, op_jal;
+    // logic op_branch, op_add4, op_jalr, op_jal;
     logic [DATAWIDTH-1:0] branch_addr, jalr_addr, jal_addr;
 
     // assign op_add4 = (npc_op == 2'b00);
@@ -44,7 +44,7 @@ module NPC #(
     always_comb begin
         case (npc_op)
             2'b00:   npc = pcadd4;
-            2'b01:   npc = isTrue ? branch_addr : pcadd4;
+            2'b01:   npc = branch_addr;
             2'b10:   npc = jalr_addr;
             2'b11:   npc = jal_addr;
             default: npc = pcadd4;

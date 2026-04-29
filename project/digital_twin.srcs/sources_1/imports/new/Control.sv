@@ -22,12 +22,12 @@
 
 module Control (
     input  logic [6:0] opcode,
-    input  logic [2:0] funct,
+    // input  logic [2:0] funct,
     output logic [1:0] NpcOp,
     output logic       RegWrite,
-    output logic [1:0] MemToReg,
+    output logic [1:0] MemToReg_sel,
     output logic       MemWrite,
-    output logic       OffsetOrigin,
+    output logic       pc_offset_sel,
     output logic       ALUSrcA,
     output logic       ALUSrcB
 );
@@ -50,15 +50,15 @@ module Control (
 
     assign NpcOp = {2{op_jalr}} & 2'b10 | {2{op_branch}} & 2'b01 | {2{op_jal}} & 2'b11;
     assign RegWrite = !(op_branch || op_store);
-    assign MemToReg = {2{op_rtype}} & 2'b01 |
+    assign MemToReg_sel = {2{op_rtype}} & 2'b01 |
                     {2{op_itype}} & 2'b01 | 
                     {2{op_auipc}} & 2'b01 | 
                     {2{op_load}} & 2'b10 |
                     {2{op_lui}} & 2'b11;
     assign MemWrite = op_store;
-    assign OffsetOrigin = op_jalr;
+    assign pc_offset_sel = op_jalr;
     assign ALUSrcA = op_auipc;
-    assign ALUSrcB = ~(op_rtype | op_branch);
+    assign ALUSrcB = !(op_rtype || op_branch);
 
 
 endmodule

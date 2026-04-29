@@ -30,9 +30,6 @@
 .DS_Store
 Thumbs.db
 
-#.xpr
-*.xpr
-
 *.srcs/constrs_1/
 *.srcs/sources_1/ip/
 *.srcs/sources_1/new/
