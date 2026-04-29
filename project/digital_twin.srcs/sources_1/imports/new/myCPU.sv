@@ -230,10 +230,16 @@ module myCPU (
         .stall(pipeline_stall),
         .flush(pipeline_flush),
         .mem_alu_result(mem_post_result_mem_mux),
+        .mem_pc_add_4(),
+        .mem_mdata(),
+        .mem_imm(),
         .mem_rd_addr(mem_thru_rd),
         .mem_mask(mem_thru_mask),
         .mem_reg_write(mem_thru_regwrite),
         .wb_alu_result(wb_pre_wdata),
+        .mem_pc_add_4(),
+        .mem_mdata(),
+        .mem_imm(),
         .wb_rd_addr(wb_pre_rd),
         .wb_mask(wb_pre_mask),
         .wb_reg_write(wb_pre_regwrite)
@@ -249,8 +255,8 @@ module myCPU (
         .trigger_stall(pipeline_stall)  // TODO: pipeline_stall has other conditions
     );
 
-    mem_mux #(DATAWIDTH) mem_mux_instance (
-        .ex_mux(alu_mux_result),
+    mem_mux #(DATAWIDTH) wb_mux_instance (
+        .ex_mux(mem_pre_result_ex_mux),
         .pc_add_4(pcadd4),
         .mdata(mdata),
         .alu_mux(mem_pre_regwrmux),
