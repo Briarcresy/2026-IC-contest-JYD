@@ -67,7 +67,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] ALU_result;
 
     logic                 MemWrite;
-    logic [          1:0] mask;
+    // logic [          1:0] mask;
     // logic [         31:0] rR2_data;
     logic [         31:0] DRAM_rdata;
 
@@ -78,7 +78,7 @@ module myCPU (
 
     // assign perip_addr = Result;
     // assign perip_wen = MemWrite;
-    assign perip_mask = mask;
+    // assign perip_mask = mask;
     // assign perip_wdata = rR2_data;
     assign DRAM_rdata = perip_rdata;
 
@@ -86,7 +86,7 @@ module myCPU (
     assign Result = daddr;
     assign clk = cpu_clk;
     assign rst = cpu_rst;
-    assign mask = funct[1:0];
+    // assign mask = funct[1:0];
 
     // pipelines BEGIN
     // <stage>_<pre/post/thru>_<function>
@@ -103,7 +103,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] id_thru_pc;
     logic [DATAWIDTH-1:0] id_pre_instruction;
 
-    logic [          1:0] id_post_mask;
+    logic [          2:0] id_post_mask;
     assign id_post_mask = funct[2:0];
     logic [4:0] id_post_rs1;
     assign id_post_rs1 = id_pre_instruction[19:15];  // for forwarding
@@ -122,7 +122,7 @@ module myCPU (
     //logic
 
     logic [DATAWIDTH-1:0] ex_pre_pc;
-    logic [          1:0] ex_pre_mask;
+    logic [          2:0] ex_thru_mask;
     logic [          4:0] ex_pre_rs1;  // for forwarding
     logic [          4:0] ex_pre_rs2;  // for forwarding
     logic [DATAWIDTH-1:0] ex_pre_rs1v;
@@ -143,10 +143,12 @@ module myCPU (
     logic [DATAWIDTH-1:0] mem_pre_result_ex_mux;
     logic [          1:0] mem_pre_regwrmux;
     logic [          4:0] mem_thru_rd;
+    logic [          2:0] mem_thru_mask;
     logic                 mem_thru_regwrite;
     logic [DATAWIDTH-1:0] mem_post_result_mem_mux;
 
     logic [          4:0] wb_pre_rd;
+    logic [          2:0] wb_pre_mask;
     logic                 wb_pre_regwrite;
     logic [DATAWIDTH-1:0] wb_pre_wdata;
 
@@ -181,9 +183,7 @@ module myCPU (
         .id_rd(id_post_rd),
         .id_opcode(id_pre_instruction[6:0]),
         .id_funct4({id_pre_instruction[30], id_pre_instruction[14:12]}),
-        .id_mask(
-        // id_post_mask
-        3'b0),
+        .id_mask(id_post_mask),
         .id_regwrmux(id_post_regwrmux),
         .id_reg_write(id_post_regwrite),
         .id_mem_write(id_post_memwrite),
@@ -196,7 +196,7 @@ module myCPU (
         .ex_rd(ex_thru_rd),
         .ex_opcode(ex_pre_opcode),
         .ex_funct4(ex_pre_funct4),
-        .ex_mask(ex_pre_mask),
+        .ex_mask(ex_thru_mask),
         .ex_regwrmux(ex_thru_regwrmux),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite)
@@ -209,6 +209,7 @@ module myCPU (
         .ex_alu_result(ex_post_result_ex_mux),
         .ex_rs2_val(ex_thru_rs2v),
         .ex_rd_addr(ex_thru_rd),
+        .ex_mask(ex_thru_mask),
         .ex_npc_op(ex_thru_npc_op),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
@@ -216,6 +217,7 @@ module myCPU (
         .mem_alu_result(mem_pre_result_ex_mux),
         .mem_rs2_val(mem_pre_rs2v),
         .mem_rd_addr(mem_thru_rd),
+        .mem_mask(mem_thru_mask),
         .mem_npc_op(mem_pre_npc_op),
         .mem_reg_write(mem_thru_regwrite),
         .mem_mem_write(mem_pre_memwrite),
@@ -229,9 +231,11 @@ module myCPU (
         .flush(pipeline_flush),
         .mem_alu_result(mem_post_result_mem_mux),
         .mem_rd_addr(mem_thru_rd),
+        .mem_mask(mem_thru_mask),
         .mem_reg_write(mem_thru_regwrite),
         .wb_alu_result(wb_pre_wdata),
         .wb_rd_addr(wb_pre_rd),
+        .wb_mask(wb_pre_mask),
         .wb_reg_write(wb_pre_regwrite)
     );
 
@@ -289,15 +293,15 @@ module myCPU (
     assign A = ALUSrcA ? ex_pre_pc : ex_pre_rs1v;
 
     Control control_inst (
-        .opcode      (opcode),
-        .funct       (funct[2:0]),
-        .NpcOp       (id_post_npc_op),
-        .RegWrite    (id_post_memwrite),
-        .MemToReg    (id_post_regwrmux),
-        .MemWrite    (id_post_memwrite),
-        .OffsetOrigin(OffsetOrigin),
-        .ALUSrcA     (ALUSrcA),
-        .ALUSrcB     (ALUSrcB)
+        .opcode       (opcode),
+        // .funct       (funct[2:0]),
+        .NpcOp        (id_post_npc_op),
+        .RegWrite     (id_post_memwrite),
+        .MemToReg_sel (id_post_regwrmux),
+        .MemWrite     (id_post_memwrite),
+        .pc_offset_sel(OffsetOrigin),
+        .ALUSrcA      (ALUSrcA),
+        .ALUSrcB      (ALUSrcB)
     );
 
     IMMGEN #(DATAWIDTH) immgen_inst (
@@ -330,7 +334,7 @@ module myCPU (
     );
 
     Mask #(DATAWIDTH) mask_inst (
-        .mask (instr[14:12]),
+        .mask (wb_pre_mask),
         .dout (DRAM_rdata),
         .mdata(mdata)
     );

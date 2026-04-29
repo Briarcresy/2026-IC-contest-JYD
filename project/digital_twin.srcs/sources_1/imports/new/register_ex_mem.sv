@@ -8,6 +8,7 @@ module register_ex_mem #(
     input  logic [WIDTH-1:0] ex_alu_result,
     input  logic [WIDTH-1:0] ex_rs2_val,
     input  logic [      4:0] ex_rd_addr,
+    input  logic [      2:0] ex_mask,
     input  logic [      1:0] ex_npc_op,
     input  logic [      1:0] ex_regwrmux,
     input  logic             ex_reg_write,
@@ -16,6 +17,7 @@ module register_ex_mem #(
     output logic [WIDTH-1:0] mem_alu_result,
     output logic [WIDTH-1:0] mem_rs2_val,
     output logic [      4:0] mem_rd_addr,
+    output logic [      2:0] mem_mask,
     output logic [      1:0] mem_npc_op,
     output logic [      1:0] mem_regwrmux,
     output logic             mem_reg_write,
@@ -42,6 +44,7 @@ module register_ex_mem #(
             mem_alu_result <= ex_alu_result;
             mem_rs2_val    <= ex_rs2_val;
             mem_rd_addr    <= ex_rd_addr;
+            mem_mask       <= ex_mask;
             mem_npc_op     <= ex_npc_op;
             mem_regwrmux   <= ex_regwrmux;
             mem_reg_write  <= ex_reg_write;
