@@ -17,6 +17,7 @@ module register_id_ex #(
     input  logic [      3:0] id_funct4,
     input  logic [      2:0] id_mask,
     input  logic [      1:0] id_regwrmux,
+    input  logic [      1:0] id_npcop,
     input  logic             id_reg_write,
     input  logic             id_mem_write,
     input  logic             id_pc_offset_sel,
@@ -33,6 +34,7 @@ module register_id_ex #(
     output logic [      3:0] ex_funct4,
     output logic [      2:0] ex_mask,
     output logic [      1:0] ex_regwrmux,
+    output logic [      1:0] ex_npcop,
     output logic             ex_reg_write,
     output logic             ex_mem_write,
     output logic             ex_pc_offset_sel
@@ -54,6 +56,7 @@ module register_id_ex #(
             ex_mem_write <= 1'b0;
         end else if (id_flush) begin
             ex_reg_write <= 1'b0;
+            ex_npcop     <= 1'b00;
         end else if (!id_stall) begin
             ex_pc            <= id_pc;
             ex_rs1v          <= id_rs1v;
@@ -69,6 +72,7 @@ module register_id_ex #(
             ex_mem_write     <= id_mem_write;
             ex_regwrmux      <= id_regwrmux;
             ex_pc_offset_sel <= id_pc_offset_sel;
+            ex_npcop         <= id_npcop;
         end
     end
 endmodule

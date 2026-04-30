@@ -182,6 +182,7 @@ module myCPU (
         .id_pc4(id_thru_pc4),
         .id_instr(id_pre_instruction)
     );
+
     register_id_ex #(DATAWIDTH) id_ex (
         .clock(clk),
         .reset(rst),
@@ -199,6 +200,7 @@ module myCPU (
         .id_funct4({id_pre_instruction[30], id_pre_instruction[14:12]}),
         .id_mask(id_post_mask),
         .id_regwrmux(id_post_regwrmux),
+        .id_npcop(id_post_npc_op),
         .id_reg_write(id_post_regwrite),
         .id_mem_write(id_post_memwrite),
         .id_pc_offset_sel(id_post_pc_offset_sel),
@@ -214,10 +216,12 @@ module myCPU (
         .ex_funct4(ex_pre_funct4),
         .ex_mask(ex_thru_mask),
         .ex_regwrmux(ex_thru_regwrmux),
+        .ex_npcop(ex_thru_npc_op),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
         .ex_pc_offset_sel(ex_pre_pc_offset_sel)
     );
+
     register_ex_mem #(DATAWIDTH) ex_mem (
         .clock(clk),
         .reset(rst),
@@ -271,8 +275,7 @@ module myCPU (
         .imm(mem_pre_imm),
         .alu(mem_pre_result),
         .alu_mux(mem_pre_regwrmux),
-        .result(mem_post_result_mem_mux),
-        .trigger_stall(pipeline_stall)  // TODO: pipeline_stall has other conditions
+        .result(mem_post_result_mem_mux)
     );
 
     mem_mux #(DATAWIDTH) wb_mux_instance (
@@ -294,11 +297,25 @@ module myCPU (
         .rd2_we(wb_pre_regwrite),
         .rs1(ex_pre_rs1),
         .rs2(ex_pre_rs2),
+        .rs1_needed(!ALUSrcA),
+        .rs2_needed(!ALUSrcB),
         .rs1_forward_sel(alu_a_forward_sel),
         .rs1_forward_require(alu_a_forward_require),
         .rs2_forward_sel(alu_b_forward_sel),
         .rs2_forward_require(alu_b_forward_require)
-    );  // TODO: In some cases, rs1 & rs2 has non-zero value but is part of imm, forwarding should be disabled
+    );
+
+    hazard_detection_unit hazard_detection_unit_instance (
+        .npcop(ex_thru_npc_op),
+        .alu_is_true(isTrue),
+        .regwrmux(ex_thru_regwrmux),
+        .reg_write(ex_thru_regwrite),
+        .rd(ex_thru_rd),
+        .rs1(id_post_rs1),
+        .rs2(id_post_rs2),
+        .trigger_stall(pipeline_stall),
+        .trigger_flush(pipeline_flush)
+    );
 
     // pipilines END
 
@@ -311,7 +328,7 @@ module myCPU (
 
     NPC #(DATAWIDTH) npc_inst (
         .isTrue(isTrue),
-        .npc_op(NpcOp),
+        .npc_op(ex_thru_npc_op),
         .pc    (pc),
         .offset(pc_offset),
         .npc   (npc),
