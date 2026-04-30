@@ -12,8 +12,8 @@ module register_if_id #(
     output logic [WIDTH-1:0] id_pc4,
     output logic [WIDTH-1:0] id_instr
 );
-    always_ff @(posedge clock or negedge reset) begin
-        if (!reset) begin
+    always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
             id_pc    <= {WIDTH{1'b0}};
             id_pc4   <= {WIDTH{1'b0}};
             id_instr <= {WIDTH{1'b0}};

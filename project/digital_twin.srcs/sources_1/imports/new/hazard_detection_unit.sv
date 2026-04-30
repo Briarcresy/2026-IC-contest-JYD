@@ -11,8 +11,9 @@ module hazard_detection_unit #(
     output logic       trigger_flush
 );
     always_comb begin
-        if (npcop != 2'b00  // npcop = 00 => no jal-jalr-b. ref Control NpcOp
-            && alu_is_true) begin  // jump haappens. discard load-use hazard
+        if (  // npcop = 00 => no jal-jalr-b. ref Control NpcOp
+            (npcop == 2'b01 && alu_is_true)
+            || (npcop[1])) begin  // jump haappens. discard load-use hazard
             trigger_stall = 0;
             trigger_flush = 1;
         end else if (regwrmux == 2'b10  // regwrmux = 10 => memdata selected.

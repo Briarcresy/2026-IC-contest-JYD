@@ -1,4 +1,8 @@
 module register_mem_wb (
+`ifdef ENABLE_DEBUG_TRACE
+    input  logic [31:0] mem_pc4,
+    output logic [31:0] wb_pc4,
+`endif
     input  logic        clock,
     input  logic        reset,
     input  logic        stall,
@@ -15,8 +19,8 @@ module register_mem_wb (
     output logic        wb_reg_write
 );
 
-    always_ff @(posedge clock or negedge reset) begin
-        if (!reset) begin
+    always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
             wb_alu_result <= '0;
             wb_mdata      <= '0;
             wb_rd_addr    <= '0;
@@ -26,6 +30,9 @@ module register_mem_wb (
             wb_alu_result <= mem_alu_result;
             wb_mdata      <= mem_mdata;
             wb_mask       <= mem_mask;
+`ifdef ENABLE_DEBUG_TRACE
+            wb_pc4 <= mem_pc4;
+`endif
             if (flush) begin
                 wb_rd_addr   <= 5'b0;
                 wb_reg_write <= 1'b0;

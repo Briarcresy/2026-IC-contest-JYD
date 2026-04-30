@@ -18,6 +18,8 @@ module register_id_ex #(
     input  logic [      2:0] id_mask,
     input  logic [      1:0] id_regwrmux,
     input  logic [      1:0] id_npcop,
+    input  logic [      1:0] id_alusrcA,
+    input  logic [      1:0] id_alusrcB,
     input  logic             id_reg_write,
     input  logic             id_mem_write,
     input  logic             id_pc_offset_sel,
@@ -35,13 +37,15 @@ module register_id_ex #(
     output logic [      2:0] ex_mask,
     output logic [      1:0] ex_regwrmux,
     output logic [      1:0] ex_npcop,
+    output logic [      1:0] ex_alusrcA,
+    output logic [      1:0] ex_alusrcB,
     output logic             ex_reg_write,
     output logic             ex_mem_write,
     output logic             ex_pc_offset_sel
 );
 
-    always_ff @(posedge clock or negedge reset) begin
-        if (!reset) begin
+    always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
             ex_pc            <= '0;
             ex_pc4           <= '0;
             ex_rs1v          <= '0;
@@ -58,9 +62,10 @@ module register_id_ex #(
             ex_regwrmux      <= '0;
             ex_pc_offset_sel <= '0;
             ex_npcop         <= '0;
+            ex_alusrcA       <= '0;
+            ex_alusrcB       <= '0;
         end else begin
             ex_pc            <= id_pc;
-            ex_pc4           <= id_pc4;
             ex_rs1v          <= id_rs1v;
             ex_rs2v          <= id_rs2v;
             ex_imm           <= id_imm;
@@ -72,14 +77,18 @@ module register_id_ex #(
             ex_mask          <= id_mask;
             ex_regwrmux      <= id_regwrmux;
             ex_pc_offset_sel <= id_pc_offset_sel;
+            ex_alusrcA       <= id_alusrcA;
+            ex_alusrcB       <= id_alusrcB;
             if (id_flush) begin
                 ex_reg_write <= 1'b0;
                 ex_mem_write <= 1'b0;
                 ex_npcop     <= 2'b00;
+                ex_pc4       <= 32'b0;
             end else if (!id_stall) begin
                 ex_reg_write <= id_reg_write;
                 ex_mem_write <= id_mem_write;
                 ex_npcop     <= id_npcop;
+                ex_pc4       <= id_pc4;
             end
         end
     end

@@ -21,13 +21,18 @@
 
 module PC #(
     parameter DATAWIDTH = 32,
+`ifdef ENABLE_DEBUG_TRACE
+    parameter RESET_VAL = 32'h0000_0000
+`else
     parameter RESET_VAL = 32'h8000_0000
+`endif
 ) (
     input  logic                   clk,
     input  logic                   rst,
     input  logic [DATAWIDTH - 1:0] npc,
     output logic [DATAWIDTH - 1:0] pc
 );
+    logic [DATAWIDTH - 1:0] reg_pc;
     logic rst_delay;
 
     always_ff @(posedge clk) begin
@@ -35,8 +40,9 @@ module PC #(
     end
 
     always_ff @(posedge clk, posedge rst) begin
-        if (rst | rst_delay) pc <= RESET_VAL;
-        else pc <= npc;
+        if (rst | rst_delay) reg_pc <= RESET_VAL;
+        else reg_pc <= npc;
     end
 
+    assign pc = reg_pc;
 endmodule

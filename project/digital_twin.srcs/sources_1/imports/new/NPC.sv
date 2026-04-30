@@ -26,6 +26,8 @@ module NPC #(
     input  logic [            1:0] npc_op,
     input  logic [DATAWIDTH - 1:0] pc,
     input  logic [DATAWIDTH - 1:0] offset,
+    input  logic [DATAWIDTH - 1:0] pc_add_offset,
+    input  logic [DATAWIDTH - 1:0] pcadd4_pipeline,
     output logic [DATAWIDTH - 1:0] npc,
     output logic [DATAWIDTH - 1:0] pcadd4
 );
@@ -37,9 +39,9 @@ module NPC #(
     // assign op_jalr = (npc_op == 2'b10);
     // assign op_jal = (npc_op == 2'b11);
 
-    assign branch_addr = isTrue ? (pc + offset) : (pc + 4);
+    assign branch_addr = isTrue ? (pc_add_offset) : (pcadd4_pipeline);
     assign jalr_addr = {offset[DATAWIDTH-1:1], 1'b0};
-    assign jal_addr = pc + offset;
+    assign jal_addr = pc_add_offset;
 
     always_comb begin
         case (npc_op)
