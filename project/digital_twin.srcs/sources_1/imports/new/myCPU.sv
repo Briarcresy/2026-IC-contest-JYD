@@ -43,8 +43,8 @@ module myCPU (
     logic [DATAWIDTH-1:0] pc_offset;
     logic [          1:0] NpcOp;
     // logic [          1:0] MemToReg;
-    logic                 RegWrite;
-    logic                 pc_offset_sel;
+    // logic                 RegWrite;
+    // logic                 pc_offset_sel;
     logic [DATAWIDTH-1:0] imm;
     // logic [DATAWIDTH-1:0] csr_npc;
     logic                 isTrue;
@@ -64,7 +64,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] instr;
     logic [DATAWIDTH-1:0] pcadd4;
     logic [DATAWIDTH-1:0] wdata;
-    logic [DATAWIDTH-1:0] ALU_result;
+    // logic [DATAWIDTH-1:0] ALU_result;
 
     logic                 MemWrite;
     // logic [          1:0] mask;
@@ -83,7 +83,7 @@ module myCPU (
     assign DRAM_rdata = perip_rdata;
 
     // assign rR2_data = din;
-    assign Result = daddr;
+    // assign Result = daddr;
     assign clk = cpu_clk;
     assign rst = cpu_rst;
     // assign mask = funct[1:0];
@@ -96,21 +96,19 @@ module myCPU (
 
     // TODO: not finished yet
     logic [DATAWIDTH-1:0] if_post_pc;
+    logic [DATAWIDTH-1:0] if_post_pc4;
     logic [DATAWIDTH-1:0] if_post_instruction;
     assign if_post_instruction = irom_data;
     assign if_post_pc          = irom_addr;
 
+    logic [DATAWIDTH-1:0] id_thru_pc4;
     logic [DATAWIDTH-1:0] id_thru_pc;
     logic [DATAWIDTH-1:0] id_pre_instruction;
 
     logic [          2:0] id_post_mask;
-    assign id_post_mask = funct[2:0];
-    logic [4:0] id_post_rs1;
-    assign id_post_rs1 = id_pre_instruction[19:15];  // for forwarding
-    logic [4:0] id_post_rs2;
-    assign id_post_rs2 = id_pre_instruction[24:20];  // for forwarding
-    logic [4:0] id_post_rd;
-    assign id_post_rd = id_pre_instruction[11:7];  // save reg-write-target
+    logic [          4:0] id_post_rs1;
+    logic [          4:0] id_post_rs2;
+    logic [          4:0] id_post_rd;
     logic                 id_post_memwrite;
     logic                 id_post_regwrite;
     logic [DATAWIDTH-1:0] id_post_rs1v;
@@ -118,6 +116,11 @@ module myCPU (
     logic [DATAWIDTH-1:0] id_post_imm;
     logic [          1:0] id_post_npc_op;
     logic [          1:0] id_post_regwrmux;
+    logic                 id_post_pc_offset_sel;
+    assign id_post_mask = funct[2:0];
+    assign id_post_rs1  = id_pre_instruction[19:15];  // for forwarding
+    assign id_post_rs2  = id_pre_instruction[24:20];  // for forwarding
+    assign id_post_rd   = id_pre_instruction[11:7];  // save reg-write-target
     //logic []
     //logic
 
@@ -126,38 +129,46 @@ module myCPU (
     logic [          4:0] ex_pre_rs1;  // for forwarding
     logic [          4:0] ex_pre_rs2;  // for forwarding
     logic [DATAWIDTH-1:0] ex_pre_rs1v;
-    logic [DATAWIDTH-1:0] ex_pre_imm;
+    logic [DATAWIDTH-1:0] ex_thru_imm;
     logic [          7:0] ex_pre_opcode;
     logic [          3:0] ex_pre_funct4;
+    logic                 ex_pre_pc_offset_sel;
+    logic [DATAWIDTH-1:0] ex_thru_pc4;
     logic [DATAWIDTH-1:0] ex_thru_rs2v;
     logic [          1:0] ex_thru_npc_op;
     logic [          4:0] ex_thru_rd;
     logic                 ex_thru_memwrite;
     logic                 ex_thru_regwrite;
     logic [          1:0] ex_thru_regwrmux;
-    logic [DATAWIDTH-1:0] ex_post_result_ex_mux;
+    logic [DATAWIDTH-1:0] ex_post_result;
+    logic [          1:0] ex_post_mask_memread;
+    assign ex_post_mask_memread = ex_pre_funct4[1:0];
 
     logic [DATAWIDTH-1:0] mem_pre_rs2v;
     logic [          1:0] mem_pre_npc_op;
     logic                 mem_pre_memwrite;
-    logic [DATAWIDTH-1:0] mem_pre_result_ex_mux;
+    logic [DATAWIDTH-1:0] mem_pre_result;
+    logic [DATAWIDTH-1:0] mem_pre_imm;
+    logic [DATAWIDTH-1:0] mem_pre_pc4;
     logic [          1:0] mem_pre_regwrmux;
+    logic [          1:0] mem_pre_mask_memread;
     logic [          4:0] mem_thru_rd;
     logic [          2:0] mem_thru_mask;
     logic                 mem_thru_regwrite;
     logic [DATAWIDTH-1:0] mem_post_result_mem_mux;
+    assign perip_wdata = mem_pre_rs2v;
+    assign perip_addr  = mem_pre_result;
+    assign perip_wen   = mem_pre_memwrite;
+    assign perip_mask  = mem_pre_mask_memread;
 
     logic [          4:0] wb_pre_rd;
     logic [          2:0] wb_pre_mask;
     logic                 wb_pre_regwrite;
-    logic [DATAWIDTH-1:0] wb_pre_wdata;
+    logic [DATAWIDTH-1:0] wb_pre_result_mem_mux;
+    logic [DATAWIDTH-1:0] wb_pre_dram_rdata;
 
-    assign perip_wdata = mem_pre_rs2v;
-    assign perip_addr  = mem_pre_result_ex_mux;
-    assign perip_wen   = mem_pre_memwrite;
-
-    logic pipeline_stall;
-    logic pipeline_flush;
+    logic                 pipeline_stall;
+    logic                 pipeline_flush;
 
     register_if_id #(DATAWIDTH) if_id (
         .clock(clk),
@@ -165,8 +176,10 @@ module myCPU (
         .stall(pipeline_stall),
         .flush(pipeline_flush),
         .if_pc(if_post_pc),
+        .if_pc4(if_post_pc4),
         .if_instr(if_post_instruction),
         .id_pc(id_thru_pc),
+        .id_pc4(id_thru_pc4),
         .id_instr(id_pre_instruction)
     );
     register_id_ex #(DATAWIDTH) id_ex (
@@ -175,6 +188,7 @@ module myCPU (
         .id_stall(pipeline_stall),
         .id_flush(pipeline_flush),
         .id_pc(id_thru_pc),
+        .id_pc4(id_thru_pc4),
         .id_rs1v(id_post_rs1v),
         .id_rs2v(id_post_rs2v),
         .id_imm(id_post_imm),
@@ -187,10 +201,12 @@ module myCPU (
         .id_regwrmux(id_post_regwrmux),
         .id_reg_write(id_post_regwrite),
         .id_mem_write(id_post_memwrite),
+        .id_pc_offset_sel(id_post_pc_offset_sel),
         .ex_pc(ex_pre_pc),
+        .ex_pc4(ex_thru_pc4),
         .ex_rs1v(ex_pre_rs1v),
         .ex_rs2v(ex_thru_rs2v),
-        .ex_imm(ex_pre_imm),
+        .ex_imm(ex_thru_imm),
         .ex_rs1(ex_pre_rs1),
         .ex_rs2(ex_pre_rs2),
         .ex_rd(ex_thru_rd),
@@ -199,47 +215,50 @@ module myCPU (
         .ex_mask(ex_thru_mask),
         .ex_regwrmux(ex_thru_regwrmux),
         .ex_reg_write(ex_thru_regwrite),
-        .ex_mem_write(ex_thru_memwrite)
+        .ex_mem_write(ex_thru_memwrite),
+        .ex_pc_offset_sel(ex_pre_pc_offset_sel)
     );
     register_ex_mem #(DATAWIDTH) ex_mem (
         .clock(clk),
         .reset(rst),
-        .stall(pipeline_stall),
-        .flush(pipeline_flush),
-        .ex_alu_result(ex_post_result_ex_mux),
+        .stall(0),
+        .flush(0),
+        .ex_alu_result(ex_post_result),
         .ex_rs2_val(ex_thru_rs2v),
+        .ex_imm(ex_thru_imm),
+        .ex_pc4(ex_thru_pc4),
         .ex_rd_addr(ex_thru_rd),
         .ex_mask(ex_thru_mask),
         .ex_npc_op(ex_thru_npc_op),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
         .ex_mem_to_reg(ex_thru_regwrmux),
-        .mem_alu_result(mem_pre_result_ex_mux),
+        .ex_mask_memread(ex_post_mask_memread),
+        .mem_alu_result(mem_pre_result),
         .mem_rs2_val(mem_pre_rs2v),
+        .mem_imm(mem_pre_imm),
+        .mem_pc4(mem_pre_pc4),
         .mem_rd_addr(mem_thru_rd),
         .mem_mask(mem_thru_mask),
         .mem_npc_op(mem_pre_npc_op),
         .mem_reg_write(mem_thru_regwrite),
         .mem_mem_write(mem_pre_memwrite),
-        .mem_mem_to_reg(mem_pre_regwrmux)
+        .mem_mem_to_reg(mem_pre_regwrmux),
+        .mem_mask_memread(mem_pre_mask_memread)
     );
 
     register_mem_wb #() mem_wb (
         .clock(clk),
         .reset(rst),
-        .stall(pipeline_stall),
-        .flush(pipeline_flush),
+        .stall(0),
+        .flush(0),
         .mem_alu_result(mem_post_result_mem_mux),
-        .mem_pc_add_4(),
-        .mem_mdata(),
-        .mem_imm(),
+        .mem_mdata(DRAM_rdata),
         .mem_rd_addr(mem_thru_rd),
         .mem_mask(mem_thru_mask),
         .mem_reg_write(mem_thru_regwrite),
-        .wb_alu_result(wb_pre_wdata),
-        .mem_pc_add_4(),
-        .mem_mdata(),
-        .mem_imm(),
+        .wb_alu_result(wb_pre_result_mem_mux),
+        .wb_mdata(wb_pre_dram_rdata),
         .wb_rd_addr(wb_pre_rd),
         .wb_mask(wb_pre_mask),
         .wb_reg_write(wb_pre_regwrite)
@@ -247,21 +266,39 @@ module myCPU (
 
     // MuxKey => ex_mux + mem_mux
 
-    ex_mux #(DATAWIDTH) ex_mux_instance (
-        .imm(ex_pre_imm),
-        .alu(daddr),
-        .alu_mux(ex_thru_memwrite),
-        .result(ex_post_result_ex_mux),
+    ex_mux #(DATAWIDTH) mem_mux_instance (
+        .pcadd4(mem_pre_pc4),
+        .imm(mem_pre_imm),
+        .alu(mem_pre_result),
+        .alu_mux(mem_pre_regwrmux),
+        .result(mem_post_result_mem_mux),
         .trigger_stall(pipeline_stall)  // TODO: pipeline_stall has other conditions
     );
 
     mem_mux #(DATAWIDTH) wb_mux_instance (
-        .ex_mux(mem_pre_result_ex_mux),
-        .pc_add_4(pcadd4),
-        .mdata(mdata),
+        .ex_mux (wb_pre_result_mem_mux),
+        .mdata  (mdata),
         .alu_mux(mem_pre_regwrmux),
-        .result(wdata)
+        .result (wdata)
     );
+
+    logic alu_a_forward_sel;
+    logic alu_a_forward_require;
+    logic alu_b_forward_sel;
+    logic alu_b_forward_require;
+
+    forwarding_unit forwarding_unit_instance (
+        .rd1(mem_thru_rd),
+        .rd1_we(mem_thru_regwrite),
+        .rd2(wb_pre_rd),
+        .rd2_we(wb_pre_regwrite),
+        .rs1(ex_pre_rs1),
+        .rs2(ex_pre_rs2),
+        .rs1_forward_sel(alu_a_forward_sel),
+        .rs1_forward_require(alu_a_forward_require),
+        .rs2_forward_sel(alu_b_forward_sel),
+        .rs2_forward_require(alu_b_forward_require)
+    );  // TODO: In some cases, rs1 & rs2 has non-zero value but is part of imm, forwarding should be disabled
 
     // pipilines END
 
@@ -281,22 +318,44 @@ module myCPU (
         .pcadd4(pcadd4)
     );
 
-    assign offset = OffsetOrigin ? Result : ex_pre_imm;
+    assign pc_offset = ex_pre_pc_offset_sel ? ex_post_result : ex_thru_imm;
 
     RF #(ADDR_WIDTH, DATAWIDTH) rf_inst (
         .clk     (clk),
         .rst     (rst),
         .wen     (wb_pre_regwrite),
         .waddr   (wb_pre_rd),
-        .wdata   (wb_pre_wdata),
+        .wdata   (wdata),
         .rR1     (id_pre_instruction[19:15]),
         .rR2     (id_pre_instruction[24:20]),
         .rR1_data(id_post_rs1v),
         .rR2_data(id_post_rs2v)
     );
 
-    assign B = ALUSrcB ? ex_pre_imm : ex_thru_rs2v;
-    assign A = ALUSrcA ? ex_pre_pc : ex_pre_rs1v;
+    ALU_src alu_a (
+        .alu_src        (ALUSrcA),
+        .forward_src    (alu_a_forward_sel),
+        .forward_require(alu_a_forward_require),
+        .alusrc0        (ex_pre_rs1v),
+        .alusrc1        (ex_pre_pc),
+        .fwdsrc0        (mem_post_result_mem_mux),
+        .fwdsrc1        (wdata),
+        .result         (A)
+    );
+
+    ALU_src alu_b (
+        .alu_src        (ALUSrcB),
+        .forward_src    (alu_b_forward_sel),
+        .forward_require(alu_b_forward_require),
+        .alusrc0        (ex_thru_rs2v),
+        .alusrc1        (ex_thru_imm),
+        .fwdsrc0        (mem_post_result_mem_mux),
+        .fwdsrc1        (wdata),
+        .result         (B)
+    );
+
+    // assign B = ALUSrcB ? ex_thru_imm : ex_thru_rs2v;
+    // assign A = ALUSrcA ? ex_pre_pc : ex_pre_rs1v;
 
     Control control_inst (
         .opcode       (opcode),
@@ -305,7 +364,7 @@ module myCPU (
         .RegWrite     (id_post_memwrite),
         .MemToReg_sel (id_post_regwrmux),
         .MemWrite     (id_post_memwrite),
-        .pc_offset_sel(OffsetOrigin),
+        .pc_offset_sel(id_post_pc_offset_sel),
         .ALUSrcA      (ALUSrcA),
         .ALUSrcB      (ALUSrcB)
     );
@@ -329,7 +388,7 @@ module myCPU (
         .A         (A),
         .B         (B),
         .ALUControl(ALUControl),
-        .Result    (ALU_result),
+        .Result    (ex_post_result),
         .isTrue    (isTrue)
     );
 
@@ -341,7 +400,7 @@ module myCPU (
 
     Mask #(DATAWIDTH) mask_inst (
         .mask (wb_pre_mask),
-        .dout (DRAM_rdata),
+        .dout (wb_pre_dram_rdata),
         .mdata(mdata)
     );
 
