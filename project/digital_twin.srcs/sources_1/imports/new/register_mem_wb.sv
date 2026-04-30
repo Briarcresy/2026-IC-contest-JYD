@@ -30,7 +30,7 @@ module register_mem_wb (
                 wb_rd_addr   <= 5'b0;
                 wb_reg_write <= 1'b0;
             end else if (!stall) begin
-                wb_rd_addr   <= mem_rd_addcr;
+                wb_rd_addr   <= mem_rd_addr;
                 wb_reg_write <= mem_reg_write;
             end
         end

@@ -45,7 +45,7 @@ module myCPU (
     // logic [          1:0] MemToReg;
     // logic                 RegWrite;
     // logic                 pc_offset_sel;
-    logic [DATAWIDTH-1:0] imm;
+    // logic [DATAWIDTH-1:0] imm;
     // logic [DATAWIDTH-1:0] csr_npc;
     logic                 isTrue;
     logic [          6:0] opcode;
@@ -61,7 +61,7 @@ module myCPU (
     // logic [DATAWIDTH-1:0] csr_wb;
 
     logic [DATAWIDTH-1:0] npc;
-    logic [DATAWIDTH-1:0] instr;
+    // logic [DATAWIDTH-1:0] instr;
     logic [DATAWIDTH-1:0] pcadd4;
     logic [DATAWIDTH-1:0] wdata;
     // logic [DATAWIDTH-1:0] ALU_result;
@@ -74,7 +74,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] pc;
 
     assign irom_addr = pc;
-    assign instr = irom_data;
+    // assign instr = irom_data;
 
     // assign perip_addr = Result;
     // assign perip_wen = MemWrite;
@@ -198,7 +198,7 @@ module myCPU (
         .id_rs2(id_post_rs2),
         .id_rd(id_post_rd),
         .id_opcode(id_pre_instruction[6:0]),
-        .id_funct4({id_pre_instruction[30], id_pre_instruction[14:12]}),
+        .id_funct4(funct),
         .id_mask(id_post_mask),
         .id_regwrmux(id_post_regwrmux),
         .id_npcop(id_post_npc_op),
