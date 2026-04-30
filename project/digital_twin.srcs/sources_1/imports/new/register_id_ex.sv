@@ -42,23 +42,25 @@ module register_id_ex #(
 
     always_ff @(posedge clock or negedge reset) begin
         if (!reset) begin
-            ex_pc <= {WIDTH{1'b0}};
-            ex_rs1v <= {WIDTH{1'b0}};
-            ex_rs2v <= {WIDTH{1'b0}};
-            ex_imm <= {WIDTH{1'b0}};
-            ex_rs1 <= 5'b0;
-            ex_rs2 <= 5'b0;
-            ex_rd <= 5'b0;
-            ex_opcode <= 7'b0;
-            ex_funct4 <= 4'b0;
-            ex_mask <= 3'b0;
+            ex_pc        <= {WIDTH{1'b0}};
+            ex_rs1v      <= {WIDTH{1'b0}};
+            ex_rs2v      <= {WIDTH{1'b0}};
+            ex_imm       <= {WIDTH{1'b0}};
+            ex_rs1       <= 5'b0;
+            ex_rs2       <= 5'b0;
+            ex_rd        <= 5'b0;
+            ex_opcode    <= 7'b0;
+            ex_funct4    <= 4'b0;
+            ex_mask      <= 3'b0;
             ex_reg_write <= 1'b0;
             ex_mem_write <= 1'b0;
+            ex_npcop     <= 2'b00;
         end else if (id_flush) begin
             ex_reg_write <= 1'b0;
-            ex_npcop     <= 1'b00;
+            ex_npcop     <= 2'b00;
         end else if (!id_stall) begin
             ex_pc            <= id_pc;
+            ex_pc4           <= id_pc4;
             ex_rs1v          <= id_rs1v;
             ex_rs2v          <= id_rs2v;
             ex_imm           <= id_imm;

@@ -10,7 +10,7 @@ module mem_mux #(
         if (alu_mux == 2'b10) begin
             result = mdata;
         end else begin
-            result = alu_mux;
+            result = ex_mux;
         end
     end
 endmodule

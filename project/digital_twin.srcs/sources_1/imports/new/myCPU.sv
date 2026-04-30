@@ -130,7 +130,7 @@ module myCPU (
     logic [          4:0] ex_pre_rs2;  // for forwarding
     logic [DATAWIDTH-1:0] ex_pre_rs1v;
     logic [DATAWIDTH-1:0] ex_thru_imm;
-    logic [          7:0] ex_pre_opcode;
+    logic [          6:0] ex_pre_opcode;
     logic [          3:0] ex_pre_funct4;
     logic                 ex_pre_pc_offset_sel;
     logic [DATAWIDTH-1:0] ex_thru_pc4;
@@ -234,6 +234,7 @@ module myCPU (
         .ex_rd_addr(ex_thru_rd),
         .ex_mask(ex_thru_mask),
         .ex_npc_op(ex_thru_npc_op),
+        .ex_regwrmux(ex_thru_regwrmux),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
         .ex_mem_to_reg(ex_thru_regwrmux),
@@ -245,6 +246,7 @@ module myCPU (
         .mem_rd_addr(mem_thru_rd),
         .mem_mask(mem_thru_mask),
         .mem_npc_op(mem_pre_npc_op),
+        .mem_regwrmux(mem_pre_regwrmux),
         .mem_reg_write(mem_thru_regwrite),
         .mem_mem_write(mem_pre_memwrite),
         .mem_mem_to_reg(mem_pre_regwrmux),
@@ -378,7 +380,7 @@ module myCPU (
         .opcode       (opcode),
         // .funct       (funct[2:0]),
         .NpcOp        (id_post_npc_op),
-        .RegWrite     (id_post_memwrite),
+        .RegWrite     (id_post_regwrite),
         .MemToReg_sel (id_post_regwrmux),
         .MemWrite     (id_post_memwrite),
         .pc_offset_sel(id_post_pc_offset_sel),
