@@ -15,7 +15,6 @@ module register_ex_mem #(
     input  logic [      1:0] ex_regwrmux,
     input  logic             ex_reg_write,
     input  logic             ex_mem_write,
-    input  logic [      1:0] ex_mem_to_reg,
     input  logic [      1:0] ex_mask_memread,
     output logic [WIDTH-1:0] mem_alu_result,
     output logic [WIDTH-1:0] mem_rs2_val,
@@ -27,7 +26,6 @@ module register_ex_mem #(
     output logic [      1:0] mem_regwrmux,
     output logic             mem_reg_write,
     output logic             mem_mem_write,
-    output logic [      1:0] mem_mem_to_reg,
     output logic [      1:0] mem_mask_memread
 );
     always_ff @(posedge clock or negedge reset) begin
@@ -38,7 +36,6 @@ module register_ex_mem #(
             mem_npc_op     <= 2'b0;
             mem_reg_write  <= 1'b0;
             mem_mem_write  <= 1'b0;
-            mem_mem_to_reg <= 1'b0;
         end else if (flush) begin
             mem_reg_write <= 1'b0;
             mem_mem_write <= 1'b0;
@@ -53,7 +50,6 @@ module register_ex_mem #(
             mem_regwrmux     <= ex_regwrmux;
             mem_reg_write    <= ex_reg_write;
             mem_mem_write    <= ex_mem_write;
-            mem_mem_to_reg   <= ex_mem_to_reg;
             mem_mask_memread <= ex_mask_memread;
         end
     end

@@ -237,7 +237,6 @@ module myCPU (
         .ex_regwrmux(ex_thru_regwrmux),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
-        .ex_mem_to_reg(ex_thru_regwrmux),
         .ex_mask_memread(ex_post_mask_memread),
         .mem_alu_result(mem_pre_result),
         .mem_rs2_val(mem_pre_rs2v),
@@ -249,7 +248,6 @@ module myCPU (
         .mem_regwrmux(mem_pre_regwrmux),
         .mem_reg_write(mem_thru_regwrite),
         .mem_mem_write(mem_pre_memwrite),
-        .mem_mem_to_reg(mem_pre_regwrmux),
         .mem_mask_memread(mem_pre_mask_memread)
     );
 
