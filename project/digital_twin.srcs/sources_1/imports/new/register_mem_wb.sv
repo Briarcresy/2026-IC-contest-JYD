@@ -17,20 +17,22 @@ module register_mem_wb (
 
     always_ff @(posedge clock or negedge reset) begin
         if (!reset) begin
-            wb_alu_result <= 32'b0;
-            wb_rd_addr    <= 5'b0;
-            wb_reg_write  <= 1'b0;
-        end else if (flush) begin
-            wb_alu_result <= 32'b0;
-            wb_rd_addr    <= 5'b0;
-            wb_reg_write  <= 1'b0;
-        end else if (!stall) begin
+            wb_alu_result <= '0;
+            wb_mdata      <= '0;
+            wb_rd_addr    <= '0;
+            wb_mask       <= '0;
+            wb_reg_write  <= '0;
+        end else begin
             wb_alu_result <= mem_alu_result;
             wb_mdata      <= mem_mdata;
-            wb_rd_addr    <= mem_rd_addr;
             wb_mask       <= mem_mask;
-            wb_reg_write  <= mem_reg_write;
+            if (flush) begin
+                wb_rd_addr   <= 5'b0;
+                wb_reg_write <= 1'b0;
+            end else if (!stall) begin
+                wb_rd_addr   <= mem_rd_addcr;
+                wb_reg_write <= mem_reg_write;
+            end
         end
     end
-
 endmodule

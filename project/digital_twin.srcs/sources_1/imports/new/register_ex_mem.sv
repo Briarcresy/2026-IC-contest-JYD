@@ -30,16 +30,18 @@ module register_ex_mem #(
 );
     always_ff @(posedge clock or negedge reset) begin
         if (!reset) begin
-            mem_alu_result <= {WIDTH{1'b0}};
-            mem_rs2_val    <= {WIDTH{1'b0}};
-            mem_rd_addr    <= 5'b0;
-            mem_npc_op     <= 2'b0;
-            mem_reg_write  <= 1'b0;
-            mem_mem_write  <= 1'b0;
-        end else if (flush) begin
-            mem_reg_write <= 1'b0;
-            mem_mem_write <= 1'b0;
-        end else if (!stall) begin
+            mem_alu_result   <= '0;
+            mem_rs2_val      <= '0;
+            mem_imm          <= '0;
+            mem_pc4          <= '0;
+            mem_rd_addr      <= '0;
+            mem_mask         <= '0;
+            mem_npc_op       <= '0;
+            mem_regwrmux     <= '0;
+            mem_reg_write    <= '0;
+            mem_mem_write    <= '0;
+            mem_mask_memread <= '0;
+        end else begin
             mem_alu_result   <= ex_alu_result;
             mem_rs2_val      <= ex_rs2_val;
             mem_imm          <= ex_imm;
@@ -48,9 +50,14 @@ module register_ex_mem #(
             mem_mask         <= ex_mask;
             mem_npc_op       <= ex_npc_op;
             mem_regwrmux     <= ex_regwrmux;
-            mem_reg_write    <= ex_reg_write;
-            mem_mem_write    <= ex_mem_write;
             mem_mask_memread <= ex_mask_memread;
+            if (flush) begin
+                mem_reg_write <= 1'b0;
+                mem_mem_write <= 1'b0;
+            end else if (!stall) begin
+                mem_reg_write <= ex_reg_write;
+                mem_mem_write <= ex_mem_write;
+            end
         end
     end
 endmodule

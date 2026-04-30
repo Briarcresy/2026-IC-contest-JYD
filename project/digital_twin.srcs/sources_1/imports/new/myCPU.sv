@@ -41,7 +41,7 @@ module myCPU (
 
     logic clk, rst;
     logic [DATAWIDTH-1:0] pc_offset;
-    logic [          1:0] NpcOp;
+    // logic [          1:0] NpcOp;
     // logic [          1:0] MemToReg;
     // logic                 RegWrite;
     // logic                 pc_offset_sel;
@@ -66,7 +66,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] wdata;
     // logic [DATAWIDTH-1:0] ALU_result;
 
-    logic                 MemWrite;
+    // logic                 MemWrite;
     // logic [          1:0] mask;
     // logic [         31:0] rR2_data;
     logic [         31:0] DRAM_rdata;
@@ -100,6 +100,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] if_post_instruction;
     assign if_post_instruction = irom_data;
     assign if_post_pc          = irom_addr;
+    assign if_post_pc4         = pcadd4;
 
     logic [DATAWIDTH-1:0] id_thru_pc4;
     logic [DATAWIDTH-1:0] id_thru_pc;
