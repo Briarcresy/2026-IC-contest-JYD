@@ -40,7 +40,7 @@ module NPC #(
     // assign op_jalr = (npc_op == 2'b10);
     // assign op_jal = (npc_op == 2'b11);
 
-    assign branch_addr = isTrue ? (pc_add_offset) : (pcadd4_pipeline);
+    assign branch_addr = isTrue ? (pc_add_offset) : (pcadd4);
     assign jalr_addr = {offset[DATAWIDTH-1:1], 1'b0};
     assign jal_addr = pc_add_offset;
 
