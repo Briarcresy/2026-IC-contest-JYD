@@ -6,8 +6,8 @@ module register_mem_wb (
     input  logic [31:0] mem_pc4,
     output logic [31:0] wb_pc4,
 `endif
-    input  logic        clock,
-    input  logic        reset,
+    input  logic        clk,
+    input  logic        rst,
     input  logic        stall,
     input  logic        flush,
     input  logic [31:0] mem_alu_result,
@@ -22,8 +22,8 @@ module register_mem_wb (
     output logic        wb_reg_write
 );
 
-    always_ff @(posedge clock or posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
             wb_alu_result <= '0;
             wb_mdata      <= '0;
             wb_rd_addr    <= '0;

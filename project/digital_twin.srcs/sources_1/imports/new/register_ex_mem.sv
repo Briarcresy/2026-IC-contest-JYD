@@ -2,8 +2,8 @@
 module register_ex_mem #(
     WIDTH = 32
 ) (
-    input  logic             clock,
-    input  logic             reset,
+    input  logic             clk,
+    input  logic             rst,
     input  logic             stall,
     input  logic             flush,
     input  logic [WIDTH-1:0] ex_alu_result,
@@ -29,8 +29,8 @@ module register_ex_mem #(
     output logic             mem_mem_write,
     output logic [      1:0] mem_mask_memread
 );
-    always_ff @(posedge clock or posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
             mem_alu_result   <= '0;
             mem_rs2_val      <= '0;
             mem_imm          <= '0;

@@ -2,8 +2,8 @@
 module register_id_ex #(
     WIDTH = 32
 ) (
-    input  logic             clock,
-    input  logic             reset,
+    input  logic             clk,
+    input  logic             rst,
     input  logic             id_stall,
     input  logic             id_flush,
     input  logic [WIDTH-1:0] id_pc,
@@ -45,8 +45,8 @@ module register_id_ex #(
     output logic             ex_pc_offset_sel
 );
 
-    always_ff @(posedge clock or posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
             ex_pc            <= '0;
             ex_pc4           <= '0;
             ex_rs1v          <= '0;
