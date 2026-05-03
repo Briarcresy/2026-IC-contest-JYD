@@ -12,10 +12,12 @@ module ALU_src #(
     output logic [WIDTH-1:0] result
 );
     always_comb begin
-        if (forward_require) begin
+        if (alu_src) begin
+            result = alusrc1;
+        end else if (forward_require) begin
             result = forward_src ? fwdsrc1 : fwdsrc0;
         end else begin
-            result = alu_src ? alusrc1 : alusrc0;
+            result = alusrc0;
         end
     end
 endmodule

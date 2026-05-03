@@ -332,8 +332,6 @@ module myCPU (
         .rd2_we(wb_pre_regwrite),
         .rs1(ex_pre_rs1),
         .rs2(ex_pre_rs2),
-        .rs1_needed(!ex_pre_alusrcA),
-        .rs2_needed(!ex_pre_alusrcB),
         .rs1_forward_sel(alu_a_forward_sel),
         .rs1_forward_require(alu_a_forward_require),
         .rs2_forward_sel(alu_b_forward_sel),
@@ -348,14 +346,10 @@ module myCPU (
     // here imm+rs1 goes ALU path
     // rs2 & rs2v goes a special rs2v path.
     always_comb begin
-        if (ex_pre_rs2 == 5'b0) begin
-            ex_post_rs2v = 32'b0;
-        end else if (ex_pre_rs2 == mem_thru_rd && mem_thru_regwrite) begin
-            ex_post_rs2v = mem_post_result_mem_mux;
-        end else if (ex_pre_rs2 == wb_pre_rd && wb_pre_regwrite) begin
-            ex_post_rs2v = wdata;
-        end else begin
+        if (!alu_b_forward_require) begin
             ex_post_rs2v = ex_pre_rs2v;
+        end else begin
+            ex_post_rs2v = alu_b_forward_sel ? wdata : mem_post_result_mem_mux;
         end
     end
     // END: Temp Solution
