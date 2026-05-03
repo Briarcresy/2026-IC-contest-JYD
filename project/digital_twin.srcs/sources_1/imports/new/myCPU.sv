@@ -195,7 +195,7 @@ module myCPU (
     logic [DATAWIDTH-1:0] _D_wb_pre_pc4;
 `endif
 
-    register_if_id #(DATAWIDTH) if_id (
+    IF_ID #(DATAWIDTH) if_id (
         .clk(clk),
         .rst(rst),
         .stall(pipeline_stall),
@@ -208,7 +208,7 @@ module myCPU (
         .id_instr(id_pre_instruction)
     );
 
-    register_id_ex #(DATAWIDTH) id_ex (
+    ID_EX #(DATAWIDTH) id_ex (
         .clk(clk),
         .rst(rst),
         .id_stall(pipeline_stall),
@@ -251,11 +251,9 @@ module myCPU (
         .ex_pc_offset_sel(ex_pre_pc_offset_sel)
     );
 
-    register_ex_mem #(DATAWIDTH) ex_mem (
+    EX_MEM #(DATAWIDTH) ex_mem (
         .clk(clk),
         .rst(rst),
-        .stall(0),
-        .flush(0),
         .ex_alu_result(ex_post_result),
         .ex_rs2_val(ex_post_rs2v),
         .ex_imm(ex_thru_imm),
@@ -280,15 +278,13 @@ module myCPU (
         .mem_mask_memread(mem_pre_mask_memread)
     );
 
-    register_mem_wb #() mem_wb (
+    MEM_WB #() mem_wb (
 `ifdef ENABLE_DEBUG_TRACE
         .mem_pc4(mem_pre_pc4),
         .wb_pc4(_D_wb_pre_pc4),
 `endif
         .clk(clk),
         .rst(rst),
-        .stall(0),
-        .flush(0),
         .mem_alu_result(mem_post_result_mem_mux),
         .mem_mdata(DRAM_rdata),
         .mem_rd_addr(mem_thru_rd),

@@ -1,5 +1,5 @@
 `include "defines.sv"
-module register_if_id #(
+module IF_ID #(
     WIDTH = 32
 ) (
     input  logic             clk,

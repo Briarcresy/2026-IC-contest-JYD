@@ -1,11 +1,9 @@
 `include "defines.sv"
-module register_ex_mem #(
+module EX_MEM #(
     WIDTH = 32
 ) (
     input  logic             clk,
     input  logic             rst,
-    input  logic             stall,
-    input  logic             flush,
     input  logic [WIDTH-1:0] ex_alu_result,
     input  logic [WIDTH-1:0] ex_rs2_val,
     input  logic [WIDTH-1:0] ex_imm,
@@ -52,13 +50,8 @@ module register_ex_mem #(
             mem_npc_op       <= ex_npc_op;
             mem_regwrmux     <= ex_regwrmux;
             mem_mask_memread <= ex_mask_memread;
-            if (flush) begin
-                mem_reg_write <= 1'b0;
-                mem_mem_write <= 1'b0;
-            end else if (!stall) begin
-                mem_reg_write <= ex_reg_write;
-                mem_mem_write <= ex_mem_write;
-            end
+            mem_reg_write    <= ex_reg_write;
+            mem_mem_write    <= ex_mem_write;
         end
     end
 endmodule
