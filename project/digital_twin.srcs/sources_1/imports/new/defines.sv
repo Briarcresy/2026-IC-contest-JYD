@@ -13,4 +13,4 @@
 
 `define OPCODE_LEN 7
 
-`define DEBUG_ENABLE
+// `define DEBUG_ENABLE
