@@ -24,6 +24,7 @@ module NPC #(
     parameter DATAWIDTH = 32
 ) (
     input  logic                   isTrue,
+    input  logic                   stall,
     input  logic [            1:0] npc_op,
     input  logic [DATAWIDTH - 1:0] pc,
     input  logic [DATAWIDTH - 1:0] offset,
@@ -59,5 +60,5 @@ module NPC #(
     //         {32{op_jalr}} & jalr_addr |
     //         {32{op_jal}} & jal_addr;
 
-    assign pcadd4 = pc + 4;
+    assign pcadd4 = stall ? pc : pc + 4;
 endmodule

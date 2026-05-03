@@ -349,13 +349,13 @@ module myCPU (
     // rs2 & rs2v goes a special rs2v path.
     always_comb begin
         if (ex_pre_rs2 == 5'b0) begin
-            assign ex_post_rs2v = 32'b0;
+            ex_post_rs2v = 32'b0;
         end else if (ex_pre_rs2 == mem_thru_rd && mem_thru_regwrite) begin
-            assign ex_post_rs2v = mem_post_result_mem_mux;
+            ex_post_rs2v = mem_post_result_mem_mux;
         end else if (ex_pre_rs2 == wb_pre_rd && wb_pre_regwrite) begin
-            assign ex_post_rs2v = wdata;
+            ex_post_rs2v = wdata;
         end else begin
-            assign ex_post_rs2v = ex_pre_rs2v;
+            ex_post_rs2v = ex_pre_rs2v;
         end
     end
     // END: Temp Solution
@@ -383,6 +383,7 @@ module myCPU (
 
     NPC #(DATAWIDTH) npc_inst (
         .isTrue         (isTrue),
+        .stall          (pipeline_stall),
         .npc_op         (ex_thru_npc_op),
         .pc             (pc),
         .offset         (pc_offset),
@@ -501,9 +502,10 @@ module myCPU (
         logic [31:0] wbpc;
         logic cond;
         assign wbpc = _D_wb_pre_pc4 - 32'h4;
-        assign breakpoint = 32'h181;
+        assign breakpoint = 32'h1;
 
         assign cond = breakpoint == wbpc;
+        // pipeline_stall;
         if (cond == 1'b0) begin
             assign debug_wb_have_inst = _D_wb_pre_pc4 != 32'b0;
             assign debug_wb_pc = wbpc;
@@ -513,7 +515,7 @@ module myCPU (
         end else begin
             assign debug_wb_have_inst = 1;
             assign debug_wb_pc = 32'h114514;
-            assign debug_wb_ena = 0;
+            assign debug_wb_ena = wb_pre_regwrite;
             assign debug_wb_reg = wb_pre_regwrmux;
             assign debug_wb_value = wdata;
         end

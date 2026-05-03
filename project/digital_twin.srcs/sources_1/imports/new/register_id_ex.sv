@@ -80,12 +80,12 @@ module register_id_ex #(
             ex_pc_offset_sel <= id_pc_offset_sel;
             ex_alusrcA       <= id_alusrcA;
             ex_alusrcB       <= id_alusrcB;
-            if (id_flush) begin
+            if (id_flush || id_stall) begin
                 ex_reg_write <= 1'b0;
                 ex_mem_write <= 1'b0;
                 ex_npcop     <= 2'b00;
                 ex_pc4       <= 32'b0;
-            end else if (!id_stall) begin
+            end else begin
                 ex_reg_write <= id_reg_write;
                 ex_mem_write <= id_mem_write;
                 ex_npcop     <= id_npcop;
