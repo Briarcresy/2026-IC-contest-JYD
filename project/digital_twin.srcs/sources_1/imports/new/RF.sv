@@ -37,6 +37,12 @@ module RF #(
     always_comb begin
         rR1_data = reg_bank[rR1];
         rR2_data = reg_bank[rR2];
+
+        // 旁路：如果WB写入的寄存器正是当前需要的
+        if (wen && waddr != 0) begin
+            if (rR1 == waddr) rR1_data = wdata;
+            if (rR2 == waddr) rR2_data = wdata;
+        end
     end
 
 endmodule
