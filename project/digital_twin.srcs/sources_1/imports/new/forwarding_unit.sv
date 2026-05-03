@@ -1,3 +1,5 @@
+`include "defines.sv"
+
 module forwarding_unit (
     input  logic [4:0] rd1,
     input  logic       rd1_we,

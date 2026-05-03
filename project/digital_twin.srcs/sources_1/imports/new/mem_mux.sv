@@ -1,3 +1,4 @@
+`include "defines.sv"
 module mem_mux #(
     WIDTH = 32
 ) (

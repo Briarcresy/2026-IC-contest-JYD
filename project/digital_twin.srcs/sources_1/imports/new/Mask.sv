@@ -1,3 +1,6 @@
+
+`include "defines.sv"
+
 module Mask #(
     parameter DATAWIDTH = 32
 ) (

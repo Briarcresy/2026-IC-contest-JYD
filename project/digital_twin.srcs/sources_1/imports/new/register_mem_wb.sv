@@ -1,3 +1,6 @@
+
+`include "defines.sv"
+
 module register_mem_wb (
 `ifdef ENABLE_DEBUG_TRACE
     input  logic [31:0] mem_pc4,

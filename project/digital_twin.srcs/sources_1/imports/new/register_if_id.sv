@@ -1,3 +1,4 @@
+`include "defines.sv"
 module register_if_id #(
     WIDTH = 32
 ) (

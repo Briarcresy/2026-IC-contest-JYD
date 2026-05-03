@@ -1,3 +1,4 @@
+`include "defines.sv"
 module register_ex_mem #(
     WIDTH = 32
 ) (
