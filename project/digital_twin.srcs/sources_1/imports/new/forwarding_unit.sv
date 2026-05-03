@@ -18,10 +18,10 @@ module forwarding_unit (
         if (!rs1_needed) begin
             rs1_forward_sel = 0;
             rs1_forward_require = 0;
-        end else if (rd1_we && (rd1 != 5'b0) && (rd1 == rs1)) begin
+        end else if (rd1_we && (rd1 != 0) && (rd1 == rs1)) begin
             rs1_forward_sel = 0;
             rs1_forward_require = 1;
-        end else if (rd2_we && (rd2 != 5'b0) && (rd2 == rs1)) begin
+        end else if (rd2_we && (rd2 != 0) && (rd2 == rs1)) begin
             rs1_forward_sel = 1;
             rs1_forward_require = 1;
         end else begin

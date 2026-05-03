@@ -81,10 +81,10 @@ module ID_EX #(
             ex_alusrcA       <= id_alusrcA;
             ex_alusrcB       <= id_alusrcB;
             if (id_flush || id_stall) begin
-                ex_reg_write <= 1'b0;
-                ex_mem_write <= 1'b0;
-                ex_npcop     <= 2'b00;
-                ex_pc4       <= 32'b0;
+                ex_reg_write <= '0;
+                ex_mem_write <= '0;
+                ex_npcop     <= '0;
+                ex_pc4       <= '0;
             end else begin
                 ex_reg_write <= id_reg_write;
                 ex_mem_write <= id_mem_write;
