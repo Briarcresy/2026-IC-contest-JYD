@@ -108,7 +108,6 @@ module myCPU (
     // post: at the end of the stage (to write to pipeline-register)
     // thru: passed directly from pre to post
 
-    // TODO: not finished yet
     logic [DATAWIDTH-1:0] if_post_pc;
     logic [DATAWIDTH-1:0] if_post_pc4;
     logic [DATAWIDTH-1:0] if_post_instruction;
@@ -314,10 +313,8 @@ module myCPU (
         .result (wdata)
     );
 
-    logic alu_a_forward_sel;
-    logic alu_a_forward_require;
-    logic alu_b_forward_sel;
-    logic alu_b_forward_require;
+    logic [1:0] alu_a_forward_sel;
+    logic [1:0] alu_b_forward_sel;
 
     forwarding_unit forwarding_unit_instance (
         .rd1(mem_thru_rd),
@@ -327,32 +324,16 @@ module myCPU (
         .rs1(ex_pre_rs1),
         .rs2(ex_pre_rs2),
         .rs1_forward_sel(alu_a_forward_sel),
-        .rs1_forward_require(alu_a_forward_require),
-        .rs2_forward_sel(alu_b_forward_sel),
-        .rs2_forward_require(alu_b_forward_require)
+        .rs2_forward_sel(alu_b_forward_sel)
     );
 
-    // TODO: Temp Solution
-    // alu-a, alu-b requires forwarding
-    // rs2v also needs forwarding
-    // this is for save instructions
-    // sw rs2, imm(rs1)
-    // here imm+rs1 goes ALU path
-    // rs2 & rs2v goes a special rs2v path.
-    always_comb begin
-        if (!alu_b_forward_require) begin
-            ex_post_rs2v = ex_pre_rs2v;
-        end else begin
-            ex_post_rs2v = alu_b_forward_sel ? wdata : mem_post_result_mem_mux;
-        end
-    end
-    // END: Temp Solution
+    assign ex_post_rs2v = B;
 
     hazard_detection_unit hazard_detection_unit_instance (
         .npcop(ex_thru_npc_op),
         .alu_is_true(isTrue),
         .regwrmux(ex_thru_regwrmux),
-        .reg_write(ex_thru_regwrite),
+        // .reg_write(ex_thru_regwrite),
         .rd(ex_thru_rd),
         .rs1(id_post_rs1),
         .rs2(id_post_rs2),
@@ -360,7 +341,7 @@ module myCPU (
         .trigger_flush(pipeline_flush)
     );
 
-    // pipilines END
+    // pipeline END
 
     PC #(DATAWIDTH, RESET_VAL) pc_inst (
         .clk(clk),
@@ -396,25 +377,23 @@ module myCPU (
     );
 
     ALU_src alu_a (
-        .alu_src        (ex_pre_alusrcA),
-        .forward_src    (alu_a_forward_sel),
-        .forward_require(alu_a_forward_require),
-        .alusrc0        (ex_pre_rs1v),
-        .alusrc1        (ex_pre_pc),
-        .fwdsrc0        (mem_post_result_mem_mux),
-        .fwdsrc1        (wdata),
-        .result         (A)
+        .alu_src    (ex_pre_alusrcA),
+        .forward_src(alu_a_forward_sel),
+        .alusrc0    (ex_pre_rs1v),
+        .alusrc1    (ex_pre_pc),
+        .fwdsrc0    (mem_post_result_mem_mux),
+        .fwdsrc1    (wdata),
+        .result     (A)
     );
 
     ALU_src alu_b (
-        .alu_src        (ex_pre_alusrcB),
-        .forward_src    (alu_b_forward_sel),
-        .forward_require(alu_b_forward_require),
-        .alusrc0        (ex_pre_rs2v),
-        .alusrc1        (ex_thru_imm),
-        .fwdsrc0        (mem_post_result_mem_mux),
-        .fwdsrc1        (wdata),
-        .result         (B)
+        .alu_src    (ex_pre_alusrcB),
+        .forward_src(alu_b_forward_sel),
+        .alusrc0    (ex_pre_rs2v),
+        .alusrc1    (ex_thru_imm),
+        .fwdsrc0    (mem_post_result_mem_mux),
+        .fwdsrc1    (wdata),
+        .result     (B)
     );
 
     // assign B = ALUSrcB ? ex_thru_imm : ex_pre_rs2v;

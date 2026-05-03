@@ -6,7 +6,7 @@ module hazard_detection_unit #(
     input  logic [1:0] npcop,
     input  logic       alu_is_true,
     input  logic [1:0] regwrmux,
-    input  logic       reg_write,
+    // input  logic       reg_write,
     input  logic [4:0] rd,
     input  logic [4:0] rs1,
     input  logic [4:0] rs2,
@@ -20,7 +20,7 @@ module hazard_detection_unit #(
             trigger_stall = 0;
             trigger_flush = 1;
         end else if (regwrmux == 2'b10  // regwrmux = 10 => memdata selected.
-            && reg_write && rd != 5'b0 && (rs1 == rd || rs2 == rd)) begin
+            && rd != 0 && (rs1 == rd || rs2 == rd)) begin
             // load-use hazard occurred.
             trigger_stall = 1;
             trigger_flush = 0;

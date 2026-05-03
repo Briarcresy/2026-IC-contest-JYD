@@ -15,13 +15,13 @@ module IF_ID #(
 );
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            id_pc    <= {WIDTH{1'b0}};
-            id_pc4   <= {WIDTH{1'b0}};
-            id_instr <= {WIDTH{1'b0}};
+            id_pc    <= '0;
+            id_pc4   <= '0;
+            id_instr <= '0;
         end else if (flush) begin
-            id_pc    <= {WIDTH{1'b0}};
-            id_pc4   <= {WIDTH{1'b0}};
-            id_instr <= {WIDTH{1'b0}};
+            id_pc    <= '0;
+            id_pc4   <= '0;
+            id_instr <= '0;
         end else if (!stall) begin
             id_pc    <= if_pc;
             id_pc4   <= if_pc4;

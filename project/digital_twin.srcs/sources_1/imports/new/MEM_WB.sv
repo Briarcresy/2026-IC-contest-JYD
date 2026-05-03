@@ -23,6 +23,7 @@ module MEM_WB #(
     output logic [WIDTH-1:0] wb_mdata,
     output logic [      4:0] wb_rd_addr,
 
+    //Control signal WB
     output logic [2:0] wb_mask,
     output logic [1:0] wb_regwrmux,
     output logic       wb_reg_write

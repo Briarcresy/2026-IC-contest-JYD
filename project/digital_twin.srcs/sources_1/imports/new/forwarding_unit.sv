@@ -7,32 +7,24 @@ module forwarding_unit (
     input  logic       rd2_we,
     input  logic [4:0] rs1,
     input  logic [4:0] rs2,
-    output logic       rs1_forward_sel,
-    output logic       rs1_forward_require,
-    output logic       rs2_forward_sel,
-    output logic       rs2_forward_require
+    output logic [1:0] rs1_forward_sel,
+    output logic [1:0] rs2_forward_sel
 );
     always_comb begin
         if (rd1_we && (rd1 != 0) && (rd1 == rs1)) begin
-            rs1_forward_sel = 0;
-            rs1_forward_require = 1;
+            rs1_forward_sel = 2'b10;
         end else if (rd2_we && (rd2 != 0) && (rd2 == rs1)) begin
-            rs1_forward_sel = 1;
-            rs1_forward_require = 1;
+            rs1_forward_sel = 2'b11;
         end else begin
-            rs1_forward_sel = 0;
-            rs1_forward_require = 0;
+            rs1_forward_sel = 2'b00;
         end
 
         if (rd1_we && (rd1 != 0) && (rd1 == rs2)) begin
-            rs2_forward_sel = 0;
-            rs2_forward_require = 1;
-        end else if (rd2_we && (rd2 != 5'b0) && (rd2 == rs2)) begin
-            rs2_forward_sel = 1;
-            rs2_forward_require = 1;
+            rs2_forward_sel = 2'b10;
+        end else if (rd2_we && (rd2 != 0) && (rd2 == rs2)) begin
+            rs2_forward_sel = 2'b11;
         end else begin
-            rs2_forward_sel = 0;
-            rs2_forward_require = 0;
+            rs2_forward_sel = 2'b00;
         end
     end
 endmodule

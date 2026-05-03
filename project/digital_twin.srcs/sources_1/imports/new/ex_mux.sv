@@ -10,14 +10,11 @@ module ex_mux #(
     output logic [WIDTH-1:0] result
 );
     always_comb begin
-        if (alu_mux == 2'b00) begin
-            result = pcadd4;
-        end else if (alu_mux == 2'b01) begin
-            result = alu;
-        end else if (alu_mux == 2'b11) begin
-            result = imm;
-        end else begin
-            result = 32'b0;
-        end
+        unique case (alu_mux)
+            2'b00:   result = pcadd4;
+            2'b01:   result = alu;
+            2'b11:   result = imm;
+            default: result = 32'b0;
+        endcase
     end
 endmodule
