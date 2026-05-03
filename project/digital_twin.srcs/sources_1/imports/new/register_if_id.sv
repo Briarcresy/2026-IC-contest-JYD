@@ -1,8 +1,9 @@
+`include "defines.sv"
 module register_if_id #(
     WIDTH = 32
 ) (
-    input  logic             clock,
-    input  logic             reset,
+    input  logic             clk,
+    input  logic             rst,
     input  logic             stall,
     input  logic             flush,
     input  logic [WIDTH-1:0] if_pc,
@@ -12,8 +13,8 @@ module register_if_id #(
     output logic [WIDTH-1:0] id_pc4,
     output logic [WIDTH-1:0] id_instr
 );
-    always_ff @(posedge clock or posedge reset) begin
-        if (reset) begin
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
             id_pc    <= {WIDTH{1'b0}};
             id_pc4   <= {WIDTH{1'b0}};
             id_instr <= {WIDTH{1'b0}};

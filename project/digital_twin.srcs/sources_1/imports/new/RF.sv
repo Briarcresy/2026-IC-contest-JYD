@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+`include "defines.sv"
+
 module RF #(
     parameter ADDR_WIDTH = 5,
     parameter DATAWIDTH  = 32

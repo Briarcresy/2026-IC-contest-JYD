@@ -1,3 +1,6 @@
+
+`include "defines.sv"
+
 module hazard_detection_unit #(
 ) (
     input  logic [1:0] npcop,

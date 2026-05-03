@@ -1,3 +1,5 @@
+
+`include "defines.sv"
 module ex_mux #(
     WIDTH = 32
 ) (

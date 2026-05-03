@@ -1,3 +1,4 @@
+`include "defines.sv"
 module ALU_src #(
     WIDTH = 32
 ) (
