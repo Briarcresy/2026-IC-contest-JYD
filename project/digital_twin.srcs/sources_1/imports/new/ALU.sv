@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 `include "defines.sv"
+
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -30,6 +31,7 @@ module ALU #(
     output logic                   isTrue
 );
 
+    // Operation code decoding
     logic op_add, op_sub, op_and, op_or, op_xor, op_sll, op_srl;
     logic op_sra, op_beq, op_bne, op_blt, op_bge, op_bgeu, op_bltu;
 
@@ -48,47 +50,63 @@ module ALU #(
     assign op_bgeu = ALUControl[12];
     assign op_bltu = ALUControl[13];
 
-    logic [DATAWIDTH-1:0] add_sub_result, and_result, or_result, xor_result;
-    logic [DATAWIDTH-1:0] sll_result, srl_result, sra_result, beq_result, bne_result;
-    logic [DATAWIDTH-1:0] blt_result, bge_result, bgeu_result, bltu_result;
+    // Intermediate results
+    logic [DATAWIDTH-1:0] add_sub_result;
+    logic [DATAWIDTH-1:0] and_result, or_result, xor_result;
+    logic [DATAWIDTH-1:0] sll_result, srl_result, sra_result;
+    logic [DATAWIDTH-1:0] beq_result, bne_result;
+    logic [DATAWIDTH-1:0] blt_result, bge_result;
+    logic [DATAWIDTH-1:0] bgeu_result, bltu_result;
 
+    // ---------- Adder/Subtractor ----------
     logic [DATAWIDTH-1:0] adder_a, adder_b;
-    logic cin, carry;
-
+    logic adder_cin;
     assign adder_a = A;
-    assign adder_b = (op_sub | op_blt | op_bge | op_bgeu | op_bltu) ? ~B : B;
-    assign cin = (op_sub | op_blt | op_bge | op_bgeu | op_bltu) ? 1'b1 : 0;
+    // Only do subtraction when op_sub is active (invert and add 1), otherwise add B directly
+    assign adder_b = op_sub ? ~B : B;
+    assign adder_cin = op_sub ? 1'b1 : 1'b0;
+    assign add_sub_result = adder_a + adder_b + adder_cin;
 
-    /* verilator lint_off WIDTHEXPAND */
-    assign {carry, add_sub_result} = adder_a + adder_b + cin;
-
+    // ---------- Logical operations ----------
     assign and_result = A & B;
     assign or_result = A | B;
     assign xor_result = A ^ B;
+
+    // ---------- Shift operations ----------
     assign sll_result = A << B[4:0];
     assign srl_result = A >> B[4:0];
-    assign sra_result = ($signed(A)) >>> B[4:0];
-    assign beq_result = {31'b0, A == B};
-    assign bne_result = {31'b0, A != B};
-    assign blt_result = {31'b0, $signed(A) < $signed(B)};
-    assign bge_result = ~blt_result;
-    assign bgeu_result = {31'b0, carry};
-    assign bltu_result = {31'b0, ~carry};
+    assign sra_result = $signed(A) >>> B[4:0];
 
+    // ---------- Comparison operations (independent, not relying on adder carry) ----------
+    assign beq_result = {{DATAWIDTH - 1{1'b0}}, A == B};
+    assign bne_result = {{DATAWIDTH - 1{1'b0}}, A != B};
+    assign blt_result = {{DATAWIDTH - 1{1'b0}}, $signed(A) < $signed(B)};
+    assign bge_result = {{DATAWIDTH - 1{1'b0}}, $signed(A) >= $signed(B)};
+    assign bgeu_result = {{DATAWIDTH - 1{1'b0}}, $unsigned(A) >= $unsigned(B)};
+    assign bltu_result = {{DATAWIDTH - 1{1'b0}}, $unsigned(A) < $unsigned(B)};
+
+    // ---------- Multiplexer (case structure for reduced critical path) ----------
+    always_comb begin
+        Result = '0;  // default value to avoid latch
+        case (1'b1)
+            op_add, op_sub: Result = add_sub_result;
+            op_and:         Result = and_result;
+            op_or:          Result = or_result;
+            op_xor:         Result = xor_result;
+            op_sll:         Result = sll_result;
+            op_srl:         Result = srl_result;
+            op_sra:         Result = sra_result;
+            op_beq:         Result = beq_result;
+            op_bne:         Result = bne_result;
+            op_blt:         Result = blt_result;
+            op_bge:         Result = bge_result;
+            op_bgeu:        Result = bgeu_result;
+            op_bltu:        Result = bltu_result;
+            default:        Result = '0;
+        endcase
+    end
+
+    // Output flag (consistent with original design: directly take LSB of Result)
     assign isTrue = Result[0];
-
-    assign Result = {32{op_add | op_sub}} & add_sub_result |
-                    {32{op_and}} & and_result |
-                    {32{op_or}} & or_result |
-                    {32{op_xor}} & xor_result |
-                    {32{op_sll}} & sll_result |
-                    {32{op_srl}} & srl_result |
-                    {32{op_sra}} & sra_result |
-                    {32{op_beq}} & beq_result |
-                    {32{op_bne}} & bne_result |
-                    {32{op_blt}} & blt_result |
-                    {32{op_bge}} & bge_result |
-                    {32{op_bgeu}} & bgeu_result |
-                    {32{op_bltu}} & bltu_result;
 
 endmodule
