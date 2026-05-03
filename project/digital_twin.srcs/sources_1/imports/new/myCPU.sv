@@ -146,7 +146,7 @@ module myCPU (
     logic [          4:0] ex_pre_rs1;  // for forwarding
     logic [          4:0] ex_pre_rs2;  // for forwarding
     logic [DATAWIDTH-1:0] ex_pre_rs1v;
-    logic [          6:0] ex_pre_opcode;
+    // logic [          6:0] ex_pre_opcode;
     logic [          3:0] ex_pre_funct4;
     logic [          1:0] ex_pre_alusrcA;
     logic [          1:0] ex_pre_alusrcB;
@@ -222,8 +222,6 @@ module myCPU (
         .id_rs1(id_post_rs1),
         .id_rs2(id_post_rs2),
         .id_rd(id_post_rd),
-        .id_opcode(id_pre_instruction[6:0]),
-        .id_funct4(funct),
         .id_mask(id_post_mask),
         .id_regwrmux(id_post_regwrmux),
         .id_npcop(id_post_npc_op),
@@ -241,8 +239,6 @@ module myCPU (
         .ex_rs1(ex_pre_rs1),
         .ex_rs2(ex_pre_rs2),
         .ex_rd(ex_thru_rd),
-        .ex_opcode(ex_pre_opcode),
-        .ex_funct4(ex_pre_funct4),
         .ex_mask(ex_thru_mask),
         .ex_regwrmux(ex_thru_regwrmux),
         .ex_npcop(ex_thru_npc_op),

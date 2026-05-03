@@ -13,20 +13,18 @@ module MEM_WB #(
     input  logic [WIDTH-1:0] mem_alu_result,
     input  logic [WIDTH-1:0] mem_mdata,
     input  logic [      4:0] mem_rd_addr,
-
     //Control signal WB
-    input logic [2:0] mem_mask,
-    input logic [1:0] mem_regwrmux,
-    input logic       mem_reg_write,
+    input  logic [      2:0] mem_mask,
+    input  logic [      1:0] mem_regwrmux,
+    input  logic             mem_reg_write,
 
     output logic [WIDTH-1:0] wb_alu_result,
     output logic [WIDTH-1:0] wb_mdata,
     output logic [      4:0] wb_rd_addr,
-
     //Control signal WB
-    output logic [2:0] wb_mask,
-    output logic [1:0] wb_regwrmux,
-    output logic       wb_reg_write
+    output logic [      2:0] wb_mask,
+    output logic [      1:0] wb_regwrmux,
+    output logic             wb_reg_write
 );
 
     always_ff @(posedge clk or posedge rst) begin
