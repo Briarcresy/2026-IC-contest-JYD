@@ -24,6 +24,8 @@ module ID_EX #(
     input  logic             id_reg_write,
     input  logic             id_mem_write,
     input  logic             id_pc_offset_sel,
+    //Control signal EX
+    input  logic [     13:0] id_alu_op,
     // ...
     output logic [WIDTH-1:0] ex_pc,
     output logic [WIDTH-1:0] ex_pc4,
@@ -42,7 +44,9 @@ module ID_EX #(
     output logic [      1:0] ex_alusrcB,
     output logic             ex_reg_write,
     output logic             ex_mem_write,
-    output logic             ex_pc_offset_sel
+    output logic             ex_pc_offset_sel,
+    //Control signal EX
+    output logic [     13:0] ex_alu_op
 );
 
     always_ff @(posedge clk or posedge rst) begin
@@ -65,6 +69,7 @@ module ID_EX #(
             ex_npcop         <= '0;
             ex_alusrcA       <= '0;
             ex_alusrcB       <= '0;
+            ex_alu_op        <= '0;
         end else begin
             ex_pc            <= id_pc;
             ex_rs1v          <= id_rs1v;
@@ -80,6 +85,7 @@ module ID_EX #(
             ex_pc_offset_sel <= id_pc_offset_sel;
             ex_alusrcA       <= id_alusrcA;
             ex_alusrcB       <= id_alusrcB;
+            ex_alu_op        <= id_alu_op;
             if (id_flush || id_stall) begin
                 ex_reg_write <= '0;
                 ex_mem_write <= '0;

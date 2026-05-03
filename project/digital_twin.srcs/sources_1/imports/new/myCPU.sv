@@ -132,6 +132,7 @@ module myCPU (
     logic [          1:0] id_post_regwrmux;
     logic [          1:0] id_post_alusrcA;
     logic [          1:0] id_post_alusrcB;
+    logic [         13:0] id_post_alu_op;
     logic                 id_post_pc_offset_sel;
     assign id_post_mask = funct[2:0];
     assign id_post_rs1  = id_pre_instruction[19:15];  // for forwarding
@@ -149,6 +150,7 @@ module myCPU (
     logic [          3:0] ex_pre_funct4;
     logic [          1:0] ex_pre_alusrcA;
     logic [          1:0] ex_pre_alusrcB;
+    logic [         13:0] ex_pre_alu_op;
     logic [DATAWIDTH-1:0] ex_pre_rs2v;
     logic                 ex_pre_pc_offset_sel;
     logic [DATAWIDTH-1:0] ex_thru_imm;
@@ -230,6 +232,7 @@ module myCPU (
         .id_reg_write(id_post_regwrite),
         .id_mem_write(id_post_memwrite),
         .id_pc_offset_sel(id_post_pc_offset_sel),
+        .id_aluop(id_post_alu_op),
         .ex_pc(ex_pre_pc),
         .ex_pc4(ex_thru_pc4),
         .ex_rs1v(ex_pre_rs1v),
@@ -247,6 +250,7 @@ module myCPU (
         .ex_alusrcB(ex_pre_alusrcB),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
+        .ex_aluop(ex_pre_alu_op),
         .ex_pc_offset_sel(ex_pre_pc_offset_sel)
     );
 
@@ -408,7 +412,8 @@ module myCPU (
         .MemWrite     (id_post_memwrite),
         .pc_offset_sel(id_post_pc_offset_sel),
         .ALUSrcA      (id_post_alusrcA),
-        .ALUSrcB      (id_post_alusrcB)
+        .ALUSrcB      (id_post_alusrcB),
+        .ALUControl   (id_post_alu_op)
     );
 
     IMMGEN #(DATAWIDTH) immgen_inst (
@@ -429,16 +434,16 @@ module myCPU (
     ALU #(DATAWIDTH) alu_inst (
         .A         (A),
         .B         (B),
-        .ALUControl(ALUControl),
+        .ALUControl(ex_pre_alu_op),
         .Result    (ex_post_result),
         .isTrue    (isTrue)
     );
 
-    ACTL actl_inst (
-        .opcode    (ex_pre_opcode),
-        .funct     (ex_pre_funct4),
-        .ALUControl(ALUControl)
-    );
+    // ACTL actl_inst (
+    //     .opcode    (ex_pre_opcode),
+    //     .funct     (ex_pre_funct4),
+    //     .ALUControl(ALUControl)
+    // );
 
     Mask #(DATAWIDTH) mask_inst (
         .mask (wb_pre_mask),
