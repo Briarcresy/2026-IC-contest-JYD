@@ -23,15 +23,16 @@
 module NPC #(
     parameter DATAWIDTH = 32
 ) (
-    input  logic                   isTrue,
-    input  logic                   stall,
-    input  logic [            1:0] npc_op,
-    input  logic [DATAWIDTH - 1:0] pc,
-    input  logic [DATAWIDTH - 1:0] offset,
-    input  logic [DATAWIDTH - 1:0] pc_add_offset,
-    input  logic [DATAWIDTH - 1:0] pcadd4_pipeline,
-    output logic [DATAWIDTH - 1:0] npc,
-    output logic [DATAWIDTH - 1:0] pcadd4
+    input logic       isTrue,
+    input logic       stall,
+    input logic [1:0] npc_op,
+
+    input logic [DATAWIDTH - 1:0] pc,
+    input logic [DATAWIDTH - 1:0] pc_add_4,
+    input logic [DATAWIDTH - 1:0] pc_add_imm,
+    input logic [DATAWIDTH - 1:0] alu_result,
+
+    output logic [DATAWIDTH - 1:0] npc
 );
     // logic op_branch, op_add4, op_jalr, op_jal;
     logic [DATAWIDTH-1:0] branch_addr, jalr_addr, jal_addr;
@@ -41,17 +42,18 @@ module NPC #(
     // assign op_jalr = (npc_op == 2'b10);
     // assign op_jal = (npc_op == 2'b11);
 
-    assign branch_addr = isTrue ? (pc_add_offset) : (pcadd4);
-    assign jalr_addr = {offset[DATAWIDTH-1:1], 1'b0};
-    assign jal_addr = pc_add_offset;
+    assign next_addr = stall ? pc : pc_add_4;
+    assign branch_addr = isTrue ? alu_result : pc_add_4;
+    assign jalr_addr = {alu_result[DATAWIDTH-1:1], 1'b0};
+    assign jal_addr = pc_add_imm;
 
     always_comb begin
-        case (npc_op)
-            2'b00:   npc = pcadd4;
+        unique case (npc_op)
+            2'b00:   npc = next_addr;
             2'b01:   npc = branch_addr;
             2'b10:   npc = jalr_addr;
             2'b11:   npc = jal_addr;
-            default: npc = pcadd4;
+            default: npc = pc_add_4;
         endcase
     end
 
@@ -60,5 +62,4 @@ module NPC #(
     //         {32{op_jalr}} & jalr_addr |
     //         {32{op_jal}} & jal_addr;
 
-    assign pcadd4 = stall ? pc : pc + 4;
 endmodule

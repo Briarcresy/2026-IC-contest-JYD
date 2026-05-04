@@ -54,7 +54,7 @@ module myCPU (
     parameter ADDR_WIDTH = 5;
 
     logic clk, rst;
-    logic [DATAWIDTH-1:0] pc_offset;
+    // logic [DATAWIDTH-1:0] pc_offset;
     // logic [          1:0] NpcOp;
     // logic [          1:0] MemToReg;
     // logic                 RegWrite;
@@ -62,8 +62,8 @@ module myCPU (
     // logic [DATAWIDTH-1:0] imm;
     // logic [DATAWIDTH-1:0] csr_npc;
     logic                 isTrue;
-    logic [          6:0] opcode;
-    logic [          3:0] funct;
+    // logic [          6:0] opcode;
+    // logic [          3:0] funct;
     logic [DATAWIDTH-1:0] A;
     // logic [DATAWIDTH-1:0] din;
     logic [DATAWIDTH-1:0] B;
@@ -133,7 +133,6 @@ module myCPU (
     logic [          1:0] id_post_alusrcA;
     logic [          1:0] id_post_alusrcB;
     logic [         13:0] id_post_alu_op;
-    logic                 id_post_pc_offset_sel;
     assign id_post_mask = funct[2:0];
     assign id_post_rs1  = id_pre_instruction[19:15];  // for forwarding
     assign id_post_rs2  = id_pre_instruction[24:20];  // for forwarding
@@ -152,7 +151,6 @@ module myCPU (
     logic [          1:0] ex_pre_alusrcB;
     logic [         13:0] ex_pre_alu_op;
     logic [DATAWIDTH-1:0] ex_pre_rs2v;
-    logic                 ex_pre_pc_offset_sel;
     logic [DATAWIDTH-1:0] ex_thru_imm;
     logic [DATAWIDTH-1:0] ex_thru_pc4;
     logic [          1:0] ex_thru_npc_op;
@@ -229,7 +227,6 @@ module myCPU (
         .id_alusrcB(id_post_alusrcB),
         .id_reg_write(id_post_regwrite),
         .id_mem_write(id_post_memwrite),
-        .id_pc_offset_sel(id_post_pc_offset_sel),
         .id_aluop(id_post_alu_op),
         .ex_pc(ex_pre_pc),
         .ex_pc4(ex_thru_pc4),
@@ -247,7 +244,6 @@ module myCPU (
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
         .ex_aluop(ex_pre_alu_op),
-        .ex_pc_offset_sel(ex_pre_pc_offset_sel)
     );
 
     EX_MEM #(DATAWIDTH) ex_mem (
@@ -350,19 +346,19 @@ module myCPU (
         .pc (pc)
     );
 
+    assign pcadd4 = pc + 4;
+
     NPC #(DATAWIDTH) npc_inst (
-        .isTrue         (isTrue),
-        .stall          (pipeline_stall),
-        .npc_op         (ex_thru_npc_op),
-        .pc             (pc),
-        .offset         (pc_offset),
-        .pc_add_offset  (ex_pre_pc + pc_offset),
-        .pcadd4_pipeline(ex_thru_pc4),
-        .npc            (npc),
-        .pcadd4         (pcadd4)
+        .isTrue    (isTrue),
+        .stall     (pipeline_stall),
+        .npc_op    (ex_thru_npc_op),
+        .pc        (pc),
+        .pc_add_4  (pcadd4),
+        .pc_add_imm(ex_thru_imm + ex_pre_pc),
+        .npc       (npc)
     );
 
-    assign pc_offset = ex_pre_pc_offset_sel ? ex_post_result : ex_thru_imm;
+    // assign pc_offset = ex_post_result;
 
     RF #(ADDR_WIDTH, DATAWIDTH) rf_inst (
         .clk     (clk),
@@ -400,16 +396,14 @@ module myCPU (
     // assign A = ALUSrcA ? ex_pre_pc : ex_pre_rs1v;
 
     Control control_inst (
-        .opcode       (opcode),
-        // .funct       (funct[2:0]),
-        .NpcOp        (id_post_npc_op),
-        .RegWrite     (id_post_regwrite),
-        .MemToReg_sel (id_post_regwrmux),
-        .MemWrite     (id_post_memwrite),
-        .pc_offset_sel(id_post_pc_offset_sel),
-        .ALUSrcA      (id_post_alusrcA),
-        .ALUSrcB      (id_post_alusrcB),
-        .ALUControl   (id_post_alu_op)
+        .instr       (id_pre_instruction),
+        .NpcOp       (id_post_npc_op),
+        .RegWrite    (id_post_regwrite),
+        .MemToReg_sel(id_post_regwrmux),
+        .MemWrite    (id_post_memwrite),
+        .ALUSrcA     (id_post_alusrcA),
+        .ALUSrcB     (id_post_alusrcB),
+        .ALUControl  (id_post_alu_op)
     );
 
     IMMGEN #(DATAWIDTH) immgen_inst (
@@ -423,8 +417,6 @@ module myCPU (
     //     .CSRControll(CSRControll)
     // );
 
-    assign opcode = id_pre_instruction[6:0];
-    assign funct  = {id_pre_instruction[30], id_pre_instruction[14:12]};
     // assign din = ALU_B;
 
     ALU #(DATAWIDTH) alu_inst (

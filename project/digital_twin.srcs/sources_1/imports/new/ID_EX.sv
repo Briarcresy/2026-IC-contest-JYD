@@ -21,7 +21,7 @@ module ID_EX #(
     input  logic [      1:0] id_alusrcA,
     input  logic [      1:0] id_alusrcB,
     input  logic [      1:0] id_npcop,
-    input  logic             id_pc_offset_sel,
+    // input  logic             id_pc_offset_sel,
     //Control signal M
     input  logic             id_mem_write,
     //Control signal WB
@@ -44,7 +44,7 @@ module ID_EX #(
     output logic [      1:0] ex_alusrcA,
     output logic [      1:0] ex_alusrcB,
     output logic [      1:0] ex_npcop,
-    output logic             ex_pc_offset_sel,
+    // output logic             ex_pc_offset_sel,
     //Control signal M
     output logic             ex_mem_write,
     //Control signal WB
@@ -75,21 +75,20 @@ module ID_EX #(
             ex_alusrcB       <= '0;
             ex_alu_op        <= '0;
         end else begin
-            ex_pc            <= id_pc;
-            ex_rs1v          <= id_rs1v;
-            ex_rs2v          <= id_rs2v;
-            ex_imm           <= id_imm;
-            ex_rs1           <= id_rs1;
-            ex_rs2           <= id_rs2;
-            ex_rd            <= id_rd;
+            ex_pc       <= id_pc;
+            ex_rs1v     <= id_rs1v;
+            ex_rs2v     <= id_rs2v;
+            ex_imm      <= id_imm;
+            ex_rs1      <= id_rs1;
+            ex_rs2      <= id_rs2;
+            ex_rd       <= id_rd;
             // ex_opcode        <= id_opcode;
             // ex_funct4        <= id_funct4;
-            ex_mask          <= id_mask;
-            ex_regwrmux      <= id_regwrmux;
-            ex_pc_offset_sel <= id_pc_offset_sel;
-            ex_alusrcA       <= id_alusrcA;
-            ex_alusrcB       <= id_alusrcB;
-            ex_alu_op        <= id_alu_op;
+            ex_mask     <= id_mask;
+            ex_regwrmux <= id_regwrmux;
+            ex_alusrcA  <= id_alusrcA;
+            ex_alusrcB  <= id_alusrcB;
+            ex_alu_op   <= id_alu_op;
             if (id_flush || id_stall) begin
                 ex_reg_write <= '0;
                 ex_mem_write <= '0;

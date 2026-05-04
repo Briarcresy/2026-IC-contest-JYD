@@ -21,8 +21,7 @@
 `include "defines.sv"
 
 module Control (
-    input  logic [ 6:0] opcode,
-    // input  logic [2:0] funct,
+    input  logic [31:0] instr,
     output logic [ 1:0] NpcOp,
     output logic        RegWrite,
     output logic [ 1:0] MemToReg_sel,
@@ -36,6 +35,8 @@ module Control (
 
     // op_csr,
     // op_call_ret;
+    assign opcode = instr[6:0];
+    assign funct = {instr[30], instr[14:12]};
 
     assign jalr = (opcode == `IJ_TYPE);
     assign branch = (opcode == `B_TYPE);
