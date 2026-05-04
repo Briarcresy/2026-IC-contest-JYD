@@ -2,7 +2,7 @@
 
 `include "defines.sv"
 
-module RF #(
+module RegFile #(
     parameter ADDR_WIDTH = 5,
     parameter DATAWIDTH  = 32
 ) (

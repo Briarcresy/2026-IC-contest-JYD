@@ -41,14 +41,12 @@ module ALU #(
     // ---------- Adder/Subtractor ----------
     logic [DATAWIDTH-1:0] adder_a, adder_b;
     logic adder_cin;
-    assign adder_a   = A;
+    assign adder_a = A;
     // Only do subtraction when op_sub is active (invert and add 1), otherwise add B directly
-    assign adder_b   = op_sub ? ~B : B;
+    assign adder_b = op_sub ? ~B : B;
     assign adder_cin = op_sub ? 1'b1 : 1'b0;
 
-    logic [DATAWIDTH:0] sum_full;
-    assign sum_full = adder_a + adder_b + {(DATAWIDTH + 1) {adder_cin}};
-    assign add_sub_result = sum_full[DATAWIDTH-1:0];
+    assign add_sub_result = adder_a + adder_b + adder_cin;
 
     // ---------- Logical operations ----------
     assign and_result = A & B;

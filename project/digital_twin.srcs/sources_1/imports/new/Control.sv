@@ -32,7 +32,7 @@ module Control (
     output logic [13:0] ALUControl,
     output logic [ 2:0] mask
 );
-    logic jalr, branch, jal, store, rtype, otype, load, auipc, lui, itype;
+    logic jalr, branch, jal, store, rtype, load, auipc, lui, itype;
 
     logic [6:0] opcode;
     logic [3:0] funct;

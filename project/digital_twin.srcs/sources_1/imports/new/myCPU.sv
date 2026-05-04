@@ -70,7 +70,6 @@ module myCPU (
     // logic [         11:0] csr_idx;
     // logic [          3:0] CSRControll;
     // logic ALUSrcA, ALUSrcB;
-    logic [         13:0] ALUControl;
     logic [DATAWIDTH-1:0] mdata;
     // logic [DATAWIDTH-1:0] csr_wb;
 
@@ -144,8 +143,6 @@ module myCPU (
     logic [          4:0] ex_pre_rs1;  // for forwarding
     logic [          4:0] ex_pre_rs2;  // for forwarding
     logic [DATAWIDTH-1:0] ex_pre_rs1v;
-    // logic [          6:0] ex_pre_opcode;
-    logic [          3:0] ex_pre_funct4;
     logic                 ex_pre_alusrcA;
     logic                 ex_pre_alusrcB;
     logic [         13:0] ex_pre_alu_op;
@@ -159,25 +156,22 @@ module myCPU (
     logic [          1:0] ex_thru_regwrmux;
     logic [DATAWIDTH-1:0] ex_post_result;
     logic [DATAWIDTH-1:0] ex_post_rs2v;
-    logic [          1:0] ex_post_mask_memread;
-    assign ex_post_mask_memread = ex_pre_funct4[1:0];
 
     logic [DATAWIDTH-1:0] mem_pre_rs2v;
-    logic [          1:0] mem_pre_npc_op;
     logic                 mem_pre_memwrite;
     logic [DATAWIDTH-1:0] mem_pre_result;
     logic [DATAWIDTH-1:0] mem_pre_imm;
     logic [DATAWIDTH-1:0] mem_pre_pc4;
-    logic [          1:0] mem_pre_mask_memread;
     logic [          4:0] mem_thru_rd;
     logic [          2:0] mem_thru_mask;
     logic [          1:0] mem_thru_regwrmux;
     logic                 mem_thru_regwrite;
     logic [DATAWIDTH-1:0] mem_post_result_mem_mux;
+
     assign perip_wdata = mem_pre_rs2v;
     assign perip_addr  = mem_pre_result;
     assign perip_wen   = mem_pre_memwrite;
-    assign perip_mask  = mem_pre_mask_memread;
+    assign perip_mask  = mem_thru_mask[1:0];
 
     logic [          4:0] wb_pre_rd;
     logic [          2:0] wb_pre_mask;
@@ -257,7 +251,7 @@ module myCPU (
         .ex_regwrmux(ex_thru_regwrmux),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
-        .ex_mask_memread(ex_post_mask_memread),
+        // .ex_mask_memread(ex_post_mask_memread),
         .mem_alu_result(mem_pre_result),
         .mem_rs2_val(mem_pre_rs2v),
         .mem_imm(mem_pre_imm),
@@ -266,8 +260,7 @@ module myCPU (
         .mem_mask(mem_thru_mask),
         .mem_regwrmux(mem_thru_regwrmux),
         .mem_reg_write(mem_thru_regwrite),
-        .mem_mem_write(mem_pre_memwrite),
-        .mem_mask_memread(mem_pre_mask_memread)
+        .mem_mem_write(mem_pre_memwrite)
     );
 
     MEM_WB #() mem_wb (
@@ -360,7 +353,7 @@ module myCPU (
 
     // assign pc_offset = ex_post_result;
 
-    RF #(ADDR_WIDTH, DATAWIDTH) rf_inst (
+    RegFile #(ADDR_WIDTH, DATAWIDTH) rf_inst (
         .clk     (clk),
         .rst     (rst),
         .wen     (wb_pre_regwrite),
@@ -427,12 +420,6 @@ module myCPU (
         .Result    (ex_post_result),
         .isTrue    (isTrue)
     );
-
-    // ACTL actl_inst (
-    //     .opcode    (ex_pre_opcode),
-    //     .funct     (ex_pre_funct4),
-    //     .ALUControl(ALUControl)
-    // );
 
     Mask #(DATAWIDTH) mask_inst (
         .mask (wb_pre_mask),
