@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 `include "defines.sv"
 module ALU_src #(
     WIDTH = 32

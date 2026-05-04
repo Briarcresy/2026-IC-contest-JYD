@@ -35,7 +35,7 @@ module NPC #(
     output logic [DATAWIDTH - 1:0] npc
 );
     // logic op_branch, op_add4, op_jalr, op_jal;
-    logic [DATAWIDTH-1:0] branch_addr, jalr_addr, jal_addr;
+    logic [DATAWIDTH-1:0] next_addr, branch_addr, jalr_addr, jal_addr;
 
     // assign op_add4 = (npc_op == 2'b00);
     // assign op_branch = (npc_op == 2'b01);

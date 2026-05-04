@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 `include "defines.sv"
 module EX_MEM #(
     WIDTH = 32

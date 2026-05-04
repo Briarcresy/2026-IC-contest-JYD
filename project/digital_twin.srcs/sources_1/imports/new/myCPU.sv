@@ -130,13 +130,12 @@ module myCPU (
     logic [DATAWIDTH-1:0] id_post_imm;
     logic [          1:0] id_post_npc_op;
     logic [          1:0] id_post_regwrmux;
-    logic [          1:0] id_post_alusrcA;
-    logic [          1:0] id_post_alusrcB;
+    logic                 id_post_alusrcA;
+    logic                 id_post_alusrcB;
     logic [         13:0] id_post_alu_op;
-    assign id_post_mask = funct[2:0];
-    assign id_post_rs1  = id_pre_instruction[19:15];  // for forwarding
-    assign id_post_rs2  = id_pre_instruction[24:20];  // for forwarding
-    assign id_post_rd   = id_pre_instruction[11:7];  // save reg-write-target
+    assign id_post_rs1 = id_pre_instruction[19:15];  // for forwarding
+    assign id_post_rs2 = id_pre_instruction[24:20];  // for forwarding
+    assign id_post_rd  = id_pre_instruction[11:7];  // save reg-write-target
     //logic []
     //logic
 
@@ -147,8 +146,8 @@ module myCPU (
     logic [DATAWIDTH-1:0] ex_pre_rs1v;
     // logic [          6:0] ex_pre_opcode;
     logic [          3:0] ex_pre_funct4;
-    logic [          1:0] ex_pre_alusrcA;
-    logic [          1:0] ex_pre_alusrcB;
+    logic                 ex_pre_alusrcA;
+    logic                 ex_pre_alusrcB;
     logic [         13:0] ex_pre_alu_op;
     logic [DATAWIDTH-1:0] ex_pre_rs2v;
     logic [DATAWIDTH-1:0] ex_thru_imm;
@@ -227,7 +226,7 @@ module myCPU (
         .id_alusrcB(id_post_alusrcB),
         .id_reg_write(id_post_regwrite),
         .id_mem_write(id_post_memwrite),
-        .id_aluop(id_post_alu_op),
+        .id_alu_op(id_post_alu_op),
         .ex_pc(ex_pre_pc),
         .ex_pc4(ex_thru_pc4),
         .ex_rs1v(ex_pre_rs1v),
@@ -243,7 +242,7 @@ module myCPU (
         .ex_alusrcB(ex_pre_alusrcB),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
-        .ex_aluop(ex_pre_alu_op),
+        .ex_alu_op(ex_pre_alu_op)
     );
 
     EX_MEM #(DATAWIDTH) ex_mem (
@@ -355,6 +354,7 @@ module myCPU (
         .pc        (pc),
         .pc_add_4  (pcadd4),
         .pc_add_imm(ex_thru_imm + ex_pre_pc),
+        .alu_result(ex_post_result),
         .npc       (npc)
     );
 
@@ -403,7 +403,8 @@ module myCPU (
         .MemWrite    (id_post_memwrite),
         .ALUSrcA     (id_post_alusrcA),
         .ALUSrcB     (id_post_alusrcB),
-        .ALUControl  (id_post_alu_op)
+        .ALUControl  (id_post_alu_op),
+        .mask        (id_post_mask)
     );
 
     IMMGEN #(DATAWIDTH) immgen_inst (

@@ -26,17 +26,22 @@ module Control (
     output logic        RegWrite,
     output logic [ 1:0] MemToReg_sel,
     output logic        MemWrite,
-    output logic        pc_offset_sel,
+    // output logic        pc_offset_sel,
     output logic        ALUSrcA,
     output logic        ALUSrcB,
-    output logic [13:0] ALUControl
+    output logic [13:0] ALUControl,
+    output logic [ 2:0] mask
 );
-    logic jalr, branch, jal, store, rtype, otype, load, auipc, lui;
+    logic jalr, branch, jal, store, rtype, otype, load, auipc, lui, itype;
+
+    logic [6:0] opcode;
+    logic [3:0] funct;
 
     // op_csr,
     // op_call_ret;
     assign opcode = instr[6:0];
     assign funct = {instr[30], instr[14:12]};
+    assign mask = instr[14:12];
 
     assign jalr = (opcode == `IJ_TYPE);
     assign branch = (opcode == `B_TYPE);
@@ -58,7 +63,7 @@ module Control (
                     {2{load}} & 2'b10 |
                     {2{lui}} & 2'b11;
     assign MemWrite = store;
-    assign pc_offset_sel = jalr;
+    // assign pc_offset_sel = jalr;
     assign ALUSrcA = auipc;
     assign ALUSrcB = !(rtype || branch);
 

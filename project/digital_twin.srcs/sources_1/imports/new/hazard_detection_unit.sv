@@ -1,4 +1,4 @@
-
+`timescale 1ns / 1ps
 `include "defines.sv"
 
 module hazard_detection_unit #(

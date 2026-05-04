@@ -1,4 +1,5 @@
 
+`timescale 1ns / 1ps
 `include "defines.sv"
 module ex_mux #(
     WIDTH = 32

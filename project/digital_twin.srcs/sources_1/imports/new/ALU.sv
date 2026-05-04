@@ -1,26 +1,6 @@
 `timescale 1ns / 1ps
 `include "defines.sv"
 
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2024/05/01 10:31:41
-// Design Name: 
-// Module Name: ALU
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 module ALU #(
     parameter DATAWIDTH = 32
 ) (
@@ -61,11 +41,14 @@ module ALU #(
     // ---------- Adder/Subtractor ----------
     logic [DATAWIDTH-1:0] adder_a, adder_b;
     logic adder_cin;
-    assign adder_a = A;
+    assign adder_a   = A;
     // Only do subtraction when op_sub is active (invert and add 1), otherwise add B directly
-    assign adder_b = op_sub ? ~B : B;
+    assign adder_b   = op_sub ? ~B : B;
     assign adder_cin = op_sub ? 1'b1 : 1'b0;
-    assign add_sub_result = adder_a + adder_b + adder_cin;
+
+    logic [DATAWIDTH:0] sum_full;
+    assign sum_full = adder_a + adder_b + {(DATAWIDTH + 1) {adder_cin}};
+    assign add_sub_result = sum_full[DATAWIDTH-1:0];
 
     // ---------- Logical operations ----------
     assign and_result = A & B;
@@ -78,12 +61,12 @@ module ALU #(
     assign sra_result = $signed(A) >>> B[4:0];
 
     // ---------- Comparison operations (independent, not relying on adder carry) ----------
-    assign beq_result = {{DATAWIDTH - 1{1'b0}}, A == B};
-    assign bne_result = {{DATAWIDTH - 1{1'b0}}, A != B};
-    assign blt_result = {{DATAWIDTH - 1{1'b0}}, $signed(A) < $signed(B)};
-    assign bge_result = {{DATAWIDTH - 1{1'b0}}, $signed(A) >= $signed(B)};
-    assign bgeu_result = {{DATAWIDTH - 1{1'b0}}, $unsigned(A) >= $unsigned(B)};
-    assign bltu_result = {{DATAWIDTH - 1{1'b0}}, $unsigned(A) < $unsigned(B)};
+    assign beq_result = {{(DATAWIDTH - 1) {1'b0}}, A == B};
+    assign bne_result = {{(DATAWIDTH - 1) {1'b0}}, A != B};
+    assign blt_result = {{(DATAWIDTH - 1) {1'b0}}, $signed(A) < $signed(B)};
+    assign bge_result = {{(DATAWIDTH - 1) {1'b0}}, $signed(A) >= $signed(B)};
+    assign bgeu_result = {{(DATAWIDTH - 1) {1'b0}}, $unsigned(A) >= $unsigned(B)};
+    assign bltu_result = {{(DATAWIDTH - 1) {1'b0}}, $unsigned(A) < $unsigned(B)};
 
     // ---------- Multiplexer (case structure for reduced critical path) ----------
     always_comb begin

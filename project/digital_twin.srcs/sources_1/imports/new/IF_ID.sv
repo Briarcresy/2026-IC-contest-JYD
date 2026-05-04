@@ -1,4 +1,6 @@
+`timescale 1ns / 1ps
 `include "defines.sv"
+
 module IF_ID #(
     WIDTH = 32
 ) (

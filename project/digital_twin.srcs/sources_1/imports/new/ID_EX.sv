@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 `include "defines.sv"
 module ID_EX #(
     WIDTH = 32
@@ -18,8 +19,8 @@ module ID_EX #(
     // input  logic [      3:0] id_funct4,
     //Control signal EX
     input  logic [     13:0] id_alu_op,
-    input  logic [      1:0] id_alusrcA,
-    input  logic [      1:0] id_alusrcB,
+    input  logic             id_alusrcA,
+    input  logic             id_alusrcB,
     input  logic [      1:0] id_npcop,
     // input  logic             id_pc_offset_sel,
     //Control signal M
@@ -41,8 +42,8 @@ module ID_EX #(
     // output logic [      3:0] ex_funct4,
     //Control signal EX
     output logic [     13:0] ex_alu_op,
-    output logic [      1:0] ex_alusrcA,
-    output logic [      1:0] ex_alusrcB,
+    output logic             ex_alusrcA,
+    output logic             ex_alusrcB,
     output logic [      1:0] ex_npcop,
     // output logic             ex_pc_offset_sel,
     //Control signal M
@@ -55,25 +56,24 @@ module ID_EX #(
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            ex_pc            <= '0;
-            ex_pc4           <= '0;
-            ex_rs1v          <= '0;
-            ex_rs2v          <= '0;
-            ex_imm           <= '0;
-            ex_rs1           <= '0;
-            ex_rs2           <= '0;
-            ex_rd            <= '0;
+            ex_pc        <= '0;
+            ex_pc4       <= '0;
+            ex_rs1v      <= '0;
+            ex_rs2v      <= '0;
+            ex_imm       <= '0;
+            ex_rs1       <= '0;
+            ex_rs2       <= '0;
+            ex_rd        <= '0;
             // ex_opcode        <= '0;
             // ex_funct4        <= '0;
-            ex_mask          <= '0;
-            ex_reg_write     <= '0;
-            ex_mem_write     <= '0;
-            ex_regwrmux      <= '0;
-            ex_pc_offset_sel <= '0;
-            ex_npcop         <= '0;
-            ex_alusrcA       <= '0;
-            ex_alusrcB       <= '0;
-            ex_alu_op        <= '0;
+            ex_mask      <= '0;
+            ex_reg_write <= '0;
+            ex_mem_write <= '0;
+            ex_regwrmux  <= '0;
+            ex_npcop     <= '0;
+            ex_alusrcA   <= '0;
+            ex_alusrcB   <= '0;
+            ex_alu_op    <= '0;
         end else begin
             ex_pc       <= id_pc;
             ex_rs1v     <= id_rs1v;
