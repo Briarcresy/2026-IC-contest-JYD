@@ -315,13 +315,18 @@ module myCPU (
         .rs2_forward_sel(alu_b_forward_sel)
     );
 
-    assign ex_post_rs2v = B;
-
+    always_comb begin
+        if (!alu_b_forward_sel[1]) begin
+            ex_post_rs2v = ex_pre_rs2v;
+        end else begin
+            ex_post_rs2v = alu_b_forward_sel[0] ? wdata : mem_post_result_mem_mux;
+        end
+    end
     hazard_detection_unit hazard_detection_unit_instance (
         .npcop(ex_thru_npc_op),
         .alu_is_true(isTrue),
         .regwrmux(ex_thru_regwrmux),
-        // .reg_write(ex_thru_regwrite),
+        .reg_write(ex_thru_regwrite),
         .rd(ex_thru_rd),
         .rs1(id_post_rs1),
         .rs2(id_post_rs2),
@@ -465,7 +470,7 @@ module myCPU (
             assign debug_wb_pc = 32'h114514;
             assign debug_wb_ena = wb_pre_regwrite;
             assign debug_wb_reg = wb_pre_regwrmux;
-            assign debug_wb_value = wdata;
+            assign debug_wb_value = wbpc;
         end
     end
 `endif

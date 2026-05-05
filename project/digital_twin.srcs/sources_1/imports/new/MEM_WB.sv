@@ -5,10 +5,10 @@
 module MEM_WB #(
     WIDTH = 32
 ) (
-`ifdef ENABLE_DEBUG_TRACE
+// `ifdef ENABLE_DEBUG_TRACE
     input  logic [WIDTH-1:0] mem_pc4,
     output logic [WIDTH-1:0] wb_pc4,
-`endif
+// `endif
     input  logic             clk,
     input  logic             rst,
     input  logic [WIDTH-1:0] mem_alu_result,
@@ -46,7 +46,7 @@ module MEM_WB #(
         end
     end
 
-`ifdef ENABLE_DEBUG_TRACE
+// `ifdef ENABLE_DEBUG_TRACE
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             wb_pc4 <= '0;
@@ -54,6 +54,6 @@ module MEM_WB #(
             wb_pc4 <= mem_pc4;
         end
     end
-`endif
+// `endif
 
 endmodule
