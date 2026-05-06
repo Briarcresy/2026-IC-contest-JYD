@@ -1,0 +1,468 @@
+\documentclass[UTF8,a4paper,12pt]{ctexart}
+\usepackage{xeCJK}
+\setCJKmainfont{Noto Serif CJK SC}
+% ===================== 基本版式 =====================
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\linespread{1.5}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{noitemsep, topsep=2pt}
+\setlist[enumerate]{noitemsep, topsep=2pt}
+
+\ctexset{
+  section={format=\zihao{3}\heiti\bfseries, aftername=\quad},
+  subsection={format=\zihao{4}\heiti\bfseries, aftername=\quad},
+  subsubsection={format=\zihao{-4}\heiti\bfseries, aftername=\quad}
+}
+
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{【待补充：#1】}}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\begin{document}
+
+% ===================== 封面 =====================
+\begin{titlepage}
+    \centering
+    \vspace*{1.8cm}
+    {\zihao{2}\heiti 第十届全国大学生集成电路创新创业大赛\\[0.4em] ``竞业达''企业命题初赛}\par
+    \vspace{1.8cm}
+    {\zihao{1}\heiti RISC-V CPU设计报告}\par
+    \vspace{0.8cm}
+    {\zihao{3}\heiti 基于RV32I指令集的五级流水线CPU设计}\par
+    \vfill
+    \begin{tabular}{rl}
+        院\quad 校： & {上海科技大学} \\[0.6em]
+        作品名称： & 基于RV32I指令集的五级流水线CPU设计 \\[0.6em]
+        团队名称： & {决战内存条队} \\[0.6em]
+        姓\quad 名： & {李建昊、施云翀、袁源} \\[0.6em]
+        指导教师： & {刘闯} \\[0.6em]
+        时\quad 间： & {2026年5月7日} 
+    \end{tabular}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ===================== 快速预览 =====================
+\section*{作品快速预览简介}
+\addcontentsline{toc}{section}{作品快速预览简介}
+
+本作品面向``竞业达''企业命题初赛中基于RISC-V指令集的CPU设计任务，实现了一款基于RV32I基本整数指令集的32位五级流水线CPU。CPU顶层模块为\code{myCPU}，采用SystemVerilog描述，能够接入企业提供的工程模板，通过\code{irom\_addr/irom\_data}访问指令存储器，通过\code{perip\_addr/perip\_wen/perip\_mask/perip\_wdata/perip\_rdata}访问DRAM与外设。
+
+作品关键技术包括：五级流水线数据通路、RV32I指令译码、立即数生成、寄存器堆双读单写、ALU算术逻辑运算、访存数据扩展、EX/MEM/WB阶段数据前递、load-use冒险暂停以及分支/跳转控制冒险冲刷。当前设计以初赛要求的RV32I 37条基础指令为实现目标，\code{fence}、\code{ecall}和\code{ebreak}暂不作为初赛核心测试指令实现。
+
+\begin{table}[H]
+\centering
+\caption{作品快速预览表}
+\begin{tabularx}{\textwidth}{p{4cm}X}
+\toprule
+项目 & 内容 \\
+\midrule
+CPU类型 & 32位RISC-V CPU \\
+指令集目标 & RV32I基本整数指令集，初赛重点支持37条基础指令 \\
+流水线结构 & IF、ID、EX、MEM、WB五级流水线 \\
+核心模块 & \code{PC}、\code{NPC}、\code{Control}、\code{IMMGEN}、\code{RegFile}、\code{ALU}、\code{Mask}、流水线寄存器、前递单元、冒险检测单元 \\
+冒险处理 & 数据前递、load-use暂停、分支/跳转冲刷 \\
+外设接口 & IROM接口与DRAM/外设统一访问接口 \\
+待补充内容 & \todo{整体架构图截图、Vivado版本、开发板型号、综合实现结果、bit文件信息} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newpage
+
+\section{项目概述}
+
+\subsection{项目背景}
+
+RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度高、扩展性强等特点，适合用于处理器设计教学、嵌入式系统开发和FPGA原型验证。本项目围绕``竞业达''企业命题初赛要求，基于RV32I基本整数指令集设计并实现一款32位CPU。通过该设计，可以完整训练从指令编码、数据通路、控制通路、流水线寄存器、冒险处理到FPGA接口适配的处理器设计流程。
+
+本设计采用五级流水线结构，将指令执行过程划分为取指、译码、执行、访存和写回五个阶段。与单周期CPU相比，五级流水线能够在不同阶段并行处理多条指令，提高指令吞吐率；同时，流水线结构也引入了数据冒险和控制冒险问题，因此本设计进一步实现了前递单元和冒险检测单元，以保证程序执行结果的正确性。
+
+\subsection{设计目标}
+
+本项目的设计目标如下：
+
+\begin{enumerate}
+    \item 实现一款基于RV32I基本整数指令集的32位CPU；
+    \item 采用五级流水线结构，实现IF、ID、EX、MEM、WB五个阶段；
+    \item 支持初赛要求的37条RV32I基础指令，不将\code{fence}、\code{ecall}和\code{ebreak}作为初赛核心测试对象；
+    \item 完成PC更新、指令译码、立即数生成、寄存器读写、ALU运算、访存和写回等功能；
+    \item 实现数据前递、load-use暂停和控制冒险冲刷机制；
+    \item 适配企业工程模板提供的\code{myCPU}接口；
+    \item 通过外设统一接口完成对DRAM、数码管、LED等地址空间的访问；
+    \item 为线上测评、上板验证、bit文件复核和演示视频提交提供硬件基础。
+\end{enumerate}
+
+\subsection{设计平台说明}
+
+\begin{table}[H]
+\centering
+\caption{设计平台说明}
+\begin{tabularx}{\textwidth}{p{4cm}X}
+\toprule
+项目 & 内容 \\
+\midrule
+硬件平台 & \todo{填写FPGA开发板型号，例如竞业达数字孪生平台/具体板卡型号} \\
+FPGA器件 & \todo{填写FPGA型号，例如Xilinx Kintex-7或实际型号} \\
+开发工具 & \todo{填写Vivado版本} \\
+硬件描述语言 & SystemVerilog \\
+仿真工具 & \todo{填写Vivado Simulation、Verilator或ModelSim等} \\
+CPU时钟 & 企业模板默认提供50MHz CPU时钟，可通过PLL调整；本设计使用频率为\todo{填写实际频率} \\
+工程顶层 & 企业模板顶层 + 自研\code{myCPU}核心 \\
+生成文件 & \todo{填写bit文件名称与生成路径} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{RISC-V CPU架构设计}
+
+\subsection{RV32I指令集的支持情况}
+
+本CPU面向RV32I基本整数指令集进行设计。初赛测试要求中，RV32I共40条基础指令，排除\code{fence}、\code{ecall}、\code{ebreak}三条后，最低要求实现37条指令。本设计按照该目标对R型、I型、Load、Store、Branch、U型和J型指令进行支持。
+
+\begin{longtable}{p{3cm}p{8cm}p{3cm}}
+\caption{RV32I指令支持情况}\\
+\toprule
+指令类型 & 指令 & 当前设计状态 \\
+\midrule
+\endfirsthead
+\toprule
+指令类型 & 指令 & 当前设计状态 \\
+\midrule
+\endhead
+R型运算指令 & \code{add, sub, sll, slt, sltu, xor, srl, sra, or, and} & 已设计 \\
+I型运算指令 & \code{addi, slti, sltiu, xori, ori, andi, slli, srli, srai} & 已设计 \\
+Load指令 & \code{lb, lh, lw, lbu, lhu} & 已设计 \\
+Store指令 & \code{sb, sh, sw} & 已设计 \\
+Branch指令 & \code{beq, bne, blt, bge, bltu, bgeu} & 已设计 \\
+U型指令 & \code{lui, auipc} & 已设计 \\
+J型指令 & \code{jal, jalr} & 已设计 \\
+初赛不测指令 & \code{fence, ecall, ebreak} & \todo{可实现为空指令或后续扩展} \\
+\bottomrule
+\end{longtable}
+
+\subsection{RV32I CPU的整体架构图}
+
+本设计采用五级流水线结构。整体架构由取指阶段、译码阶段、执行阶段、访存阶段和写回阶段组成，各阶段之间通过流水线寄存器传递数据与控制信号。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.0cm,
+    stage/.style={draw, rounded corners, minimum width=2.1cm, minimum height=1.0cm, align=center},
+    reg/.style={draw, fill=gray!10, minimum width=0.7cm, minimum height=1.0cm, align=center},
+    arrow/.style={-Latex, thick}
+]
+\node[stage] (if) {IF\\取指};
+\node[reg, right=0.5cm of if] (ifid) {IF/ID};
+\node[stage, right=0.5cm of ifid] (id) {ID\\译码};
+\node[reg, right=0.5cm of id] (idex) {ID/EX};
+\node[stage, right=0.5cm of idex] (ex) {EX\\执行};
+\node[reg, right=0.5cm of ex] (exmem) {EX/MEM};
+\node[stage, right=0.5cm of exmem] (mem) {MEM\\访存};
+\node[reg, right=0.5cm of mem] (memwb) {MEM/WB};
+\node[stage, right=0.5cm of memwb] (wb) {WB\\写回};
+
+\draw[arrow] (if) -- (ifid);
+\draw[arrow] (ifid) -- (id);
+\draw[arrow] (id) -- (idex);
+\draw[arrow] (idex) -- (ex);
+\draw[arrow] (ex) -- (exmem);
+\draw[arrow] (exmem) -- (mem);
+\draw[arrow] (mem) -- (memwb);
+\draw[arrow] (memwb) -- (wb);
+
+\node[stage, below=1.0cm of id] (control) {Control\\IMMGEN\\RegFile};
+\node[stage, below=1.0cm of ex] (hazard) {Forwarding\\Hazard Detection};
+\draw[arrow] (control) -- (id);
+\draw[arrow] (hazard) -- (ex);
+\draw[arrow, dashed] (wb.south) |- (control.east);
+\end{tikzpicture}
+\caption{五级流水线CPU整体架构示意图}
+\end{figure}
+
+\todo{如需使用工程真实框图，可在此处替换为Vivado RTL Analysis或draw.io绘制的整体架构图。}
+
+\subsection{CPU顶层接口设计}
+
+本CPU顶层模块为\code{myCPU}，与企业模板中\code{Core\_cpu}实例连接。接口包括系统时钟复位、IROM指令存储器接口以及DRAM/外设统一接口。
+
+\begin{table}[H]
+\centering
+\caption{\code{myCPU}顶层接口说明}
+\begin{tabularx}{\textwidth}{p{3cm}p{2cm}p{2cm}X}
+\toprule
+信号名称 & 方向 & 位宽 & 功能说明 \\
+\midrule
+\code{cpu\_clk} & input & 1 & CPU工作时钟 \\
+\code{cpu\_rst} & input & 1 & CPU复位信号 \\
+\code{irom\_addr} & output & 32 & 指令存储器访问地址，由当前PC给出 \\
+\code{irom\_data} & input & 32 & 指令存储器返回的32位指令 \\
+\code{perip\_addr} & output & 32 & DRAM或外设访问地址，由MEM阶段ALU结果给出 \\
+\code{perip\_wen} & output & 1 & 写使能信号，store指令有效 \\
+\code{perip\_mask} & output & 2 & 访存宽度控制，00表示1字节，01表示2字节，10表示4字节 \\
+\code{perip\_wdata} & output & 32 & 写入DRAM或外设的数据 \\
+\code{perip\_rdata} & input & 32 & DRAM或外设返回的数据 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{数据通路各模块的设计}
+
+\subsubsection{PC模块}
+
+\code{PC}模块用于保存当前取指地址。复位时，正常上板模式下PC初始化为\code{0x8000\_0000}，以匹配企业模板中IROM起始地址；开启\code{ENABLE\_DEBUG\_TRACE}调试宏时，复位值为\code{0x0000\_0000}，便于仿真跟踪。正常运行时，PC在时钟上升沿更新为\code{NPC}模块生成的下一条指令地址。
+
+\subsubsection{NPC模块}
+
+\code{NPC}模块根据\code{npc\_op}选择下一条PC地址。\code{npc\_op=00}表示顺序执行或stall保持，\code{npc\_op=01}表示条件分支，\code{npc\_op=10}表示\code{jalr}，\code{npc\_op=11}表示\code{jal}。对于\code{jalr}，模块将ALU计算结果最低位置零，以符合RISC-V对\code{jalr}目标地址的要求。
+
+\subsubsection{IF/ID流水线寄存器}
+
+\code{IF\_ID}模块连接IF与ID阶段，保存取指阶段得到的PC、PC+4和指令。当发生\code{stall}时保持原值，当发生\code{flush}时清空寄存器内容，用于处理load-use冒险和控制冒险。
+
+\subsubsection{Control控制模块}
+
+\code{Control}模块根据指令\code{opcode}和\code{funct3/funct7}字段产生控制信号。当前控制器可识别R型、I型、Load、Store、Branch、U型和J型指令，输出包括\code{NpcOp}、\code{RegWrite}、\code{MemToReg\_sel}、\code{MemWrite}、\code{ALUSrcA}、\code{ALUSrcB}、\code{ALUControl}和\code{mask}等控制信号。
+
+\subsubsection{IMMGEN立即数生成模块}
+
+\code{IMMGEN}模块根据指令格式生成立即数。支持I型、S型、B型、U型和J型立即数，并按照RISC-V编码规则进行符号扩展和位拼接。其中B型和J型立即数最低位补0，以适配分支和跳转指令的目标地址计算。
+
+\subsubsection{RegFile寄存器堆模块}
+
+\code{RegFile}模块包含32个32位通用寄存器，支持两个读端口和一个写端口。写回阶段当\code{wen}有效且\code{waddr}不为0时写入寄存器。模块中还实现了同周期读写同一寄存器时的内部旁路逻辑，若读地址与写地址相同，则读端口优先返回当前写入数据。
+
+\subsubsection{ID/EX流水线寄存器}
+
+\code{ID\_EX}模块连接ID与EX阶段，传递PC、PC+4、源寄存器值、立即数、源/目的寄存器编号以及执行、访存和写回相关控制信号。当发生\code{id\_stall}或\code{id\_flush}时，模块将写使能、访存写使能、NPC控制等关键控制信号清零，从而在EX阶段插入无效操作。
+
+\subsubsection{ALU\_src操作数选择模块}
+
+\code{ALU\_src}模块用于选择ALU输入操作数。若\code{alu\_src}为1，则选择立即数或PC；若为0，则根据前递选择信号在寄存器原始值、MEM阶段结果和WB阶段写回数据中选择正确操作数。
+
+\subsubsection{ALU模块}
+
+\code{ALU}模块使用14位\code{ALUControl}信号控制具体运算。支持加法、减法、按位与、按位或、按位异或、逻辑左移、逻辑右移、算术右移、有符号比较、无符号比较以及分支条件判断。分支判断结果通过\code{isTrue}输出给冒险检测单元和NPC模块。
+
+\subsubsection{EX/MEM流水线寄存器}
+
+\code{EX\_MEM}模块连接EX与MEM阶段，保存ALU结果、store写数据、立即数、PC+4、目的寄存器编号和访存/写回控制信号。进入MEM阶段后，ALU结果作为\code{perip\_addr}输出，store写数据作为\code{perip\_wdata}输出。
+
+\subsubsection{ex\_mux与mem\_mux模块}
+
+\code{ex\_mux}用于在MEM阶段预先选择写回候选结果，包括PC+4、ALU结果和立即数。\code{mem\_mux}用于在WB阶段最终选择写回数据，当\code{regwrmux=10}时选择经过\code{Mask}处理的load数据，否则选择\code{ex\_mux}输出。
+
+\subsubsection{Mask模块}
+
+\code{Mask}模块用于处理load指令读出的数据。对于\code{lb}和\code{lh}执行符号扩展，对于\code{lbu}和\code{lhu}执行零扩展，对于\code{lw}直接保留32位数据。
+
+\subsubsection{MEM/WB流水线寄存器}
+
+\code{MEM\_WB}模块连接MEM与WB阶段，保存访存读数据、MEM阶段写回候选结果、目的寄存器编号以及写回控制信号。WB阶段根据选择结果将数据写回寄存器堆。
+
+\subsubsection{forwarding\_unit前递单元}
+
+\code{forwarding\_unit}比较EX阶段源寄存器\code{rs1/rs2}与MEM、WB阶段目的寄存器\code{rd}。若检测到数据相关且后续阶段写使能有效，则生成\code{2'b10}或\code{2'b11}前递选择信号，使ALU输入直接使用最新结果，减少流水线暂停。
+
+\subsubsection{hazard\_detection\_unit冒险检测单元}
+
+\code{hazard\_detection\_unit}主要处理两类冒险。第一类是控制冒险，当分支成立或发生\code{jal/jalr}跳转时，产生\code{flush}信号冲刷错误路径指令。第二类是load-use冒险，当EX阶段为load指令且其目的寄存器被ID阶段指令立即使用时，产生\code{stall}信号暂停流水线一个周期。
+
+\subsection{数据通路信号表}
+
+\begin{table}[H]
+\centering
+\caption{不同指令类型的数据通路信号表}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2.1cm}p{1.8cm}p{1.8cm}p{1.5cm}p{1.5cm}p{2.2cm}p{1.6cm}X}
+\toprule
+指令类型 & 立即数类型 & PC来源 & ALUSrcA & ALUSrcB & ALU功能 & 写回来源 & 说明 \\
+\midrule
+R型 & 无 & PC+4 & rs1 & rs2 & funct决定 & ALU & 寄存器-寄存器运算 \\
+I型运算 & I型 & PC+4 & rs1 & imm & funct决定 & ALU & 寄存器-立即数运算 \\
+Load & I型 & PC+4 & rs1 & imm & 加法求地址 & MEM & 从DRAM/外设读取数据 \\
+Store & S型 & PC+4 & rs1 & imm & 加法求地址 & 无 & 写入DRAM/外设 \\
+Branch & B型 & 条件分支 & rs1 & rs2 & 比较 & 无 & 分支成立时PC=PC+imm \\
+\code{lui} & U型 & PC+4 & 无 & imm & 无 & IMM & 立即数写回rd \\
+\code{auipc} & U型 & PC+4 & PC & imm & 加法 & ALU & PC+imm写回rd \\
+\code{jal} & J型 & PC+imm & 无 & 无 & 无 & PC+4 & 跳转并写回返回地址 \\
+\code{jalr} & I型 & rs1+imm & rs1 & imm & 加法 & PC+4 & 间接跳转并写回返回地址 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{控制器设计}
+
+\subsubsection{控制信号表}
+
+\begin{table}[H]
+\centering
+\caption{主要控制信号含义}
+\begin{tabularx}{\textwidth}{p{3cm}p{3cm}X}
+\toprule
+控制信号 & 取值 & 含义 \\
+\midrule
+\code{NpcOp} & 00/01/10/11 & 顺序执行/条件分支/\code{jalr}/\code{jal} \\
+\code{RegWrite} & 0/1 & 是否写回寄存器堆 \\
+\code{MemToReg\_sel} & 00/01/10/11 & PC+4/ALU结果/访存数据/立即数 \\
+\code{MemWrite} & 0/1 & 是否向DRAM或外设写入数据 \\
+\code{ALUSrcA} & 0/1 & ALU输入A选择rs1或PC \\
+\code{ALUSrcB} & 0/1 & ALU输入B选择rs2或立即数 \\
+\code{ALUControl} & 14位独热/组合信号 & 控制ALU执行加、减、逻辑、移位或比较操作 \\
+\code{mask} & funct3 & 指示访存宽度和load扩展方式 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{各类指令控制信号表}
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2cm}p{1.2cm}p{1.4cm}p{1.6cm}p{1.4cm}p{1.4cm}p{1.4cm}X}
+\toprule
+指令类型 & NpcOp & RegWrite & MemToReg & MemWrite & ALUSrcA & ALUSrcB & ALUControl \\
+\midrule
+R型 & 00 & 1 & 01 & 0 & 0 & 0 & funct决定 \\
+I型运算 & 00 & 1 & 01 & 0 & 0 & 1 & funct决定 \\
+Load & 00 & 1 & 10 & 0 & 0 & 1 & add \\
+Store & 00 & 0 & -- & 1 & 0 & 1 & add \\
+Branch & 01 & 0 & -- & 0 & 0 & 0 & funct决定比较 \\
+\code{lui} & 00 & 1 & 11 & 0 & -- & -- & -- \\
+\code{auipc} & 00 & 1 & 01 & 0 & 1 & 1 & add \\
+\code{jal} & 11 & 1 & 00 & 0 & -- & -- & -- \\
+\code{jalr} & 10 & 1 & 00 & 0 & 0 & 1 & add \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{控制器设计说明}
+
+控制器首先从指令中取出\code{opcode}，判断当前指令属于R型、I型、Load、Store、Branch、U型或J型。随后根据\code{opcode}与\code{funct}字段生成控制信号。对于R型和I型运算指令，\code{ALUControl}由\code{funct3}与\code{funct7[5]}共同决定；对于load/store和\code{jalr}指令，ALU执行加法用于地址计算；对于branch指令，ALU执行比较并输出\code{isTrue}；对于\code{lui}，写回数据选择立即数；对于\code{jal/jalr}，写回数据选择PC+4。
+
+\section{RV32I CPU性能优化设计}
+
+\subsection{五级流水线优化}
+
+本CPU将指令执行划分为IF、ID、EX、MEM、WB五个阶段。流水线寄存器将各阶段结果保存并传递，使多条指令能够重叠执行。理想情况下，在流水线填满后每个周期可完成一条指令的写回，从而提高指令吞吐率。
+
+\subsection{数据前递优化}
+
+本设计通过\code{forwarding\_unit}解决大多数RAW数据冒险。当EX阶段源寄存器与MEM或WB阶段目的寄存器相同，且对应写使能有效时，前递单元直接将MEM或WB阶段结果送入ALU输入端，避免等待寄存器写回后再读取，从而减少流水线停顿。
+
+\subsection{load-use暂停机制}
+
+load指令的数据在MEM阶段后才能获得，如果紧随其后的指令立即使用该数据，则单纯前递无法满足时序要求。本设计通过\code{hazard\_detection\_unit}检测此类情况，并暂停PC和IF/ID寄存器，同时向ID/EX插入无效控制信号，使流水线等待一个周期后继续执行。
+
+\subsection{控制冒险冲刷机制}
+
+当条件分支成立或执行\code{jal/jalr}时，已取出的顺序路径指令可能无效。本设计在EX阶段得到分支/跳转结果后，通过\code{flush}清空IF/ID和ID/EX相关控制信息，防止错误路径指令继续执行。
+
+\subsection{ALU组合逻辑优化}
+
+ALU中将加减、逻辑、移位和比较运算分别计算，再通过\code{case(1'b1)}结构选择结果。该结构清晰地划分了不同运算路径，便于综合工具优化组合逻辑，也便于后续进一步针对关键路径进行时序分析。
+
+\section{RV32I CPU的特色功能设计}
+
+\subsection{企业工程模板接口适配}
+
+本设计严格采用企业模板要求的\code{myCPU}接口，直接连接IROM、DRAM和外设访问端口。CPU核心内部不直接固定LED和数码管逻辑，而是通过统一的\code{perip}接口输出地址、写使能、写数据和访存宽度，由外部SoC或模板中的外设桥完成地址译码。
+
+\subsection{统一外设访问机制}
+
+CPU使用与load/store指令一致的数据通路访问DRAM和外设。ALU在EX阶段计算访存地址，MEM阶段将地址输出到\code{perip\_addr}，同时将写使能、写数据和访问宽度输出到外设接口。这种设计保持了CPU核心的通用性，便于后续扩展更多MMIO外设。
+
+\subsection{调试跟踪接口预留}
+
+在\code{ENABLE\_DEBUG\_TRACE}宏开启时，CPU会输出写回阶段相关调试信息，包括\code{debug\_wb\_have\_inst}、\code{debug\_wb\_pc}、\code{debug\_wb\_ena}、\code{debug\_wb\_reg}和\code{debug\_wb\_value}等，便于仿真阶段对指令提交结果进行追踪与比对。
+
+\section{附录}
+
+\subsection{代码清单}
+
+\begin{longtable}{p{5cm}p{9cm}}
+\caption{主要工程文件说明}\\
+\toprule
+文件名称 & 功能说明 \\
+\midrule
+\endfirsthead
+\toprule
+文件名称 & 功能说明 \\
+\midrule
+\endhead
+\code{myCPU.sv} & CPU顶层模块，连接五级流水线各模块和外部接口 \\
+\code{defines.sv} & 定义RV32I主要opcode宏 \\
+\code{PC.sv} & 程序计数器模块 \\
+\code{NPC.sv} & 下一PC生成模块 \\
+\code{IF\_ID.sv} & IF/ID流水线寄存器 \\
+\code{ID\_EX.sv} & ID/EX流水线寄存器 \\
+\code{EX\_MEM.sv} & EX/MEM流水线寄存器 \\
+\code{MEM\_WB.sv} & MEM/WB流水线寄存器 \\
+\code{Control.sv} & 控制器模块 \\
+\code{IMMGEN.sv} & 立即数生成模块 \\
+\code{RegFile.sv} & 寄存器堆模块 \\
+\code{ALU.sv} & 算术逻辑单元 \\
+\code{ALU\_src.sv} & ALU操作数选择模块，包含前递选择 \\
+\code{forwarding\_unit.sv} & 数据前递单元 \\
+\code{hazard\_detection\_unit.sv} & 冒险检测单元 \\
+\code{Mask.sv} & load数据扩展模块 \\
+\code{ex\_mux.sv} & MEM阶段写回候选数据选择模块 \\
+\code{mem\_mux.sv} & WB阶段最终写回数据选择模块 \\
+\bottomrule
+\end{longtable}
+
+\subsection{工程目录结构}
+
+\begin{verbatim}
+project_root/
+  sources/
+    myCPU.sv
+    defines.sv
+    PC.sv
+    NPC.sv
+    IF_ID.sv
+    ID_EX.sv
+    EX_MEM.sv
+    MEM_WB.sv
+    Control.sv
+    IMMGEN.sv
+    RegFile.sv
+    ALU.sv
+    ALU_src.sv
+    forwarding_unit.sv
+    hazard_detection_unit.sv
+    Mask.sv
+    ex_mux.sv
+    mem_mux.sv
+  constraints/
+    【待补充：约束文件名称】
+  bitstream/
+    【待补充：bit文件名称】
+\end{verbatim}
+
+\subsection{参考资料}
+
+\begin{enumerate}
+    \item RISC-V Unprivileged ISA Specification, Version 2024.04.
+    \item 第十届全国大学生集成电路创新创业大赛``竞业达''企业命题初赛、分赛区决赛比赛要求补充说明。
+    \item \todo{补充Vivado官方文档、课程资料或其他参考资料。}
+\end{enumerate}
+
+\end{document}
