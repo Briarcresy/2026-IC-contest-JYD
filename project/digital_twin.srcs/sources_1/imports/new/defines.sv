@@ -12,3 +12,5 @@
 // `define CSR_TYPE 7'b111_0011 // CSR
 
 `define OPCODE_LEN 7
+
+// `define DEBUG_ENABLE

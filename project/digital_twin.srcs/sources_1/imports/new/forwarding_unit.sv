@@ -1,0 +1,31 @@
+`timescale 1ns / 1ps
+`include "defines.sv"
+
+module forwarding_unit (
+    input  logic [4:0] rd1,
+    input  logic       rd1_we,
+    input  logic [4:0] rd2,
+    input  logic       rd2_we,
+    input  logic [4:0] rs1,
+    input  logic [4:0] rs2,
+    output logic [1:0] rs1_forward_sel,
+    output logic [1:0] rs2_forward_sel
+);
+    always_comb begin
+        if (rd1_we && (rd1 != 0) && (rd1 == rs1)) begin
+            rs1_forward_sel = 2'b10;
+        end else if (rd2_we && (rd2 != 0) && (rd2 == rs1)) begin
+            rs1_forward_sel = 2'b11;
+        end else begin
+            rs1_forward_sel = 2'b00;
+        end
+
+        if (rd1_we && (rd1 != 0) && (rd1 == rs2)) begin
+            rs2_forward_sel = 2'b10;
+        end else if (rd2_we && (rd2 != 0) && (rd2 == rs2)) begin
+            rs2_forward_sel = 2'b11;
+        end else begin
+            rs2_forward_sel = 2'b00;
+        end
+    end
+endmodule

@@ -23,8 +23,8 @@
 module IMMGEN #(
     parameter DATAWIDTH = 32
 ) (
-    input  logic [  DATAWIDTH-1:0] instr,
-    output logic [DATAWIDTH - 1:0] imm
+    input  logic [DATAWIDTH-1:0] instr,
+    output logic [DATAWIDTH-1:0] imm
 );
     logic op_itype, op_stype, op_btype, op_utype, op_jtype;
     logic [6:0] opcode;

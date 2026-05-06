@@ -21,6 +21,7 @@
 	"editor.tabSize": 4,
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": false,
+	"systemverilogFormatter.commandLineArguments": "--indentation_spaces=4",
 }
 ```
 
