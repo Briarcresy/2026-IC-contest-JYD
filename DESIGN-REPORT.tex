@@ -80,7 +80,9 @@ CPU类型 & 32位RISC-V CPU \\
 核心模块 & \code{PC}、\code{NPC}、\code{Control}、\code{IMMGEN}、\code{RegFile}、\code{ALU}、\code{Mask}、流水线寄存器、前递单元、冒险检测单元 \\
 冒险处理 & 数据前递、load-use暂停、分支/跳转冲刷 \\
 外设接口 & IROM接口与DRAM/外设统一访问接口 \\
-待补充内容 & \todo{整体架构图截图、Vivado版本、开发板型号、综合实现结果、bit文件信息} \\
+Vivado版本 & Vivado 2023.2
+开发板型号 & Kintex-7
+补充内容 & \todo{整体架构图截图、综合实现结果、bit文件信息} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -119,14 +121,14 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 \toprule
 项目 & 内容 \\
 \midrule
-硬件平台 & \todo{填写FPGA开发板型号，例如竞业达数字孪生平台/具体板卡型号} \\
-FPGA器件 & \todo{填写FPGA型号，例如Xilinx Kintex-7或实际型号} \\
-开发工具 & \todo{填写Vivado版本} \\
+硬件平台 & {竞业达数字孪生平台} \\
+FPGA器件 & {Xilinx Kintex-7} \\
+开发工具 & {Vivado 2023.2} \\
 硬件描述语言 & SystemVerilog \\
-仿真工具 & \todo{填写Vivado Simulation、Verilator或ModelSim等} \\
-CPU时钟 & 企业模板默认提供50MHz CPU时钟，可通过PLL调整；本设计使用频率为\todo{填写实际频率} \\
+仿真工具 & {Vivado Simulation、Verilator} \\
+CPU时钟 & 企业模板默认提供50MHz外设时钟，可通过PLL调整；本设计使用CPU时钟频率为{130MHz} \\
 工程顶层 & 企业模板顶层 + 自研\code{myCPU}核心 \\
-生成文件 & \todo{填写bit文件名称与生成路径} \\
+生成文件 & {src0.bit, src1.bit, src2.bit} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -153,49 +155,125 @@ Load指令 & \code{lb, lh, lw, lbu, lhu} & 已设计 \\
 Store指令 & \code{sb, sh, sw} & 已设计 \\
 Branch指令 & \code{beq, bne, blt, bge, bltu, bgeu} & 已设计 \\
 U型指令 & \code{lui, auipc} & 已设计 \\
-J型指令 & \code{jal, jalr} & 已设计 \\
-初赛不测指令 & \code{fence, ecall, ebreak} & \todo{可实现为空指令或后续扩展} \\
+J型指令 & \code{jal, jalr} & 已设计  \\
 \bottomrule
 \end{longtable}
 
 \subsection{RV32I CPU的整体架构图}
 
 本设计采用五级流水线结构。整体架构由取指阶段、译码阶段、执行阶段、访存阶段和写回阶段组成，各阶段之间通过流水线寄存器传递数据与控制信号。
-
 \begin{figure}[H]
 \centering
+\resizebox{0.96\textwidth}{!}{
 \begin{tikzpicture}[
-    node distance=1.0cm,
-    stage/.style={draw, rounded corners, minimum width=2.1cm, minimum height=1.0cm, align=center},
-    reg/.style={draw, fill=gray!10, minimum width=0.7cm, minimum height=1.0cm, align=center},
-    arrow/.style={-Latex, thick}
+    font=\small,
+    stage/.style={
+        draw,
+        rounded corners,
+        minimum width=1.65cm,
+        minimum height=0.9cm,
+        align=center,
+        thick
+    },
+    reg/.style={
+        draw,
+        minimum width=0.75cm,
+        minimum height=0.75cm,
+        align=center,
+        font=\scriptsize
+    },
+    unit/.style={
+        draw,
+        rounded corners,
+        minimum width=2.05cm,
+        minimum height=0.65cm,
+        align=center,
+        font=\scriptsize
+    },
+    hazard/.style={
+        draw,
+        rounded corners,
+        minimum width=3.2cm,
+        minimum height=0.65cm,
+        align=center,
+        font=\scriptsize
+    },
+    dataarrow/.style={
+        -{Stealth[length=2mm]},
+        thick
+    },
+    ctrlarrow/.style={
+        -{Stealth[length=2mm]},
+        dashed,
+        thick,
+        rounded corners=3pt
+    }
 ]
-\node[stage] (if) {IF\\取指};
-\node[reg, right=0.5cm of if] (ifid) {IF/ID};
-\node[stage, right=0.5cm of ifid] (id) {ID\\译码};
-\node[reg, right=0.5cm of id] (idex) {ID/EX};
-\node[stage, right=0.5cm of idex] (ex) {EX\\执行};
-\node[reg, right=0.5cm of ex] (exmem) {EX/MEM};
-\node[stage, right=0.5cm of exmem] (mem) {MEM\\访存};
-\node[reg, right=0.5cm of mem] (memwb) {MEM/WB};
-\node[stage, right=0.5cm of memwb] (wb) {WB\\写回};
 
-\draw[arrow] (if) -- (ifid);
-\draw[arrow] (ifid) -- (id);
-\draw[arrow] (id) -- (idex);
-\draw[arrow] (idex) -- (ex);
-\draw[arrow] (ex) -- (exmem);
-\draw[arrow] (exmem) -- (mem);
-\draw[arrow] (mem) -- (memwb);
-\draw[arrow] (memwb) -- (wb);
+% ================= 主流水线阶段 =================
+\node[stage] (IF) at (0,0) {IF\\取指};
+\node[reg]   (IFID) at (1.75,0) {IF/ID};
+\node[stage] (ID) at (3.50,0) {ID\\译码};
+\node[reg]   (IDEX) at (5.25,0) {ID/EX};
+\node[stage] (EX) at (7.00,0) {EX\\执行};
+\node[reg]   (EXMEM) at (8.85,0) {EX/MEM};
+\node[stage] (MEM) at (10.75,0) {MEM\\访存};
+\node[reg]   (MEMWB) at (12.65,0) {MEM/WB};
+\node[stage] (WB) at (14.40,0) {WB\\写回};
 
-\node[stage, below=1.0cm of id] (control) {Control\\IMMGEN\\RegFile};
-\node[stage, below=1.0cm of ex] (hazard) {Forwarding\\Hazard Detection};
-\draw[arrow] (control) -- (id);
-\draw[arrow] (hazard) -- (ex);
-\draw[arrow, dashed] (wb.south) |- (control.east);
+% ================= 主数据通路 =================
+\draw[dataarrow] (IF.east) -- (IFID.west);
+\draw[dataarrow] (IFID.east) -- (ID.west);
+\draw[dataarrow] (ID.east) -- (IDEX.west);
+\draw[dataarrow] (IDEX.east) -- (EX.west);
+\draw[dataarrow] (EX.east) -- (EXMEM.west);
+\draw[dataarrow] (EXMEM.east) -- (MEM.west);
+\draw[dataarrow] (MEM.east) -- (MEMWB.west);
+\draw[dataarrow] (MEMWB.east) -- (WB.west);
+
+% ================= 各阶段内部模块 =================
+\node[unit] (ifunit) at (0,-1.45) {PC / NPC\\IROM接口};
+\node[unit] (idunit) at (3.50,-1.45) {Control\\IMMGEN / RegFile};
+\node[unit] (exunit) at (7.00,-1.45) {ALU\\ALU\_src};
+\node[unit] (memunit) at (10.75,-1.45) {DRAM/外设接口\\Mask};
+\node[unit] (wbunit) at (14.40,-1.45) {写回选择\\RegFile写入};
+
+% 各阶段模块到对应流水线阶段，短虚线，不跨框
+\draw[ctrlarrow] (ifunit.north) -- (IF.south);
+\draw[ctrlarrow] (idunit.north) -- (ID.south);
+\draw[ctrlarrow] (exunit.north) -- (EX.south);
+\draw[ctrlarrow] (memunit.north) -- (MEM.south);
+\draw[ctrlarrow] (wbunit.north) -- (WB.south);
+
+% ================= 冒险处理单元 =================
+\node[hazard] (hazardunit) at (7.00,-2.85) {Forwarding Unit\\Hazard Detection Unit};
+
+% 冒险处理到EX阶段，短虚线
+\draw[ctrlarrow] (hazardunit.north) -- (exunit.south);
+
+% 冒险处理到IF/ID，路线从底部绕行，不压框
+\draw[ctrlarrow]
+    (hazardunit.west)
+    -- (1.75,-2.85)
+    -- (IFID.south);
+
+% 冒险处理到ID/EX，路线走模块间隙，不压框
+\draw[ctrlarrow]
+    (hazardunit.west)
+    -- (5.25,-3.25)
+    -- (IDEX.south);
+
+% 写回反馈到寄存器堆，从右侧绕到底部，不穿过中间框图
+\draw[ctrlarrow]
+    (WB.east)
+    -- ++(0.45,0)
+    |- (3.50,-4.05)
+    -- (idunit.south);
+
 \end{tikzpicture}
-\caption{五级流水线CPU整体架构示意图}
+}
+\caption{五级流水线 CPU 整体架构示意图}
+\label{fig:cpu_arch}
 \end{figure}
 
 \todo{如需使用工程真实框图，可在此处替换为Vivado RTL Analysis或draw.io绘制的整体架构图。}
@@ -291,20 +369,68 @@ J型指令 & \code{jal, jalr} & 已设计 \\
 \begin{table}[H]
 \centering
 \caption{不同指令类型的数据通路信号表}
+\label{tab:datapath_signals}
 \scriptsize
-\begin{tabularx}{\textwidth}{p{2.1cm}p{1.8cm}p{1.8cm}p{1.5cm}p{1.5cm}p{2.2cm}p{1.6cm}X}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{
+>{\centering\arraybackslash}p{1.35cm}
+>{\raggedright\arraybackslash}p{2.4cm}
+>{\centering\arraybackslash}p{0.9cm}
+>{\centering\arraybackslash}p{1.1cm}
+>{\centering\arraybackslash}p{1.1cm}
+>{\centering\arraybackslash}p{1.35cm}
+>{\centering\arraybackslash}p{1.2cm}
+X}
 \toprule
-指令类型 & 立即数类型 & PC来源 & ALUSrcA & ALUSrcB & ALU功能 & 写回来源 & 说明 \\
+指令类型 & 指令示例 & Imm & ALU A & ALU B & ALU功能 & 写回 & 简要说明 \\
 \midrule
-R型 & 无 & PC+4 & rs1 & rs2 & funct决定 & ALU & 寄存器-寄存器运算 \\
-I型运算 & I型 & PC+4 & rs1 & imm & funct决定 & ALU & 寄存器-立即数运算 \\
-Load & I型 & PC+4 & rs1 & imm & 加法求地址 & MEM & 从DRAM/外设读取数据 \\
-Store & S型 & PC+4 & rs1 & imm & 加法求地址 & 无 & 写入DRAM/外设 \\
-Branch & B型 & 条件分支 & rs1 & rs2 & 比较 & 无 & 分支成立时PC=PC+imm \\
-\code{lui} & U型 & PC+4 & 无 & imm & 无 & IMM & 立即数写回rd \\
-\code{auipc} & U型 & PC+4 & PC & imm & 加法 & ALU & PC+imm写回rd \\
-\code{jal} & J型 & PC+imm & 无 & 无 & 无 & PC+4 & 跳转并写回返回地址 \\
-\code{jalr} & I型 & rs1+imm & rs1 & imm & 加法 & PC+4 & 间接跳转并写回返回地址 \\
+
+R型运算 &
+\texttt{add, sub, sll, slt, sltu, xor, srl, sra, or, and} &
+无 & rs1 & rs2 & funct决定 & ALU &
+寄存器间运算，结果写回rd。 \\
+
+I型运算 &
+\texttt{addi, slti, sltiu, xori, ori, andi, slli, srli, srai} &
+I型 & rs1 & imm & funct决定 & ALU &
+寄存器与立即数运算，结果写回rd。 \\
+
+Load &
+\texttt{lb, lh, lw, lbu, lhu} &
+I型 & rs1 & imm & 地址计算 & MEM &
+计算地址，读取DRAM/外设，经Mask扩展后写回rd。 \\
+
+Store &
+\texttt{sb, sh, sw} &
+S型 & rs1 & imm & 地址计算 & 无 &
+计算地址，将rs2写入DRAM/外设。 \\
+
+Branch &
+\texttt{beq, bne, blt, bge, bltu, bgeu} &
+B型 & rs1 & rs2 & 条件比较 & 无 &
+条件成立时跳转到PC+imm，否则顺序执行。 \\
+
+\texttt{lui} &
+\texttt{lui} &
+U型 & 无 & imm & 无 & IMM &
+立即数写回rd。 \\
+
+\texttt{auipc} &
+\texttt{auipc} &
+U型 & PC & imm & 加法 & ALU &
+计算PC+imm并写回rd。 \\
+
+\texttt{jal} &
+\texttt{jal} &
+J型 & 无 & 无 & 无 & PC+4 &
+PC跳转到PC+imm，PC+4写回rd。 \\
+
+\texttt{jalr} &
+\texttt{jalr} &
+I型 & rs1 & imm & 地址计算 & PC+4 &
+PC跳转到rs1+imm，PC+4写回rd。 \\
+
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -379,20 +505,6 @@ load指令的数据在MEM阶段后才能获得，如果紧随其后的指令立�
 
 ALU中将加减、逻辑、移位和比较运算分别计算，再通过\code{case(1'b1)}结构选择结果。该结构清晰地划分了不同运算路径，便于综合工具优化组合逻辑，也便于后续进一步针对关键路径进行时序分析。
 
-\section{RV32I CPU的特色功能设计}
-
-\subsection{企业工程模板接口适配}
-
-本设计严格采用企业模板要求的\code{myCPU}接口，直接连接IROM、DRAM和外设访问端口。CPU核心内部不直接固定LED和数码管逻辑，而是通过统一的\code{perip}接口输出地址、写使能、写数据和访存宽度，由外部SoC或模板中的外设桥完成地址译码。
-
-\subsection{统一外设访问机制}
-
-CPU使用与load/store指令一致的数据通路访问DRAM和外设。ALU在EX阶段计算访存地址，MEM阶段将地址输出到\code{perip\_addr}，同时将写使能、写数据和访问宽度输出到外设接口。这种设计保持了CPU核心的通用性，便于后续扩展更多MMIO外设。
-
-\subsection{调试跟踪接口预留}
-
-在\code{ENABLE\_DEBUG\_TRACE}宏开启时，CPU会输出写回阶段相关调试信息，包括\code{debug\_wb\_have\_inst}、\code{debug\_wb\_pc}、\code{debug\_wb\_ena}、\code{debug\_wb\_reg}和\code{debug\_wb\_value}等，便于仿真阶段对指令提交结果进行追踪与比对。
-
 \section{附录}
 
 \subsection{代码清单}
@@ -451,18 +563,15 @@ project_root/
     Mask.sv
     ex_mux.sv
     mem_mux.sv
-  constraints/
-    【待补充：约束文件名称】
-  bitstream/
-    【待补充：bit文件名称】
+
 \end{verbatim}
 
 \subsection{参考资料}
 
 \begin{enumerate}
     \item RISC-V Unprivileged ISA Specification, Version 2024.04.
-    \item 第十届全国大学生集成电路创新创业大赛``竞业达''企业命题初赛、分赛区决赛比赛要求补充说明。
-    \item \todo{补充Vivado官方文档、课程资料或其他参考资料。}
+    \item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
+
 \end{enumerate}
 
 \end{document}
