@@ -43,7 +43,7 @@ module NPC #(
     // assign op_jal = (npc_op == 2'b11);
 
     assign next_addr = stall ? pc : pc_add_4;
-    assign branch_addr = isTrue ? alu_result : pc_add_4;
+    assign branch_addr = isTrue ? pc_add_imm : pc_add_4;
     assign jalr_addr = {alu_result[DATAWIDTH-1:1], 1'b0};
     assign jal_addr = pc_add_imm;
 
