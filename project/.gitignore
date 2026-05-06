@@ -44,3 +44,5 @@ Thumbs.db
 *.dmp
 *.wcfg
 *.coe
+
+vivado_cache/
