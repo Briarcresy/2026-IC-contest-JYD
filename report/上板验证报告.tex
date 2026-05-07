@@ -74,7 +74,7 @@
 
 本次上板验证采用三组 COE 测试程序作为输入激励，每组测试程序均由一份 IROM 初始化文件和一份 DRAM 初始化文件组成。IROM 文件以 32 位 RV32I 机器码形式给出程序指令，DRAM 文件给出程序运行前的数据存储器初值。三组测试程序分别固化进 \code{src0.bit}、\code{src1.bit} 和 \code{src2.bit}，CPU 复位后从 IROM 起始地址 \code{0x8000\_0000} 取指运行，依次完成 RV32I 指令集功能测试、流水线相关性测试、访存与外设访问测试以及性能测试。
 
-三组 COE 程序的规模如下表所示。三组 IROM 程序均采用 \code{memory\_initialization\_radix=16} 的十六进制机器码格式，程序规模均未超过平台 16KB IROM 容量；三组 DRAM 初始化内容一致，共 12 个 32 位数据字，包含 \code{0x1234abcd}、\code{0x55667788} 和 \code{0xff0000ff} 等典型数据模式，用于验证 \code{lb/lh/lw/lbu/lhu}、\code{sb/sh/sw} 以及符号扩展、零扩展和字节选择逻辑。
+三组 COE 程序的规模如下表所示。三组 IROM 程序均采用十六进制机器码格式，程序规模均未超过平台 16KB IROM 容量；三组 DRAM 初始化内容一致，共 12 个 32 位数据字，包含 \code{0x1234abcd}、\code{0x55667788} 和 \code{0xff0000ff} 等典型数据模式，用于验证 \code{lb/lh/lw/lbu/lhu}、\code{sb/sh/sw} 以及符号扩展、零扩展和字节选择逻辑。
 
 \begin{table}[H]
 	\centering
