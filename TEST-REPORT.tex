@@ -1,0 +1,224 @@
+
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage{xeCJK}
+\setCJKmainfont{Noto Serif CJK SC}
+% ===================== 基本版式 =====================
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{listings}
+
+% 页面设置
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% 字体与行距
+\setCJKmainfont{Noto Serif CJK SC}
+% \setmainfont{Times New Roman} % 英文正文 Times New Roman
+\linespread{1.5}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0pt}
+
+% 列表格式
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, topsep=2pt}
+\setlist[enumerate]{noitemsep, topsep=2pt}
+
+% 图形
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+
+% 超链接
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+
+% 章节标题格式
+\ctexset{
+  section={format=\zihao{3}\heiti\bfseries\centering, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip},
+  subsection={format=\zihao{4}\heiti\bfseries, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip},
+  subsubsection={format=\zihao{-4}\heiti\bfseries, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip}
+}
+
+% 自定义命令
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{【待补充：#1】}}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\lstdefinestyle{bashstyle}{
+    language=bash,
+    backgroundcolor=\color{black!5},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=10pt,
+    tabsize=4,
+    showspaces=false,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=true,
+    frame=single,
+    frameround=tttt,
+    rulecolor=\color{black!30},
+}
+\begin{document}
+
+% ===================== 封面 =====================
+\begin{titlepage}
+    \centering
+    \vspace*{1.8cm}
+    {\zihao{2}\heiti 第十届全国大学生集成电路创新创业大赛\\[0.4em] ``竞业达''企业命题初赛}\par
+    \vspace{1.8cm}
+    {\zihao{1}\heiti RISC-V CPU仿真报告}\par
+    \vspace{0.8cm}
+    {\zihao{3}\heiti 基于RV32I指令集的五级流水线CPU设计}\par
+    \vfill
+    \begin{tabular}{rl}
+        院\quad 校： & {上海科技大学} \\[0.6em]
+        作品名称： & 基于RV32I指令集的五级流水线CPU设计 \\[0.6em]
+        团队名称： & {决战内存条队} \\[0.6em]
+        姓\quad 名： & {李建昊、施云翀、袁源} \\[0.6em]
+        指导教师： & {刘闯} \\[0.6em]
+        时\quad 间： & {2026年5月7日} 
+    \end{tabular}
+    \vfill
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\section{仿真平台介绍}
+
+\subsection{仿真工具}
+
+
+我们采用运行于Linux系统上的Verilator仿真器仿真测试。我们使用的Verilator版本号是\code{Verilator 5.049 devel rev v5.048-25-gec03edcdd}
+
+Verilator配合哈工大设计开发的开源cdp-tests使用，环境配置完成后，单次测试非常方便快捷，单行指令即可启动并完成测试，单次测试总时间在1秒以内。
+
+\subsection{测试环境说明}
+
+\subsubsection{测试环境搭建}
+
+环境搭建可以完全使用脚本完成。在项目仓库所在文件夹运行脚本完成搭建。
+
+\begin{lstlisting}[style=bashstyle]
+sudo apt-get install git perl python3 make autoconf g++ flex bison ccache
+sudo apt-get install libgoogle-perftools-dev numactl perl-doc help2man
+sudo apt-get install libfl2
+sudo apt-get install libfl-dev
+sudo apt-get install zlibc zlib1g zlib1g-dev
+git clone https://gitee.com/hitsz-cslab/cdp-tests.git
+\end{lstlisting}
+
+\subsubsection{测试环境使用}
+
+为方便测试，我们编写了一套测试脚本，并将入口点硬编码在脚本中，运行脚本即可完成测试。
+
+\begin{lstlisting}[style=bashstyle]
+
+SOURCE="./project/digital_twin.srcs/sources_1/imports/new"
+TARGET="./cdp-tests/mySoC"
+
+rm -r $TARGET
+cp -r $SOURCE $TARGET
+
+cat > "$TARGET/miniRV_SoC.sv" << __EOF__
+... # 省略硬编码的用于适配cdp-tests测试的入口点文件
+__EOF__
+
+cd "$TARGET/.."
+make && python3 run_all_tests.py
+
+\end{lstlisting}
+
+cdp-tests的测试方法大致是在WB阶段令CPU输出五个调试值：是否有有效指令被执行、对应的PC值、是否有数据被写回寄存器、写回的目标寄存器、写回值。只要所有检查点的结果均与cdp-tests内置的正确CPU对照核心完全相同，即被测CPU的行为正确。
+
+为适配cdp-tests的测试，我们对CPU进行了小部分的接口修改，包括上述5个调试输出。通过定义\code{ENABLE\_TRACE\_DEBUG}宏控制仿真测试部分的代码，使仿真能正常运行并且仿真代码不影响最终烧录的CPU结果。
+
+由于我们设计的CPU将\code{ecall}等指令实现为空指令，cdp-tests中原有的部分输出提示功能无法使用，这不影响最终测试结果的正确性。
+
+\section{仿真测试设计}
+
+\subsection{RV32I 指令集测试}
+
+对指令集的测试和单一指令测试，我们使用了cdp-tests中提供的针对所有37条被测试的指令的开源测试。
+
+\subsubsection{\code{add}指令测试}
+\begin{enumerate}
+    \item 启动与初始化
+
+    从\code{\_start}跳转到\code{reset\_vector}
+    
+    初始化\code{x0 = 0, x1 = 0}
+    
+    执行\code{x14 = x1 + x2}
+    
+    检查结果是否为0
+    
+    \item 主要测试循环（共38个用例，包含\code{test\_3}到\code{test\_38}）
+    
+    每个用例的基本模式：
+    \begin{enumerate}
+        \item 设置操作数：将测试值加载到寄存器中
+        \item 执行加法指令，并将结果保存到\code{x14}，部分测试保存到\code{x1}或\code{x2}
+        \item 将预期值加载到\code{x7}寄存器
+        \item 用\code{bne}指令比较实际结果和i预期值，不同则跳转到\code{<fail>}
+        \item 记录测试序号，失败时用于标记位置。
+    \end{enumerate}
+
+    \item 测试覆盖场景
+    \begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{p{4cm}p{3cm}p{8cm}X}
+        \toprule
+        主要测试内容 & 测试用例 & 测试内容 \\
+        \midrule
+        基础加法 & 3 ~ 4 & 小正整数加法 \\
+        LUI+ADD组合 & 5 ~ 12 & 大立即数加载后再相加，测试高位运算 \\
+        边界值 & 13 ~ 16 & 负数相加 \\
+        寄存器复用 & 17 ~ 19 & 将结果写回原寄存器（\code{x1 = x1 + x2}） \\
+        冒险测试 & 20 ~ 34 & 插入不同数量的\code{nop}（\code{addi x0, x0, 0}），测试forwarding是否正确 \\
+        零寄存器测试 & 35 ~ 38 & 使用\code{x0}作为操作数或目标寄存器 \\
+        \bottomrule
+    \end{tabularx}
+    \end{table}
+
+\end{enumerate}
+
+\subsection{RV32I CPU 性能测试}
+\subsection{RV32I CPU 其他测试}
+
+\section{仿真测试结果}
+
+\subsection{RV32I 指令集测试结果}
+\subsection{RV32I CPU 性能测试结果}
+\subsection{RV32I CPU 其他测试结果}
+
+\clearpage
+\subsection{参考资料}
+
+\begin{enumerate}
+    \item RISC-V Unprivileged ISA Specification, Version 2024.04.
+    \item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
+
+    \item 竞业达杯CPU设计竞赛技术手册，版本1.2，2025.
+    \item Patterson, D. A., \& Hennessy, J. L. (2021). \textit{Computer Organization and Design RISC-V Edition}. Morgan Kaufmann.
+    \item Xilinx Inc. (2020). \textit{Vivado Design Suite User Guide: Synthesis (UG901)}.
+
+\end{enumerate}
+
+\end{document}
