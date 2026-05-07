@@ -742,37 +742,66 @@ ALU中将加减、逻辑、移位和比较运算分别计算，再通过\code{ca
 \subsection{工程目录结构}
 
 \begin{verbatim}
-project/
-  sources/
-    myCPU.sv
-    defines.sv
-    PC.sv
-    NPC.sv
-    IF_ID.sv
-    ID_EX.sv
-    EX_MEM.sv
-    MEM_WB.sv
-    Control.sv
-    IMMGEN.sv
-    RegFile.sv
-    ALU.sv
-    ALU_src.sv
-    forwarding_unit.sv
-    hazard_detection_unit.sv
-    Mask.sv
-    ex_mux.sv
-    mem_mux.sv
-
+digital_twin/
+├── digital_twin.srcs/
+│   ├── sources_1/
+│   │   ├── imports/
+│   │   │   └── new/ 本项目自研 CPU 源文件目录
+│   │   │       ├── myCPU.sv
+│   │   │       ├── defines.sv
+│   │   │       ├── PC.sv
+│   │   │       ├── NPC.sv
+│   │   │       ├── IF_ID.sv
+│   │   │       ├── ID_EX.sv
+│   │   │       ├── EX_MEM.sv
+│   │   │       ├── MEM_WB.sv
+│   │   │       ├── Control.sv
+│   │   │       ├── IMMGEN.sv
+│   │   │       ├── RegFile.sv
+│   │   │       ├── ALU.sv
+│   │   │       ├── ALU_src.sv
+│   │   │       ├── forwarding_unit.sv
+│   │   │       ├── hazard_detection_unit.sv
+│   │   │       ├── Mask.sv
+│   │   │       ├── ex_mux.sv
+│   │   │       └── mem_mux.sv
+│   │   │
+│   │   ├── new/
+│   │   │   ├── top.sv
+│   │   │   ├── student_top.sv
+│   │   │   ├── perip_bridge.sv
+│   │   │   ├── dram_driver.sv
+│   │   │   ├── display_seg.sv
+│   │   │   ├── counter.sv
+│   │   │   ├── twin_controller.sv
+│   │   │   └── uart.sv
+│   │   │
+│   │   └── ip/
+│   │       ├── IROM/
+│   │       ├── DRAM/
+│   │       └── pll/
+│   │
+│   ├── constrs_1/
+│   │   └── new/
+│   │       └── digital_twin.xdc
+│   │
+│   └── sim_1/
+│       └── new/
+│           └── 仿真相关文件
+│
+└── digital_twin.runs/
+    └── impl_1/
+        └── 生成的 bit 文件
 \end{verbatim}
 
 
 \clearpage
-\subsection{参考资料}
+\section*{参考文献}
+\addcontentsline{toc}{section}{参考文献}
 
 \begin{enumerate}
-    \item RISC-V Unprivileged ISA Specification, Version 2024.04.
+    \item RISC-V International. The RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture, Version 2024.04[EB/OL]. 2024.
+
     \item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
-
 \end{enumerate}
-
 \end{document}
