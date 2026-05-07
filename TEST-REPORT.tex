@@ -16,6 +16,7 @@
 \usepackage{amsmath}
 \usepackage{tikz}
 \usepackage{listings}
+\usepackage{pdfpages}
 
 % 页面设置
 \usepackage{geometry}
@@ -75,26 +76,7 @@
 }
 \begin{document}
 
-% ===================== 封面 =====================
-\begin{titlepage}
-    \centering
-    \vspace*{1.8cm}
-    {\zihao{2}\heiti 第十届全国大学生集成电路创新创业大赛\\[0.4em] ``竞业达''企业命题初赛}\par
-    \vspace{1.8cm}
-    {\zihao{1}\heiti RISC-V CPU仿真报告}\par
-    \vspace{0.8cm}
-    {\zihao{3}\heiti 基于RV32I指令集的五级流水线CPU设计}\par
-    \vfill
-    \begin{tabular}{rl}
-        院\quad 校： & {上海科技大学} \\[0.6em]
-        作品名称： & 基于RV32I指令集的五级流水线CPU设计 \\[0.6em]
-        团队名称： & {决战内存条队} \\[0.6em]
-        姓\quad 名： & {李建昊、施云翀、袁源} \\[0.6em]
-        指导教师： & {刘闯} \\[0.6em]
-        时\quad 间： & {2026年5月7日} 
-    \end{tabular}
-    \vfill
-\end{titlepage}
+\includepdf[pages=1]{cover.pdf}
 
 \tableofcontents
 
@@ -572,27 +554,30 @@ cdp-tests的测试方法大致是在WB阶段令CPU输出五个调试值：是否
     \end{enumerate}
 \end{enumerate}
 
-\subsection{RV32I CPU 性能测试}
-\subsection{RV32I CPU 其他测试}
+% \subsection{RV32I CPU 性能测试}
+% \subsection{RV32I CPU 其他测试}
 
 \section{仿真测试结果}
 
 \subsection{RV32I 指令集测试结果}
+
 观察测试脚本的运行输出，对每一条指令的结果及综合测试的结果均显示\code{Test Passed}，总结果显示\code{Failed Test}下无失败的测试项。所有测试均通过。
-\subsection{RV32I CPU 性能测试结果}
-\subsection{RV32I CPU 其他测试结果}
 
-\clearpage
-\subsection{参考资料}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{test-summary.png}
+\end{figure}
 
-\begin{enumerate}
-    \item RISC-V Unprivileged ISA Specification, Version 2024.04.
-    \item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
+% \subsection{RV32I CPU 性能测试结果}
+% \subsection{RV32I CPU 其他测试结果}
 
-    \item 竞业达杯CPU设计竞赛技术手册，版本1.2，2025.
-    \item Patterson, D. A., \& Hennessy, J. L. (2021). \textit{Computer Organization and Design RISC-V Edition}. Morgan Kaufmann.
-    \item Xilinx Inc. (2020). \textit{Vivado Design Suite User Guide: Synthesis (UG901)}.
+% \clearpage
+% \subsection{参考资料}
 
-\end{enumerate}
+% \begin{enumerate}
+    % \item RISC-V Unprivileged ISA Specification, Version 2024.04.
+    % \item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
+
+% \end{enumerate}
 
 \end{document}
