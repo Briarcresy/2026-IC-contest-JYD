@@ -45,29 +45,6 @@
 
 \begin{document}
 
-% ===================== 封面 =====================
-\begin{titlepage}
-	\centering
-	\vspace*{1.8cm}
-	{\zihao{2}\heiti 第十届全国大学生集成电路创新创业大赛\\[0.4em] ``竞业达''企业命题初赛}\par
-	\vspace{1.8cm}
-	{\zihao{1}\heiti RISC-V CPU设计报告}\par
-	\vspace{0.8cm}
-	{\zihao{3}\heiti 基于RV32I指令集的五级流水线CPU设计}\par
-	\vfill
-	\begin{tabular}{rl}
-		院\quad 校： & {上海科技大学}              \\[0.6em]
-		作品名称：     & 基于RV32I指令集的五级流水线CPU设计 \\[0.6em]
-		团队名称：     & {决战内存条队}              \\[0.6em]
-		姓\quad 名： & {李建昊、施云翀、袁源}          \\[0.6em]
-		指导教师：     & {刘闯}                  \\[0.6em]
-		时\quad 间： & {2026年5月7日}
-	\end{tabular}
-	\vfill
-\end{titlepage}
-
-\tableofcontents
-\newpage
 
 % ===================== 快速预览 =====================
 \section*{作品快速预览简介}
@@ -85,15 +62,15 @@
 		项目       & 内容                                                                                                         \\
 		\midrule
 		CPU类型    & 32位RISC-V CPU                                                                                              \\
-		指令集目标    & RV32I基本整数指令集，初赛重点支持37条基础指令                                                                                 \\
-		流水线结构    & IF、ID、EX、MEM、WB五级流水线                                                                                       \\
+		存储结构     & 采用哈佛架构，指令存储器接口与数据存储器/外设接口相互独立                                                                              \\
+		指令集目标    & RV32I基本整数指令集，支持初赛要求的37条基础指令                                                                                \\
+		流水线结构    & 包含IF、ID、EX、MEM、WB的五级流水线                                                                                    \\
 		核心模块     & \code{PC}、\code{NPC}、\code{Control}、\code{IMMGEN}、\code{RegFile}、\code{ALU}、\code{Mask}、流水线寄存器、前递单元、冒险检测单元 \\
 		冒险处理     & 数据前递、load-use暂停、分支/跳转冲刷                                                                                    \\
 		外设接口     & IROM接口与DRAM/外设统一访问接口                                                                                       \\
 		Vivado版本 & Vivado 2023.2                                                                                              \\
-		开发板型号    & Kintex-7                                                                                                   \\
-		最大工作频率   & 120 MHz                                                                                                    \\
-		补充内容     & \todo{整体架构图截图、综合实现结果、bit文件信息}                                                                              \\
+		开发板型号    & Xilinx Kintex-7 系列 FPGA                                                                                    \\
+		最大工作频率   & 120 MHz                                                                                                    \\                                                                                                  \\
 		\bottomrule
 	\end{tabularx}
 \end{table}
@@ -348,7 +325,7 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 
 \subsubsection{PC模块}
 
-\code{PC}模块用于保存当前取指地址。复位时，正常上板模式下PC初始化为\code{0x8000\_0000}，以匹配企业模板中IROM起始地址；开启\code{ENABLE\_DEBUG\_TRACE}调试宏时，复位值为\code{0x0000\_0000}，便于仿真跟踪。正常运行时，PC在时钟上升沿更新为\code{NPC}模块生成的下一条指令地址。
+\code{PC}模块用于保存当前取指地址。复位时，正常上板模式下PC初始化为\code{0x8000\_0000}，以匹配企业模板中IROM起始地址；开启\code{ENABLE\_DEBUG\_TRACE}调试宏时，复位值为\code{0x0000\_0000}，便于trace仿真跟踪。正常运行时，PC在时钟上升沿更新为\code{NPC}模块生成的下一条指令地址。
 
 \subsubsection*{设计细节}
 
@@ -757,37 +734,72 @@ ALU中将加减、逻辑、移位和比较运算分别计算，再通过\code{ca
 \subsection{工程目录结构}
 
 \begin{verbatim}
-project/
-  sources/
-    myCPU.sv
-    defines.sv
-    PC.sv
-    NPC.sv
-    IF_ID.sv
-    ID_EX.sv
-    EX_MEM.sv
-    MEM_WB.sv
-    Control.sv
-    IMMGEN.sv
-    RegFile.sv
-    ALU.sv
-    ALU_src.sv
-    forwarding_unit.sv
-    hazard_detection_unit.sv
-    Mask.sv
-    ex_mux.sv
-    mem_mux.sv
-
+digital_twin/
+├── digital_twin.srcs/
+│   ├── sources_1/
+│   │   ├── imports/
+│   │   │   └── new/ 本项目自研 CPU 源文件目录
+│   │   │       ├── myCPU.sv
+│   │   │       ├── defines.sv
+│   │   │       ├── PC.sv
+│   │   │       ├── NPC.sv
+│   │   │       ├── IF_ID.sv
+│   │   │       ├── ID_EX.sv
+│   │   │       ├── EX_MEM.sv
+│   │   │       ├── MEM_WB.sv
+│   │   │       ├── Control.sv
+│   │   │       ├── IMMGEN.sv
+│   │   │       ├── RegFile.sv
+│   │   │       ├── ALU.sv
+│   │   │       ├── ALU_src.sv
+│   │   │       ├── forwarding_unit.sv
+│   │   │       ├── hazard_detection_unit.sv
+│   │   │       ├── Mask.sv
+│   │   │       ├── ex_mux.sv
+│   │   │       └── mem_mux.sv
+│   │   │
+│   │   ├── new/
+│   │   │   ├── top.sv
+│   │   │   ├── student_top.sv
+│   │   │   ├── perip_bridge.sv
+│   │   │   ├── dram_driver.sv
+│   │   │   ├── display_seg.sv
+│   │   │   ├── counter.sv
+│   │   │   ├── twin_controller.sv
+│   │   │   └── uart.sv
+│   │   │
+│   │   └── ip/
+│   │       ├── IROM/
+│   │       ├── DRAM/
+│   │       └── pll/
+│   │
+│   ├── constrs_1/
+│   │   └── new/
+│   │       └── digital_twin.xdc
+│   │
+│   └── sim_1/
+│       └── new/
+│           └── 仿真相关文件
+│
+└── digital_twin.runs/
+    └── impl_1/
+        └── 生成的 bit 文件
 \end{verbatim}
 
 
 \clearpage
-\subsection{参考资料}
+\section*{参考文献}
+\addcontentsline{toc}{section}{参考文献}
 
 \begin{enumerate}
+	<<<<<<< HEAD:report/DESIGN-REPORT.tex
 	\item RISC-V Unprivileged ISA Specification, Version 2024.04.
 	\item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
 
-\end{enumerate}
+	      =======
+	\item RISC-V International. The RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture, Version 2024.04[EB/OL]. 2024.
 
+	\item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
+	      >>>>>>> dwevelop-yy:DESIGN-REPORT.tex
+\end{enumerate}
 \end{document}
