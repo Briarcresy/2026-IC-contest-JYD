@@ -45,6 +45,8 @@
 
 \begin{document}
 
+\tableofcontents
+\newpage
 
 % ===================== 快速预览 =====================
 \section*{作品快速预览简介}
@@ -59,18 +61,22 @@
 	\caption{作品快速预览表}
 	\begin{tabularx}{\textwidth}{p{4cm}X}
 		\toprule
-		项目       & 内容                                                                                                         \\
+		项目         & 内容                                                                                                         \\
 		\midrule
-		CPU类型    & 32位RISC-V CPU                                                                                              \\
-		存储结构     & 采用哈佛架构，指令存储器接口与数据存储器/外设接口相互独立                                                                              \\
-		指令集目标    & RV32I基本整数指令集，支持初赛要求的37条基础指令                                                                                \\
-		流水线结构    & 包含IF、ID、EX、MEM、WB的五级流水线                                                                                    \\
-		核心模块     & \code{PC}、\code{NPC}、\code{Control}、\code{IMMGEN}、\code{RegFile}、\code{ALU}、\code{Mask}、流水线寄存器、前递单元、冒险检测单元 \\
-		冒险处理     & 数据前递、load-use暂停、分支/跳转冲刷                                                                                    \\
-		外设接口     & IROM接口与DRAM/外设统一访问接口                                                                                       \\
-		Vivado版本 & Vivado 2023.2                                                                                              \\
-		开发板型号    & Xilinx Kintex-7 系列 FPGA                                                                                    \\
-		最大工作频率   & 120 MHz                                                                                                    \\                                                                                                  \\
+		CPU类型      & 32位RISC-V CPU                                                                                              \\
+		存储结构       & 采用哈佛架构，指令存储器接口与数据存储器/外设接口相互独立                                                                              \\
+		指令集目标      & RV32I基本整数指令集，支持初赛要求的37条基础指令                                                                                \\
+		流水线结构      & 包含IF、ID、EX、MEM、WB的五级流水线                                                                                    \\
+		核心模块       & \code{PC}、\code{NPC}、\code{Control}、\code{IMMGEN}、\code{RegFile}、\code{ALU}、\code{Mask}、流水线寄存器、前递单元、冒险检测单元 \\
+		主要优化手段     & 五级流水线、静态分支预测、数据前递                                                                                          \\
+		冒险处理       & 数据前递、load-use暂停、分支/跳转冲刷                                                                                    \\
+		load-use惩罚 & 1周期                                                                                                        \\
+		分支/跳转惩罚    & 最多2周期                                                                                                      \\
+		最大工作频率     & 120 MHz                                                                                                    \\
+		外设接口       & IROM接口与DRAM/外设统一访问接口                                                                                       \\
+		Vivado版本   & Vivado 2023.2                                                                                              \\
+		开发板型号      & Xilinx Kintex-7 系列 FPGA                                                                                    \\
+		芯片型号       & xc7k325tffg900-2                                                                                           \\
 		\bottomrule
 	\end{tabularx}
 \end{table}
@@ -266,9 +272,14 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 	\caption{五级流水线 CPU 整体架构示意图}
 	\label{fig:cpu_arch}
 \end{figure}
-本设计采用哈佛式存储结构，指令访问接口与数据/外设访问接口相互独立。取指阶段通过 \texttt{irom\_addr} 和 \texttt{irom\_data} 访问 IROM；访存阶段通过 \texttt{perip\_addr}、\texttt{perip\_wen}、\texttt{perip\_mask}、\texttt{perip\_wdata} 和 \texttt{perip\_rdata} 访问 DRAM 或外设。因此，IF 阶段取指和 MEM 阶段访存可以在接口层面分离，符合五级流水线 CPU 的设计需求。\
-\todo{更改后的cpu架构图}
+本设计采用哈佛式存储结构，指令访问接口与数据/外设访问接口相互独立。取指阶段通过 \texttt{irom\_addr} 和 \texttt{irom\_data} 访问 IROM；访存阶段通过 \texttt{perip\_addr}、\texttt{perip\_wen}、\texttt{perip\_mask}、\texttt{perip\_wdata} 和 \texttt{perip\_rdata} 访问 DRAM 或外设。因此，IF 阶段取指和 MEM 阶段访存可以在接口层面分离，符合五级流水线 CPU 的设计需求。
 这种结构使取指通路和数据访存通路在接口层面相互独立，便于五级流水线中 IF 阶段和 MEM 阶段分别完成指令读取与数据访问，降低指令存储器访问和数据存储器访问之间的结构冲突风险，也更符合企业提供工程模板中 IROM、DRAM 与外设分离的系统结构。图~\ref{fig:cpu_arch} 中实线表示主流水线数据通路，虚线表示控制、前递、暂停、冲刷和写回相关通路。
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{CPU2.0 pipeline.drawio.png}
+	\caption{CPU RTL结构图}
+\end{figure}
 
 \subsection{CPU顶层接口设计}
 
@@ -651,8 +662,11 @@ add x6, x5, x2
 \code{lw} 指令的数据需要到 MEM 阶段后才能得到，而后一条 \code{add} 指令在 EX 阶段已经需要该数据。因此，本设计通过 \code{hazard\_detection\_unit} 检测该情况，并暂停 PC 和 IF/ID 一个周期，同时向 ID/EX 插入无效控制信号。等待 load 数据进入可前递阶段后，流水线继续执行。
 
 
-\subsection{控制冒险冲刷机制}
+\subsection{静态分支预测机制}
 
+对于控制冒险，阻塞流水线直到分支完成的策略非常耗时。本设计采用静态分支预测机制，默认所有分支指令不跳转，即预测分支不成立。这样，在分支指令进入 EX 阶段之前，IF 和 ID 阶段可以继续顺序取指和译码，提高了分支指令的平均执行效率。
+
+\subsection{分支/跳转冲刷机制}
 当条件分支成立或执行\code{jal/jalr}时，已取出的顺序路径指令可能无效。本设计在EX阶段得到分支/跳转结果后，通过\code{flush}清空IF/ID和ID/EX相关控制信息，防止错误路径指令继续执行。
 
 \subsection{ALU组合逻辑优化}
@@ -667,34 +681,6 @@ ALU中将加减、逻辑、移位和比较运算分别计算，再通过\code{ca
 本设计采用哈佛式存储结构，指令访问通路与数据/外设访问通路相互独立。取指阶段通过 \code{irom\_addr} 和 \code{irom\_data} 接口访问 IROM 指令存储器；访存阶段通过 \code{perip\_addr}、\code{perip\_wen}、\code{perip\_mask}、\code{perip\_wdata} 和 \code{perip\_rdata} 接口访问 DRAM 或外设地址空间。
 
 这种结构使 IF 阶段的指令读取和 MEM 阶段的数据访问在接口层面分离，减少了统一存储接口可能导致的结构冲突，也便于 CPU 接入企业提供的工程模板。
-
-\section{不足与展望}
-
-\subsection{当前设计不足}
-
-虽然本设计已经完成了基于 RV32I 指令集的五级流水线 CPU 基本功能，并实现了数据前递、load-use 暂停和控制冒险冲刷等机制，但当前设计仍存在以下不足。
-
-首先，当前 CPU 主要面向初赛要求的 RV32I 37 条基础指令进行设计，尚未完整支持 CSR 指令、异常处理、trap 机制以及 RV32M 乘除法扩展。因此，在后续分赛区决赛或更复杂的软件运行场景中，仍需要进一步扩展控制器、数据通路和系统寄存器相关模块。
-
-其次，当前流水线采用较为基础的冒险处理策略。对于 load-use 冒险，本设计通过暂停一个周期保证数据正确；对于分支和跳转指令，本设计在确认跳转发生后冲刷错误路径指令。该方法逻辑清晰、实现可靠，但在分支密集或 load-use 相关较多的程序中会引入一定流水线停顿，影响整体执行效率。
-
-最后，当前 CPU 的性能优化仍以功能正确性为优先。虽然设计中采用了五级流水线和数据前递机制，但对关键路径、资源利用率、最高工作频率和 CPI 等性能指标的分析仍不够深入。后续仍需要结合 Vivado 综合实现报告，对 ALU、前递选择、冒险检测和写回路径等关键逻辑进行进一步时序分析和优化。
-
-\subsection{后续改进方向}
-
-后续工作可以从以下几个方面继续完善。
-
-第一，进一步完善功能。在 RV32I 基础指令稳定通过的基础上，加入浮点数计算等更多特色功能的设计。
-
-第二，优化流水线性能。针对 load-use 冒险和分支控制冒险，可以进一步研究更高效的处理策略，例如优化 load 数据前递路径、提前分支判断阶段，或增加简单的分支预测机制，以减少流水线冲刷和暂停带来的性能损失。
-
-第三，加强时序和资源优化。后续可以根据 Vivado 的综合与实现报告，分析关键路径所在模块，对 ALU 运算逻辑、前递选择逻辑、冒险检测逻辑和写回选择逻辑进行优化。同时，可以比较不同 CPU 时钟频率下的资源利用率和时序裕量，确定更稳定的运行频率。
-
-第四，完善验证体系。除企业提供的测评程序外，还可以增加自定义汇编测试、边界条件测试和随机指令测试。例如，针对跳转边界、符号扩展、无符号比较、字节/半字访存、连续数据相关等情况设计专门测试用例，以提高 CPU 验证的覆盖率。
-
-第五，增强工程可维护性。后续可以进一步规范模块命名、信号命名和注释说明，将控制信号、流水线寄存器信号和调试信号整理成更清晰的接口文档，方便后续团队成员继续扩展和调试。
-
-综上，本设计已经完成了初赛阶段五级流水线 RV32I CPU 的核心功能，但仍有进一步扩展和优化空间。后续将以提高指令集完整性、增强流水线性能、完善异常处理机制和提升验证覆盖率为主要方向，使 CPU 设计更加完整、稳定和可扩展。
 
 \section{附录}
 
@@ -792,14 +778,8 @@ digital_twin/
 \addcontentsline{toc}{section}{参考文献}
 
 \begin{enumerate}
-	<<<<<<< HEAD:report/DESIGN-REPORT.tex
-	\item RISC-V Unprivileged ISA Specification, Version 2024.04.
-	\item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
-
-	      =======
 	\item RISC-V International. The RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture, Version 2024.04[EB/OL]. 2024.
 
 	\item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
-	      >>>>>>> dwevelop-yy:DESIGN-REPORT.tex
 \end{enumerate}
 \end{document}
