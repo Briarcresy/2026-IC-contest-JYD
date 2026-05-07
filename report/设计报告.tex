@@ -284,26 +284,28 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 
 \subsection{CPU顶层接口设计}
 
-本CPU顶层模块为\code{myCPU}，源文件位于企业工程的\code{digital\_twin.srcs/sources\_1/imports/news/}目录下。该模块通过系统时钟复位、IROM指令存储器接口以及DRAM/外设统一接口接入企业提供的工程模板。
+本CPU顶层模块为\code{myCPU}。
+
+源文件位于企业工程的\code{digital\_twin.srcs/sources\_1/imports/news/}目录下。该模块通过系统时钟复位、IROM指令存储器接口以及DRAM/外设统一接口接入企业提供的工程模板。
 
 \begin{table}[H]
-\centering
-\caption{\code{myCPU}顶层接口说明}
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}p{2cm}X}
-\toprule
-信号名称 & 方向 & 位宽 & 功能说明 \\
-\midrule
-\code{cpu\_clk} & input & 1 & CPU工作时钟 \\
-\code{cpu\_rst} & input & 1 & CPU复位信号 \\
-\code{irom\_addr} & output & 32 & 指令存储器访问地址，由当前PC给出 \\
-\code{irom\_data} & input & 32 & 指令存储器返回的32位指令 \\
-\code{perip\_addr} & output & 32 & DRAM或外设访问地址，由MEM阶段传递的ALU结果给出 \\
-\code{perip\_wen} & output & 1 & 写使能信号，Store指令有效 \\
-\code{perip\_mask} & output & 2 & 访存宽度控制，00表示1字节，01表示2字节，10表示4字节 \\
-\code{perip\_wdata} & output & 32 & 写入DRAM或外设的数据 \\
-\code{perip\_rdata} & input & 32 & DRAM或外设返回的数据 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{myCPU}顶层接口说明}
+	\begin{tabularx}{\textwidth}{p{3cm}p{2cm}p{2cm}X}
+		\toprule
+		信号名称                & 方向     & 位宽 & 功能说明                           \\
+		\midrule
+		\code{cpu\_clk}     & input  & 1  & CPU工作时钟                        \\
+		\code{cpu\_rst}     & input  & 1  & CPU复位信号                        \\
+		\code{irom\_addr}   & output & 32 & 指令存储器访问地址，由当前PC给出              \\
+		\code{irom\_data}   & input  & 32 & 指令存储器返回的32位指令                  \\
+		\code{perip\_addr}  & output & 32 & DRAM或外设访问地址，由MEM阶段传递的ALU结果给出   \\
+		\code{perip\_wen}   & output & 1  & 写使能信号，Store指令有效                \\
+		\code{perip\_mask}  & output & 2  & 访存宽度控制，00表示1字节，01表示2字节，10表示4字节 \\
+		\code{perip\_wdata} & output & 32 & 写入DRAM或外设的数据                   \\
+		\code{perip\_rdata} & input  & 32 & DRAM或外设返回的数据                   \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 
@@ -340,20 +342,20 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 \code{PC}模块用于保存当前取指地址。复位时，正常上板模式下PC初始化为\code{0x8000\_0000}，以匹配企业模板中IROM起始地址；开启\code{ENABLE\_DEBUG\_TRACE}调试宏时，复位值为\code{0x0000\_0000}，便于trace仿真跟踪。正常运行时，PC在时钟上升沿更新为\code{NPC}模块生成的下一条指令地址。
 
 \begin{table}[H]
-\centering
-\caption{\code{PC}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{clk} & 输入 & 1 & 系统时钟信号，上升沿更新PC寄存器。 \\
-\code{rst} & 输入 & 1 & 复位信号，复位时PC回到参数\code{RESET\_VAL}。 \\
-\code{npc} & 输入 & 32 & NPC模块计算得到的下一条指令地址。 \\
-\code{pc} & 输出 & 32 & 当前取指地址，连接到IROM地址端口。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{PC}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名        & 方向 & 位宽 & 说明                               \\
+		\midrule
+		\code{clk} & 输入 & 1  & 系统时钟信号，上升沿更新PC寄存器。               \\
+		\code{rst} & 输入 & 1  & 复位信号，复位时PC回到参数\code{RESET\_VAL}。 \\
+		\code{npc} & 输入 & 32 & NPC模块计算得到的下一条指令地址。               \\
+		\code{pc}  & 输出 & 32 & 当前取指地址，连接到IROM地址端口。              \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -367,24 +369,24 @@ PC 模块的输入信号包括系统时钟、复位信号和下一条指令地�
 \code{NPC}模块根据\code{npc\_op}选择下一条PC地址。\code{npc\_op=00}表示顺序执行或stall保持，\code{npc\_op=01}表示条件分支，\code{npc\_op=10}表示\code{jalr}，\code{npc\_op=11}表示\code{jal}。对于\code{jalr}，模块将ALU计算结果最低位置零，以符合RISC-V对\code{jalr}目标地址的要求。
 
 \begin{table}[H]
-\centering
-\caption{\code{NPC}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{isTrue} & 输入 & 1 & ALU输出的分支条件判断结果。 \\
-\code{stall} & 输入 & 1 & 流水线暂停信号，有效时保持当前PC。 \\
-\code{npc\_op} & 输入 & 2 & 下一PC选择信号：顺序/分支/\code{jalr}/\code{jal}。 \\
-\code{pc} & 输入 & 32 & 当前PC值。 \\
-\code{pc\_add\_4} & 输入 & 32 & 顺序执行时的\code{PC+4}。 \\
-\code{pc\_add\_imm} & 输入 & 32 & 分支或\code{jal}目标地址\code{PC+imm}。 \\
-\code{alu\_result} & 输入 & 32& \code{jalr}指令由ALU计算出的\code{rs1+imm}。 \\
-\code{npc} & 输出 & 32 & 送回PC模块的下一条指令地址。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{NPC}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名                 & 方向 & 位宽 & 说明                                     \\
+		\midrule
+		\code{isTrue}       & 输入 & 1  & ALU输出的分支条件判断结果。                        \\
+		\code{stall}        & 输入 & 1  & 流水线暂停信号，有效时保持当前PC。                     \\
+		\code{npc\_op}      & 输入 & 2  & 下一PC选择信号：顺序/分支/\code{jalr}/\code{jal}。 \\
+		\code{pc}           & 输入 & 32 & 当前PC值。                                 \\
+		\code{pc\_add\_4}   & 输入 & 32 & 顺序执行时的\code{PC+4}。                     \\
+		\code{pc\_add\_imm} & 输入 & 32 & 分支或\code{jal}目标地址\code{PC+imm}。        \\
+		\code{alu\_result}  & 输入 & 32 & \code{jalr}指令由ALU计算出的\code{rs1+imm}。   \\
+		\code{npc}          & 输出 & 32 & 送回PC模块的下一条指令地址。                        \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -398,26 +400,26 @@ NPC 模块的输入包括当前 PC、\code{PC+4}、\code{PC+imm}、ALU 计算结
 \code{IF\_ID}模块连接IF与ID阶段，保存取指阶段得到的PC、PC+4和指令。当发生\code{stall}时保持原值，当发生\code{flush}时清空寄存器内容，用于处理load-use冒险和控制冒险。
 
 \begin{table}[H]
-\centering
-\caption{\code{IF\_ID}流水线寄存器输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{clk} & 输入 & 1 & 系统时钟信号。 \\
-\code{rst} & 输入 & 1 & 复位信号。 \\
-\code{stall} & 输入 & 1 & 暂停信号，有效时保持当前寄存器值。 \\
-\code{flush} & 输入 & 1 & 冲刷信号，有效时清空输出。 \\
-\code{if\_pc} & 输入 & 32 & IF阶段当前PC。 \\
-\code{if\_pc4} & 输入 & 32 & IF阶段计算得到的\code{PC+4}。 \\
-\code{if\_instr} & 输入 & 32 & IF阶段从IROM读出的指令。 \\
-\code{id\_pc} & 输出 & 32 & 传递到ID阶段的PC。 \\
-\code{id\_pc4} & 输出 & 32 & 传递到ID阶段的\code{PC+4}。 \\
-\code{id\_instr} & 输出 & 32 & 传递到ID阶段的指令。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{IF\_ID}流水线寄存器输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名              & 方向 & 位宽 & 说明                    \\
+		\midrule
+		\code{clk}       & 输入 & 1  & 系统时钟信号。               \\
+		\code{rst}       & 输入 & 1  & 复位信号。                 \\
+		\code{stall}     & 输入 & 1  & 暂停信号，有效时保持当前寄存器值。     \\
+		\code{flush}     & 输入 & 1  & 冲刷信号，有效时清空输出。         \\
+		\code{if\_pc}    & 输入 & 32 & IF阶段当前PC。             \\
+		\code{if\_pc4}   & 输入 & 32 & IF阶段计算得到的\code{PC+4}。 \\
+		\code{if\_instr} & 输入 & 32 & IF阶段从IROM读出的指令。       \\
+		\code{id\_pc}    & 输出 & 32 & 传递到ID阶段的PC。           \\
+		\code{id\_pc4}   & 输出 & 32 & 传递到ID阶段的\code{PC+4}。  \\
+		\code{id\_instr} & 输出 & 32 & 传递到ID阶段的指令。           \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -431,25 +433,25 @@ IF/ID 流水线寄存器的输入来自 IF 阶段，包括当前指令地址、\
 \code{Control}模块根据指令\code{opcode}和\code{funct3/funct7}字段产生控制信号。当前控制器可识别R型、I型、Load、Store、Branch、U型和J型指令，输出包括\code{NpcOp}、\code{RegWrite}、\code{MemToReg\_sel}、\code{MemWrite}、\code{ALUSrcA}、\code{ALUSrcB}、\code{ALUControl}和\code{mask}等控制信号。
 
 \begin{table}[H]
-\centering
-\caption{\code{Control}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{instr} & 输入 & 32 & 当前32位指令。 \\
-\code{NpcOp} & 输出 & 2 & 下一PC选择控制信号。 \\
-\code{RegWrite} & 输出 & 1 & 寄存器堆写使能信号。 \\
-\code{MemToReg\_sel} & 输出 & 2 & 写回来源选择信号。 \\
-\code{MemWrite} & 输出 & 1 & DRAM/外设写使能信号。 \\
-\code{ALUSrcA} & 输出 & 1 & ALU第一个操作数来源选择。 \\
-\code{ALUSrcB} & 输出 & 1 & ALU第二个操作数来源选择。 \\
-\code{ALUControl} & 输出 & 14 & ALU运算控制信号。 \\
-\code{mask} & 输出 & 3 & 访存宽度及load扩展控制，来自\code{funct3}。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{Control}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名                  & 方向 & 位宽 & 说明                             \\
+		\midrule
+		\code{instr}         & 输入 & 32 & 当前32位指令。                       \\
+		\code{NpcOp}         & 输出 & 2  & 下一PC选择控制信号。                    \\
+		\code{RegWrite}      & 输出 & 1  & 寄存器堆写使能信号。                     \\
+		\code{MemToReg\_sel} & 输出 & 2  & 写回来源选择信号。                      \\
+		\code{MemWrite}      & 输出 & 1  & DRAM/外设写使能信号。                  \\
+		\code{ALUSrcA}       & 输出 & 1  & ALU第一个操作数来源选择。                 \\
+		\code{ALUSrcB}       & 输出 & 1  & ALU第二个操作数来源选择。                 \\
+		\code{ALUControl}    & 输出 & 14 & ALU运算控制信号。                     \\
+		\code{mask}          & 输出 & 3  & 访存宽度及load扩展控制，来自\code{funct3}。 \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -463,18 +465,18 @@ Control 模块输入为完整的 32 位指令。模块首先提取低 7 位 \cod
 \code{IMMGEN}模块根据指令格式生成立即数。支持I型、S型、B型、U型和J型立即数，并按照RISC-V编码规则进行符号扩展和位拼接。其中B型和J型立即数最低位补0，以适配分支和跳转指令的目标地址计算。
 
 \begin{table}[H]
-\centering
-\caption{\code{IMMGEN}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{instr} & 输入 & 32 & 当前32位指令。 \\
-\code{imm} & 输出 & 32 & 按指令类型生成并符号扩展后的立即数。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{IMMGEN}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名          & 方向 & 位宽 & 说明                 \\
+		\midrule
+		\code{instr} & 输入 & 32 & 当前32位指令。           \\
+		\code{imm}   & 输出 & 32 & 按指令类型生成并符号扩展后的立即数。 \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -488,25 +490,25 @@ IMMGEN 模块的输入为 32 位指令，输出为扩展后的 32 位立即数�
 \code{RegFile}模块包含32个32位通用寄存器，支持两个读端口和一个写端口。写回阶段当\code{wen}有效且\code{waddr}不为0时写入寄存器。模块中还实现了同周期读写同一寄存器时的内部旁路逻辑，若读地址与写地址相同，则读端口优先返回当前写入数据。
 
 \begin{table}[H]
-\centering
-\caption{\code{RegFile}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{clk} & 输入 & 1 & 系统时钟信号。 \\
-\code{rst} & 输入 & 1 & 复位信号。 \\
-\code{wen} & 输入 & 1 & 写使能信号。 \\
-\code{waddr} & 输入 & 5 & 写寄存器地址。 \\
-\code{wdata} & 输入 & 32 & 写回数据。 \\
-\code{rR1} & 输入 & 5 & 第一个读寄存器地址，对应\code{rs1}。 \\
-\code{rR2} & 输入 & 5 & 第二个读寄存器地址，对应\code{rs2}。 \\
-\code{rR1\_data} & 输出 & 32 & 第一个读端口输出数据。 \\
-\code{rR2\_data} & 输出 & 32 & 第二个读端口输出数据。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{RegFile}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名              & 方向 & 位宽 & 说明                      \\
+		\midrule
+		\code{clk}       & 输入 & 1  & 系统时钟信号。                 \\
+		\code{rst}       & 输入 & 1  & 复位信号。                   \\
+		\code{wen}       & 输入 & 1  & 写使能信号。                  \\
+		\code{waddr}     & 输入 & 5  & 写寄存器地址。                 \\
+		\code{wdata}     & 输入 & 32 & 写回数据。                   \\
+		\code{rR1}       & 输入 & 5  & 第一个读寄存器地址，对应\code{rs1}。 \\
+		\code{rR2}       & 输入 & 5  & 第二个读寄存器地址，对应\code{rs2}。 \\
+		\code{rR1\_data} & 输出 & 32 & 第一个读端口输出数据。             \\
+		\code{rR2\_data} & 输出 & 32 & 第二个读端口输出数据。             \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -522,52 +524,52 @@ RegFile 模块输入包括读寄存器地址 \code{rs1}、\code{rs2}，写寄存
 {\footnotesize
 \renewcommand{\arraystretch}{1.12}
 \begin{longtable}{p{3.2cm}p{1.5cm}p{2.1cm}p{7.0cm}}
-\caption{\code{ID\_EX}流水线寄存器输入输出信号说明}\\
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\endfirsthead
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\endhead
-\code{clk} & 输入 & 1 & 系统时钟信号。 \\
-\code{rst} & 输入 & 1 & 复位信号。 \\
-\code{id\_stall} & 输入 & 1 & ID/EX暂停控制信号。 \\
-\code{id\_flush} & 输入 & 1 & ID/EX冲刷控制信号。 \\
-\code{id\_pc} & 输入 & 32 & ID阶段PC。 \\
-\code{id\_pc4} & 输入 & 32 & ID阶段\code{PC+4}。 \\
-\code{id\_rs1v} & 输入 & 32 & 寄存器堆读出的\code{rs1}数据。 \\
-\code{id\_rs2v} & 输入 & 32 & 寄存器堆读出的\code{rs2}数据。 \\
-\code{id\_imm} & 输入 & 32 & 立即数生成模块输出。 \\
-\code{id\_rs1} & 输入 & 5 & 源寄存器\code{rs1}编号。 \\
-\code{id\_rs2} & 输入 & 5 & 源寄存器\code{rs2}编号。 \\
-\code{id\_rd} & 输入 & 5 & 目的寄存器\code{rd}编号。 \\
-\code{id\_alu\_op} & 输入 & 14 & ID阶段产生的ALU控制信号。 \\
-\code{id\_alusrcA} & 输入 & 1 & ALU输入A来源控制。 \\
-\code{id\_alusrcB} & 输入 & 1 & ALU输入B来源控制。 \\
-\code{id\_npcop} & 输入 & 2 & 下一PC控制信号。 \\
-\code{id\_mem\_write} & 输入 & 1 & 访存写使能控制信号。 \\
-\code{id\_mask} & 输入 & 3 & 访存宽度及扩展控制信号。 \\
-\code{id\_regwrmux} & 输入 & 2 & 写回来源选择信号。 \\
-\code{id\_reg\_write} & 输入 & 1 & 寄存器写使能信号。 \\
-\code{ex\_pc} & 输出 & 32 & 传递到EX阶段的PC。 \\
-\code{ex\_pc4} & 输出 & 32 & 传递到EX阶段的\code{PC+4}。 \\
-\code{ex\_rs1v} & 输出 & 32 & EX阶段使用的\code{rs1}数据。 \\
-\code{ex\_rs2v} & 输出 & 32 & EX阶段使用的\code{rs2}数据。 \\
-\code{ex\_imm} & 输出 & 32 & EX阶段使用的立即数。 \\
-\code{ex\_rs1} & 输出 & 5 & EX阶段\code{rs1}编号。 \\
-\code{ex\_rs2} & 输出 & 5 & EX阶段\code{rs2}编号。 \\
-\code{ex\_rd} & 输出 & 5 & EX阶段目的寄存器编号。 \\
-\code{ex\_alu\_op} & 输出 & 14 & EX阶段ALU控制信号。 \\
-\code{ex\_alusrcA} & 输出 & 1 & EX阶段ALU输入A选择。 \\
-\code{ex\_alusrcB} & 输出 & 1 & EX阶段ALU输入B选择。 \\
-\code{ex\_npcop} & 输出 & 2 & EX阶段下一PC控制。 \\
-\code{ex\_mem\_write} & 输出 & 1 & EX阶段访存写使能。 \\
-\code{ex\_mask} & 输出 & 3 & EX阶段访存宽度及扩展控制。 \\
-\code{ex\_regwrmux} & 输出 & 2 & EX阶段写回来源选择。 \\
-\code{ex\_reg\_write} & 输出 & 1 & EX阶段寄存器写使能。 \\
-\bottomrule
+	\caption{\code{ID\_EX}流水线寄存器输入输出信号说明}                  \\
+	\toprule
+	参数名                   & 方向 & 位宽 & 说明                   \\
+	\midrule
+	\endfirsthead
+	\toprule
+	参数名                   & 方向 & 位宽 & 说明                   \\
+	\midrule
+	\endhead
+	\code{clk}            & 输入 & 1  & 系统时钟信号。              \\
+	\code{rst}            & 输入 & 1  & 复位信号。                \\
+	\code{id\_stall}      & 输入 & 1  & ID/EX暂停控制信号。         \\
+	\code{id\_flush}      & 输入 & 1  & ID/EX冲刷控制信号。         \\
+	\code{id\_pc}         & 输入 & 32 & ID阶段PC。              \\
+	\code{id\_pc4}        & 输入 & 32 & ID阶段\code{PC+4}。     \\
+	\code{id\_rs1v}       & 输入 & 32 & 寄存器堆读出的\code{rs1}数据。 \\
+	\code{id\_rs2v}       & 输入 & 32 & 寄存器堆读出的\code{rs2}数据。 \\
+	\code{id\_imm}        & 输入 & 32 & 立即数生成模块输出。           \\
+	\code{id\_rs1}        & 输入 & 5  & 源寄存器\code{rs1}编号。    \\
+	\code{id\_rs2}        & 输入 & 5  & 源寄存器\code{rs2}编号。    \\
+	\code{id\_rd}         & 输入 & 5  & 目的寄存器\code{rd}编号。    \\
+	\code{id\_alu\_op}    & 输入 & 14 & ID阶段产生的ALU控制信号。      \\
+	\code{id\_alusrcA}    & 输入 & 1  & ALU输入A来源控制。          \\
+	\code{id\_alusrcB}    & 输入 & 1  & ALU输入B来源控制。          \\
+	\code{id\_npcop}      & 输入 & 2  & 下一PC控制信号。            \\
+	\code{id\_mem\_write} & 输入 & 1  & 访存写使能控制信号。           \\
+	\code{id\_mask}       & 输入 & 3  & 访存宽度及扩展控制信号。         \\
+	\code{id\_regwrmux}   & 输入 & 2  & 写回来源选择信号。            \\
+	\code{id\_reg\_write} & 输入 & 1  & 寄存器写使能信号。            \\
+	\code{ex\_pc}         & 输出 & 32 & 传递到EX阶段的PC。          \\
+	\code{ex\_pc4}        & 输出 & 32 & 传递到EX阶段的\code{PC+4}。 \\
+	\code{ex\_rs1v}       & 输出 & 32 & EX阶段使用的\code{rs1}数据。 \\
+	\code{ex\_rs2v}       & 输出 & 32 & EX阶段使用的\code{rs2}数据。 \\
+	\code{ex\_imm}        & 输出 & 32 & EX阶段使用的立即数。          \\
+	\code{ex\_rs1}        & 输出 & 5  & EX阶段\code{rs1}编号。    \\
+	\code{ex\_rs2}        & 输出 & 5  & EX阶段\code{rs2}编号。    \\
+	\code{ex\_rd}         & 输出 & 5  & EX阶段目的寄存器编号。         \\
+	\code{ex\_alu\_op}    & 输出 & 14 & EX阶段ALU控制信号。         \\
+	\code{ex\_alusrcA}    & 输出 & 1  & EX阶段ALU输入A选择。        \\
+	\code{ex\_alusrcB}    & 输出 & 1  & EX阶段ALU输入B选择。        \\
+	\code{ex\_npcop}      & 输出 & 2  & EX阶段下一PC控制。          \\
+	\code{ex\_mem\_write} & 输出 & 1  & EX阶段访存写使能。           \\
+	\code{ex\_mask}       & 输出 & 3  & EX阶段访存宽度及扩展控制。       \\
+	\code{ex\_regwrmux}   & 输出 & 2  & EX阶段写回来源选择。          \\
+	\code{ex\_reg\_write} & 输出 & 1  & EX阶段寄存器写使能。          \\
+	\bottomrule
 \end{longtable}
 }
 
@@ -582,23 +584,23 @@ ID/EX 流水线寄存器保存译码阶段产生的主要数据，包括 \code{P
 \code{ALU\_src}模块用于选择ALU输入操作数。若\code{alu\_src}为1，则选择立即数或PC；若为0，则根据前递选择信号在寄存器原始值、MEM阶段结果和WB阶段写回数据中选择正确操作数。
 
 \begin{table}[H]
-\centering
-\caption{\code{ALU\_src}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{alu\_src} & 输入 & 1 & 操作数来源选择，决定是否直接选择\code{alusrc1}。 \\
-\code{forward\_src} & 输入 & 2 & 前递选择信号。 \\
-\code{alusrc0} & 输入 & 32 & 寄存器原始操作数。 \\
-\code{alusrc1} & 输入 & 32 & 立即数或PC候选操作数。 \\
-\code{fwdsrc0} & 输入 & 32 & MEM阶段前递数据。 \\
-\code{fwdsrc1} & 输入 & 32 & WB阶段前递数据。 \\
-\code{result} & 输出 & 32 & 最终送入ALU的操作数。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{ALU\_src}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名                 & 方向 & 位宽 & 说明                              \\
+		\midrule
+		\code{alu\_src}     & 输入 & 1  & 操作数来源选择，决定是否直接选择\code{alusrc1}。 \\
+		\code{forward\_src} & 输入 & 2  & 前递选择信号。                         \\
+		\code{alusrc0}      & 输入 & 32 & 寄存器原始操作数。                       \\
+		\code{alusrc1}      & 输入 & 32 & 立即数或PC候选操作数。                    \\
+		\code{fwdsrc0}      & 输入 & 32 & MEM阶段前递数据。                      \\
+		\code{fwdsrc1}      & 输入 & 32 & WB阶段前递数据。                       \\
+		\code{result}       & 输出 & 32 & 最终送入ALU的操作数。                    \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -612,21 +614,21 @@ ALU\_src 模块的输入包括原始寄存器数据、立即数或 PC 候选数�
 \code{ALU}模块使用14位\code{ALUControl}信号控制具体运算。支持加法、减法、按位与、按位或、按位异或、逻辑左移、逻辑右移、算术右移、有符号比较、无符号比较以及分支条件判断。分支判断结果通过\code{isTrue}输出给冒险检测单元和NPC模块。
 
 \begin{table}[H]
-\centering
-\caption{\code{ALU}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{A} & 输入 & 32 & ALU第一个操作数。 \\
-\code{B} & 输入 & 32 & ALU第二个操作数。 \\
-\code{ALUControl} & 输入 & 14 & ALU运算控制信号。 \\
-\code{Result} & 输出 & 32 & ALU运算或比较结果。 \\
-\code{isTrue} & 输出 & 1 & 分支判断结果，取\code{Result[0]}。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{ALU}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名               & 方向 & 位宽 & 说明                        \\
+		\midrule
+		\code{A}          & 输入 & 32 & ALU第一个操作数。                \\
+		\code{B}          & 输入 & 32 & ALU第二个操作数。                \\
+		\code{ALUControl} & 输入 & 14 & ALU运算控制信号。                \\
+		\code{Result}     & 输出 & 32 & ALU运算或比较结果。               \\
+		\code{isTrue}     & 输出 & 1  & 分支判断结果，取\code{Result[0]}。 \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -642,36 +644,36 @@ ALU 模块输入为两个 32 位操作数和 14 位 \code{ALUControl} 控制信�
 {\footnotesize
 \renewcommand{\arraystretch}{1.12}
 \begin{longtable}{p{3.2cm}p{1.5cm}p{2.1cm}p{7.0cm}}
-\caption{\code{EX\_MEM}流水线寄存器输入输出信号说明}\\
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\endfirsthead
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\endhead
-\code{clk} & 输入 & 1 & 系统时钟信号。 \\
-\code{rst} & 输入 & 1 & 复位信号。 \\
-\code{ex\_alu\_result} & 输入 & 32 & EX阶段ALU结果。 \\
-\code{ex\_rs2\_val} & 输入 & 32 & EX阶段传入的\code{rs2}值，用于Store写数据。 \\
-\code{ex\_imm} & 输入 & 32 & EX阶段立即数。 \\
-\code{ex\_pc4} & 输入 & 32 & EX阶段\code{PC+4}。 \\
-\code{ex\_rd\_addr} & 输入 & 5 & EX阶段目的寄存器编号。 \\
-\code{ex\_mask} & 输入 & 3 & EX阶段访存宽度及扩展控制。 \\
-\code{ex\_regwrmux} & 输入 & 2 & EX阶段写回来源选择。 \\
-\code{ex\_reg\_write} & 输入 & 1 & EX阶段寄存器写使能。 \\
-\code{ex\_mem\_write} & 输入 & 1 & EX阶段访存写使能。 \\
-\code{mem\_alu\_result} & 输出 & 32 & MEM阶段ALU结果。 \\
-\code{mem\_rs2\_val} & 输出 & 32 & MEM阶段Store写数据。 \\
-\code{mem\_imm} & 输出 & 32 & MEM阶段立即数。 \\
-\code{mem\_pc4} & 输出 & 32 & MEM阶段\code{PC+4}。 \\
-\code{mem\_rd\_addr} & 输出 & 5 & MEM阶段目的寄存器编号。 \\
-\code{mem\_mask} & 输出 & 3 & MEM阶段访存宽度及扩展控制。 \\
-\code{mem\_regwrmux} & 输出 & 2 & MEM阶段写回来源选择。 \\
-\code{mem\_reg\_write} & 输出 & 1 & MEM阶段寄存器写使能。 \\
-\code{mem\_mem\_write} & 输出 & 1 & MEM阶段访存写使能。 \\
-\bottomrule
+	\caption{\code{EX\_MEM}流水线寄存器输入输出信号说明}                             \\
+	\toprule
+	参数名                     & 方向 & 位宽 & 说明                             \\
+	\midrule
+	\endfirsthead
+	\toprule
+	参数名                     & 方向 & 位宽 & 说明                             \\
+	\midrule
+	\endhead
+	\code{clk}              & 输入 & 1  & 系统时钟信号。                        \\
+	\code{rst}              & 输入 & 1  & 复位信号。                          \\
+	\code{ex\_alu\_result}  & 输入 & 32 & EX阶段ALU结果。                     \\
+	\code{ex\_rs2\_val}     & 输入 & 32 & EX阶段传入的\code{rs2}值，用于Store写数据。 \\
+	\code{ex\_imm}          & 输入 & 32 & EX阶段立即数。                       \\
+	\code{ex\_pc4}          & 输入 & 32 & EX阶段\code{PC+4}。               \\
+	\code{ex\_rd\_addr}     & 输入 & 5  & EX阶段目的寄存器编号。                   \\
+	\code{ex\_mask}         & 输入 & 3  & EX阶段访存宽度及扩展控制。                 \\
+	\code{ex\_regwrmux}     & 输入 & 2  & EX阶段写回来源选择。                    \\
+	\code{ex\_reg\_write}   & 输入 & 1  & EX阶段寄存器写使能。                    \\
+	\code{ex\_mem\_write}   & 输入 & 1  & EX阶段访存写使能。                     \\
+	\code{mem\_alu\_result} & 输出 & 32 & MEM阶段ALU结果。                    \\
+	\code{mem\_rs2\_val}    & 输出 & 32 & MEM阶段Store写数据。                 \\
+	\code{mem\_imm}         & 输出 & 32 & MEM阶段立即数。                      \\
+	\code{mem\_pc4}         & 输出 & 32 & MEM阶段\code{PC+4}。              \\
+	\code{mem\_rd\_addr}    & 输出 & 5  & MEM阶段目的寄存器编号。                  \\
+	\code{mem\_mask}        & 输出 & 3  & MEM阶段访存宽度及扩展控制。                \\
+	\code{mem\_regwrmux}    & 输出 & 2  & MEM阶段写回来源选择。                   \\
+	\code{mem\_reg\_write}  & 输出 & 1  & MEM阶段寄存器写使能。                   \\
+	\code{mem\_mem\_write}  & 输出 & 1  & MEM阶段访存写使能。                    \\
+	\bottomrule
 \end{longtable}
 }
 
@@ -686,24 +688,24 @@ EX/MEM 流水线寄存器保存执行阶段的计算结果和后续访存/写回
 \code{ex\_mux}用于在MEM阶段预先选择写回候选结果，包括PC+4、ALU结果和立即数。\code{mem\_mux}用于在WB阶段最终选择写回数据，当\code{regwrmux=10}时选择经过\code{Mask}处理的load数据，否则选择\code{ex\_mux}输出。
 
 \begin{table}[H]
-\centering
-\caption{\code{ex\_mux}与\code{mem\_mux}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{pcadd4} & 输入 & 32 & \code{ex\_mux}输入，跳转链接指令写回候选值。 \\
-\code{imm} & 输入 & 32 & \code{ex\_mux}输入，\code{lui}写回候选值。 \\
-\code{alu} & 输入 & 32 & \code{ex\_mux}输入，ALU结果写回候选值。 \\
-\code{ex\_mux.result} & 输出 & 32 & \code{ex\_mux}输出的非Load类写回候选值。 \\
-\code{ex\_mux} & 输入 & 32 & \code{mem\_mux}输入，来自\code{ex\_mux}的候选值。 \\
-\code{mdata} & 输入 & 32 & \code{mem\_mux}输入，经过Mask处理的Load数据。 \\
-\code{alu\_mux} & 输入 & 2 & 写回来源选择信号。 \\
-\code{mem\_mux.result} & 输出 & 32 & WB阶段最终写回数据。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{ex\_mux}与\code{mem\_mux}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名                    & 方向 & 位宽 & 说明                                      \\
+		\midrule
+		\code{pcadd4}          & 输入 & 32 & \code{ex\_mux}输入，跳转链接指令写回候选值。           \\
+		\code{imm}             & 输入 & 32 & \code{ex\_mux}输入，\code{lui}写回候选值。       \\
+		\code{alu}             & 输入 & 32 & \code{ex\_mux}输入，ALU结果写回候选值。            \\
+		\code{ex\_mux.result}  & 输出 & 32 & \code{ex\_mux}输出的非Load类写回候选值。           \\
+		\code{ex\_mux}         & 输入 & 32 & \code{mem\_mux}输入，来自\code{ex\_mux}的候选值。 \\
+		\code{mdata}           & 输入 & 32 & \code{mem\_mux}输入，经过Mask处理的Load数据。      \\
+		\code{alu\_mux}        & 输入 & 2  & 写回来源选择信号。                               \\
+		\code{mem\_mux.result} & 输出 & 32 & WB阶段最终写回数据。                             \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -717,19 +719,19 @@ mem\_mux 位于 WB 阶段，用于区分 load 指令和其他写回指令。当�
 \code{Mask}模块用于处理load指令读出的数据。对于\code{lb}和\code{lh}执行符号扩展，对于\code{lbu}和\code{lhu}执行零扩展，对于\code{lw}直接保留32位数据。
 
 \begin{table}[H]
-\centering
-\caption{\code{Mask}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{mask} & 输入 & 3 & Load指令类型及扩展方式控制。 \\
-\code{dout} & 输入 & 32 & DRAM/外设读出的原始32位数据。 \\
-\code{mdata} & 输出 & 32 & 符号扩展或零扩展后的32位写回数据。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{Mask}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名          & 方向 & 位宽 & 说明                 \\
+		\midrule
+		\code{mask}  & 输入 & 3  & Load指令类型及扩展方式控制。   \\
+		\code{dout}  & 输入 & 32 & DRAM/外设读出的原始32位数据。 \\
+		\code{mdata} & 输出 & 32 & 符号扩展或零扩展后的32位写回数据。 \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -745,32 +747,32 @@ Mask 模块输入包括访存控制信号 \code{mask} 和从 DRAM/外设读出�
 {\footnotesize
 \renewcommand{\arraystretch}{1.12}
 \begin{longtable}{p{3.2cm}p{1.5cm}p{2.1cm}p{7.0cm}}
-\caption{\code{MEM\_WB}流水线寄存器输入输出信号说明}\\
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\endfirsthead
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\endhead
-\code{mem\_pc4} & 输入 & 32 & MEM阶段\code{PC+4}，用于传递或调试。 \\
-\code{wb\_pc4} & 输出 & 32 & WB阶段\code{PC+4}。 \\
-\code{clk} & 输入 & 1 & 系统时钟信号。 \\
-\code{rst} & 输入 & 1 & 复位信号。 \\
-\code{mem\_alu\_result} & 输入 & 32 & MEM阶段写回候选结果。 \\
-\code{mem\_mdata} & 输入 & 32 & MEM阶段访存读出数据。 \\
-\code{mem\_rd\_addr} & 输入 & 5 & MEM阶段目的寄存器编号。 \\
-\code{mem\_mask} & 输入 & 3 & MEM阶段访存宽度及扩展控制。 \\
-\code{mem\_regwrmux} & 输入 & 2 & MEM阶段写回来源选择。 \\
-\code{mem\_reg\_write} & 输入 & 1 & MEM阶段寄存器写使能。 \\
-\code{wb\_alu\_result} & 输出 & 32 & WB阶段写回候选结果。 \\
-\code{wb\_mdata} & 输出 & 32 & WB阶段访存读出数据。 \\
-\code{wb\_rd\_addr} & 输出 & 5 & WB阶段目的寄存器编号。 \\
-\code{wb\_mask} & 输出 & 3 & WB阶段访存宽度及扩展控制。 \\
-\code{wb\_regwrmux} & 输出 & 2 & WB阶段写回来源选择。 \\
-\code{wb\_reg\_write} & 输出 & 1 & WB阶段寄存器写使能。 \\
-\bottomrule
+	\caption{\code{MEM\_WB}流水线寄存器输入输出信号说明}                        \\
+	\toprule
+	参数名                     & 方向 & 位宽 & 说明                        \\
+	\midrule
+	\endfirsthead
+	\toprule
+	参数名                     & 方向 & 位宽 & 说明                        \\
+	\midrule
+	\endhead
+	\code{mem\_pc4}         & 输入 & 32 & MEM阶段\code{PC+4}，用于传递或调试。 \\
+	\code{wb\_pc4}          & 输出 & 32 & WB阶段\code{PC+4}。          \\
+	\code{clk}              & 输入 & 1  & 系统时钟信号。                   \\
+	\code{rst}              & 输入 & 1  & 复位信号。                     \\
+	\code{mem\_alu\_result} & 输入 & 32 & MEM阶段写回候选结果。              \\
+	\code{mem\_mdata}       & 输入 & 32 & MEM阶段访存读出数据。              \\
+	\code{mem\_rd\_addr}    & 输入 & 5  & MEM阶段目的寄存器编号。             \\
+	\code{mem\_mask}        & 输入 & 3  & MEM阶段访存宽度及扩展控制。           \\
+	\code{mem\_regwrmux}    & 输入 & 2  & MEM阶段写回来源选择。              \\
+	\code{mem\_reg\_write}  & 输入 & 1  & MEM阶段寄存器写使能。              \\
+	\code{wb\_alu\_result}  & 输出 & 32 & WB阶段写回候选结果。               \\
+	\code{wb\_mdata}        & 输出 & 32 & WB阶段访存读出数据。               \\
+	\code{wb\_rd\_addr}     & 输出 & 5  & WB阶段目的寄存器编号。              \\
+	\code{wb\_mask}         & 输出 & 3  & WB阶段访存宽度及扩展控制。            \\
+	\code{wb\_regwrmux}     & 输出 & 2  & WB阶段写回来源选择。               \\
+	\code{wb\_reg\_write}   & 输出 & 1  & WB阶段寄存器写使能。               \\
+	\bottomrule
 \end{longtable}
 }
 
@@ -785,24 +787,24 @@ MEM/WB 流水线寄存器将 MEM 阶段的访存结果和写回候选结果传�
 \code{forwarding\_unit}比较EX阶段源寄存器\code{rs1/rs2}与MEM、WB阶段目的寄存器\code{rd}。若检测到数据相关且后续阶段写使能有效，则生成\code{2'b10}或\code{2'b11}前递选择信号，使ALU输入直接使用最新结果，减少流水线暂停。
 
 \begin{table}[H]
-\centering
-\caption{\code{forwarding\_unit}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{rd1} & 输入 & 5 & MEM阶段目的寄存器编号。 \\
-\code{rd1\_we} & 输入 & 1 & MEM阶段寄存器写使能。 \\
-\code{rd2} & 输入 & 5 & WB阶段目的寄存器编号。 \\
-\code{rd2\_we} & 输入 & 1 & WB阶段寄存器写使能。 \\
-\code{rs1} & 输入 & 5 & EX阶段源寄存器\code{rs1}编号。 \\
-\code{rs2} & 输入 & 5 & EX阶段源寄存器\code{rs2}编号。 \\
-\code{rs1\_forward\_sel} & 输出 & 2 & \code{rs1}前递选择信号。 \\
-\code{rs2\_forward\_sel} & 输出 & 2 & \code{rs2}前递选择信号。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{forwarding\_unit}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名                      & 方向 & 位宽 & 说明                    \\
+		\midrule
+		\code{rd1}               & 输入 & 5  & MEM阶段目的寄存器编号。         \\
+		\code{rd1\_we}           & 输入 & 1  & MEM阶段寄存器写使能。          \\
+		\code{rd2}               & 输入 & 5  & WB阶段目的寄存器编号。          \\
+		\code{rd2\_we}           & 输入 & 1  & WB阶段寄存器写使能。           \\
+		\code{rs1}               & 输入 & 5  & EX阶段源寄存器\code{rs1}编号。 \\
+		\code{rs2}               & 输入 & 5  & EX阶段源寄存器\code{rs2}编号。 \\
+		\code{rs1\_forward\_sel} & 输出 & 2  & \code{rs1}前递选择信号。     \\
+		\code{rs2\_forward\_sel} & 输出 & 2  & \code{rs2}前递选择信号。     \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -816,25 +818,25 @@ forwarding\_unit 的输入包括 EX 阶段源寄存器编号 \code{rs1}、\code{
 \code{hazard\_detection\_unit}主要处理两类冒险。第一类是控制冒险，当分支成立或发生\code{jal/jalr}跳转时，产生\code{flush}信号冲刷错误路径指令。第二类是load-use冒险，当EX阶段为load指令且其目的寄存器被ID阶段指令立即使用时，产生\code{stall}信号暂停流水线一个周期。
 
 \begin{table}[H]
-\centering
-\caption{\code{hazard\_detection\_unit}模块输入输出信号说明}
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
-\toprule
-参数名 & 方向 & 位宽 & 说明 \\
-\midrule
-\code{npcop} & 输入 & 2 & EX阶段下一PC控制信号。 \\
-\code{alu\_is\_true} & 输入 & 1 & ALU输出的分支判断结果。 \\
-\code{regwrmux} & 输入 & 2 & EX阶段写回来源选择，用于判断Load指令。 \\
-\code{reg\_write} & 输入 & 1 & EX阶段寄存器写使能。 \\
-\code{rd} & 输入 & 5 & EX阶段目的寄存器编号。 \\
-\code{rs1} & 输入 & 5 & ID阶段源寄存器\code{rs1}编号。 \\
-\code{rs2} & 输入 & 5 & ID阶段源寄存器\code{rs2}编号。 \\
-\code{trigger\_stall} & 输出 & 1 & load-use冒险暂停信号。 \\
-\code{trigger\_flush} & 输出 & 1 & 分支/跳转冲刷信号。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{hazard\_detection\_unit}模块输入输出信号说明}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{p{3.2cm}p{1.5cm}p{2.1cm}X}
+		\toprule
+		参数名                   & 方向 & 位宽 & 说明                     \\
+		\midrule
+		\code{npcop}          & 输入 & 2  & EX阶段下一PC控制信号。          \\
+		\code{alu\_is\_true}  & 输入 & 1  & ALU输出的分支判断结果。          \\
+		\code{regwrmux}       & 输入 & 2  & EX阶段写回来源选择，用于判断Load指令。 \\
+		\code{reg\_write}     & 输入 & 1  & EX阶段寄存器写使能。            \\
+		\code{rd}             & 输入 & 5  & EX阶段目的寄存器编号。           \\
+		\code{rs1}            & 输入 & 5  & ID阶段源寄存器\code{rs1}编号。  \\
+		\code{rs2}            & 输入 & 5  & ID阶段源寄存器\code{rs2}编号。  \\
+		\code{trigger\_stall} & 输出 & 1  & load-use冒险暂停信号。        \\
+		\code{trigger\_flush} & 输出 & 1  & 分支/跳转冲刷信号。             \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection*{设计细节}
@@ -1066,7 +1068,7 @@ ALU中将加减、逻辑、移位和比较运算分别计算，再通过\code{ca
 	\code{Control.sv}                 & 控制器模块                   \\
 	\code{IMMGEN.sv}                  & 立即数生成模块                 \\
 	\code{RegFile.sv}                 & 寄存器堆模块                  \\
-	\code{ALU.sv}                     & 算术逻辑单元           HEAD       \\
+	\code{ALU.sv}                     & 算术逻辑单元           HEAD   \\
 	\code{ALU\_src.sv}                & ALU操作数选择模块，包含前递选择       \\
 	\code{forwarding\_unit.sv}        & 数据前递单元                  \\
 	\code{hazard\_detection\_unit.sv} & 冒险检测单元                  \\
@@ -1131,6 +1133,21 @@ digital_twin/
         `-- 生成的 bit 文件
 \end{verbatim}
 
+\subsection{团队分工}
+
+\begin{itemize}
+	\item 李建昊：CPU顶层架构设计，Datapath模块设计，流水线寄存器设计，数据前递与冒险处理机制设计，报告撰写，git协作环境搭建，项目管理，设计、仿真与上板测试环境搭建；负责团队成员协调。
+	\item 施云翀：参与流水线代码初期实现、初期调试，参与流水线后期优化；完成Trace仿真测试接口设计、兼容性设计；性能测试设计和执行；参与FPGA bitstream生成与上板测试；负责测评报告的整理与撰写。
+	\item 袁源：检查各模块源文件的引用路径；整理 CPU 各模块的输入输出端口信息，并制作模块接口说明表；协助准备指令存储器初始化文件，完成基础行为仿真和部分关键信号观察；参与 FPGA bitstream 生成与上板测试，记录测试结果；负责设计报告的整理与撰写。
+\end{itemize}
+
+\subsection{AI 工具使用声明}
+
+所用工具：ChatGPT 5.5
+
+用途：辅助撰写项目背景、辅助生成表格
+
+AI 生成内容占比：约占报告文档的10\%
 
 \clearpage
 \section*{参考文献}
@@ -1141,4 +1158,6 @@ digital_twin/
 
 	\item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
 \end{enumerate}
+
+
 \end{document}
