@@ -35,29 +35,6 @@
 
 \begin{document}
 
-% ===================== 封面 =====================
-\begin{titlepage}
-    \centering
-    \vspace*{1.8cm}
-    {\zihao{2}\heiti 第十届全国大学生集成电路创新创业大赛\\[0.4em] ``竞业达''企业命题初赛}\par
-    \vspace{1.8cm}
-    {\zihao{1}\heiti RISC-V CPU设计报告}\par
-    \vspace{0.8cm}
-    {\zihao{3}\heiti 基于RV32I指令集的五级流水线CPU设计}\par
-    \vfill
-    \begin{tabular}{rl}
-        院\quad 校： & {上海科技大学} \\[0.6em]
-        作品名称： & 基于RV32I指令集的五级流水线CPU设计 \\[0.6em]
-        团队名称： & {决战内存条队} \\[0.6em]
-        姓\quad 名： & {李建昊、施云翀、袁源} \\[0.6em]
-        指导教师： & {刘闯} \\[0.6em]
-        时\quad 间： & {2026年5月7日} 
-    \end{tabular}
-    \vfill
-\end{titlepage}
-
-\tableofcontents
-\newpage
 
 % ===================== 快速预览 =====================
 \section*{作品快速预览简介}
@@ -82,7 +59,7 @@ CPU类型 & 32位RISC-V CPU \\
 冒险处理 & 数据前递、load-use暂停、分支/跳转冲刷 \\
 外设接口 & IROM接口与DRAM/外设统一访问接口 \\
 Vivado版本 & Vivado 2023.2\\
-开发板型号 & Kintex-7\\
+开发板型号 & Xilinx Kintex-7 系列 FPGA\\
 
 \bottomrule
 \end{tabularx}
@@ -333,7 +310,7 @@ COUNTER & \code{0x8020\_0050--0x8020\_0053} & 计数器区域，读写，用于�
 
 \subsubsection{PC模块}
 
-\code{PC}模块用于保存当前取指地址。复位时，正常上板模式下PC初始化为\code{0x8000\_0000}，以匹配企业模板中IROM起始地址；开启\code{ENABLE\_DEBUG\_TRACE}调试宏时，复位值为\code{0x0000\_0000}，便于仿真跟踪。正常运行时，PC在时钟上升沿更新为\code{NPC}模块生成的下一条指令地址。
+\code{PC}模块用于保存当前取指地址。复位时，正常上板模式下PC初始化为\code{0x8000\_0000}，以匹配企业模板中IROM起始地址；开启\code{ENABLE\_DEBUG\_TRACE}调试宏时，复位值为\code{0x0000\_0000}，便于trace仿真跟踪。正常运行时，PC在时钟上升沿更新为\code{NPC}模块生成的下一条指令地址。
 
 \subsubsection*{设计细节}
 
