@@ -80,12 +80,18 @@
 		核心模块     & \code{PC}、\code{NPC}、\code{Control}、\code{IMMGEN}、\code{RegFile}、\code{ALU}、\code{Mask}、流水线寄存器、前递单元、冒险检测单元 \\
 		冒险处理     & 数据前递、load-use暂停、分支/跳转冲刷                                                                                    \\
 		外设接口     & IROM接口与DRAM/外设统一访问接口                                                                                       \\
-		Vivado版本 & Vivado 2023.2 \\
-		开发板型号    & Kintex-7 \\
+		Vivado版本 & Vivado 2023.2                                                                                              \\
+		开发板型号    & Kintex-7                                                                                                   \\
+		最大工作频率   & 120 MHz                                                                                                    \\
 		补充内容     & \todo{整体架构图截图、综合实现结果、bit文件信息}                                                                              \\
 		\bottomrule
 	\end{tabularx}
 \end{table}
+
+\begin{figure}[H]
+	\includegraphics[width=1\textwidth]{../CPU2.0 pipeline.drawio.png}
+	\caption{CPU整体架构图}
+\end{figure}
 
 \newpage
 
@@ -126,7 +132,7 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 		开发工具   & {Vivado 2023.2}                                  \\
 		硬件描述语言 & SystemVerilog                                    \\
 		仿真工具   & {Vivado Simulation、Verilator}                    \\
-		CPU时钟  & 企业模板默认提供50MHz外设时钟，可通过PLL调整；本设计使用CPU时钟频率为{130MHz} \\
+		CPU时钟  & 企业模板默认提供50MHz外设时钟，可通过PLL调整；本设计使用CPU时钟频率为{120MHz} \\
 		工程顶层   & 企业模板顶层 + 自研\code{myCPU}核心                        \\
 		生成文件   & {src0.bit, src1.bit, src2.bit}                   \\
 		\bottomrule
