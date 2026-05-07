@@ -1,35 +1,45 @@
-\documentclass[UTF8,a4paper,12pt]{ctexart}
-\usepackage{xeCJK}
-\setCJKmainfont{Noto Serif CJK SC}
-% ===================== 基本版式 =====================
-\usepackage{geometry}
-\usepackage{graphicx}
-\usepackage{float}
+\documentclass[12pt,a4paper]{ctexart}
+
 \usepackage{booktabs}
-\usepackage{array}
 \usepackage{tabularx}
 \usepackage{longtable}
-\usepackage{enumitem}
-\usepackage{hyperref}
-\usepackage{xcolor}
 \usepackage{amsmath}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+\usepackage{array}
 
+% 页面设置
+\usepackage{geometry}
 \geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% 字体与行距
+\setCJKmainfont{Noto Serif CJK SC}
+\setmainfont{Times New Roman} % 英文正文 Times New Roman
 \linespread{1.5}
 \setlength{\parindent}{2em}
 \setlength{\parskip}{0pt}
+
+% 列表格式
+\usepackage{enumitem}
 \setlist[itemize]{noitemsep, topsep=2pt}
 \setlist[enumerate]{noitemsep, topsep=2pt}
 
+% 图形
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+
+% 超链接
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+
+% 章节标题格式
 \ctexset{
-  section={format=\zihao{3}\heiti\bfseries, aftername=\quad},
-  subsection={format=\zihao{4}\heiti\bfseries, aftername=\quad},
-  subsubsection={format=\zihao{-4}\heiti\bfseries, aftername=\quad}
+  section={format=\zihao{3}\heiti\bfseries\centering, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip},
+  subsection={format=\zihao{4}\heiti\bfseries, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip},
+  subsubsection={format=\zihao{-4}\heiti\bfseries, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip}
 }
 
-\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+% 自定义命令
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{【待补充：#1】}}}
 \newcommand{\code}[1]{\texttt{#1}}
 
@@ -37,23 +47,23 @@
 
 % ===================== 封面 =====================
 \begin{titlepage}
-    \centering
-    \vspace*{1.8cm}
-    {\zihao{2}\heiti 第十届全国大学生集成电路创新创业大赛\\[0.4em] ``竞业达''企业命题初赛}\par
-    \vspace{1.8cm}
-    {\zihao{1}\heiti RISC-V CPU设计报告}\par
-    \vspace{0.8cm}
-    {\zihao{3}\heiti 基于RV32I指令集的五级流水线CPU设计}\par
-    \vfill
-    \begin{tabular}{rl}
-        院\quad 校： & {上海科技大学} \\[0.6em]
-        作品名称： & 基于RV32I指令集的五级流水线CPU设计 \\[0.6em]
-        团队名称： & {决战内存条队} \\[0.6em]
-        姓\quad 名： & {李建昊、施云翀、袁源} \\[0.6em]
-        指导教师： & {刘闯} \\[0.6em]
-        时\quad 间： & {2026年5月7日} 
-    \end{tabular}
-    \vfill
+	\centering
+	\vspace*{1.8cm}
+	{\zihao{2}\heiti 第十届全国大学生集成电路创新创业大赛\\[0.4em] ``竞业达''企业命题初赛}\par
+	\vspace{1.8cm}
+	{\zihao{1}\heiti RISC-V CPU设计报告}\par
+	\vspace{0.8cm}
+	{\zihao{3}\heiti 基于RV32I指令集的五级流水线CPU设计}\par
+	\vfill
+	\begin{tabular}{rl}
+		院\quad 校： & {上海科技大学}              \\[0.6em]
+		作品名称：     & 基于RV32I指令集的五级流水线CPU设计 \\[0.6em]
+		团队名称：     & {决战内存条队}              \\[0.6em]
+		姓\quad 名： & {李建昊、施云翀、袁源}          \\[0.6em]
+		指导教师：     & {刘闯}                  \\[0.6em]
+		时\quad 间： & {2026年5月7日}
+	\end{tabular}
+	\vfill
 \end{titlepage}
 
 \tableofcontents
@@ -89,7 +99,7 @@
 \end{table}
 
 \begin{figure}[H]
-	\includegraphics[width=1\textwidth]{../CPU2.0 pipeline.drawio.png}
+	\includegraphics[width=1\textwidth]{CPU2.0 pipeline.drawio.png}
 	\caption{CPU整体架构图}
 \end{figure}
 
@@ -108,11 +118,11 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 本项目的设计目标如下：
 
 \begin{enumerate}
-    \item 实现一款基于RV32I基本整数指令集的32位CPU；
-    \item 采用五级流水线结构，实现IF、ID、EX、MEM、WB五个阶段；
-    \item 支持初赛要求的37条RV32I基础指令；
-    \item 完成PC更新、指令译码、立即数生成、寄存器读写、ALU运算、访存和写回等功能；
-    \item 实现数据前递、load-use暂停和控制冒险冲刷机制；
+	\item 实现一款基于RV32I基本整数指令集的32位CPU；
+	\item 采用五级流水线结构，实现IF、ID、EX、MEM、WB五个阶段；
+	\item 支持初赛要求的37条RV32I基础指令；
+	\item 完成PC更新、指令译码、立即数生成、寄存器读写、ALU运算、访存和写回等功能；
+	\item 实现数据前递、load-use暂停和控制冒险冲刷机制；
 
 \end{enumerate}
 
@@ -144,140 +154,140 @@ RISC-V是一种开放的指令集架构，具有结构简洁、模块化程度�
 本CPU面向RV32I基本整数指令集进行设计。初赛测试要求中，RV32I共40条基础指令，排除\code{fence}、\code{ecall}、\code{ebreak}三条后，最低要求实现37条指令。本设计按照该目标对R型、I型、Load、Store、Branch、U型和J型指令进行支持。
 
 \begin{longtable}{p{3cm}p{8cm}p{3cm}}
-\caption{RV32I指令支持情况}\\
-\toprule
-指令类型 & 指令 & 当前设计状态 \\
-\midrule
-\endfirsthead
-\toprule
-指令类型 & 指令 & 当前设计状态 \\
-\midrule
-\endhead
-R型运算指令 & \code{add, sub, sll, slt, sltu, xor, srl, sra, or, and} & 已完成 \\
-I型运算指令 & \code{addi, slti, sltiu, xori, ori, andi, slli, srli, srai} & 已完成 \\
-Load指令 & \code{lb, lh, lw, lbu, lhu} & 已完成 \\
-Store指令 & \code{sb, sh, sw} & 已完成 \\
-Branch指令 & \code{beq, bne, blt, bge, bltu, bgeu} & 已完成 \\
-U型指令 & \code{lui, auipc} & 已完成 \\
-J型指令 & \code{jal, jalr} & 已完成  \\
-\bottomrule
+	\caption{RV32I指令支持情况}                                                           \\
+	\toprule
+	指令类型     & 指令                                                          & 当前设计状态 \\
+	\midrule
+	\endfirsthead
+	\toprule
+	指令类型     & 指令                                                          & 当前设计状态 \\
+	\midrule
+	\endhead
+	R型运算指令   & \code{add, sub, sll, slt, sltu, xor, srl, sra, or, and}     & 已完成    \\
+	I型运算指令   & \code{addi, slti, sltiu, xori, ori, andi, slli, srli, srai} & 已完成    \\
+	Load指令   & \code{lb, lh, lw, lbu, lhu}                                 & 已完成    \\
+	Store指令  & \code{sb, sh, sw}                                           & 已完成    \\
+	Branch指令 & \code{beq, bne, blt, bge, bltu, bgeu}                       & 已完成    \\
+	U型指令     & \code{lui, auipc}                                           & 已完成    \\
+	J型指令     & \code{jal, jalr}                                            & 已完成    \\
+	\bottomrule
 \end{longtable}
 
 \subsection{RV32I CPU的整体架构图}
 
 本设计采用五级流水线结构。整体架构由取指阶段、译码阶段、执行阶段、访存阶段和写回阶段组成，各阶段之间通过流水线寄存器传递数据与控制信号。
 \begin{figure}[H]
-\centering
-\resizebox{0.96\textwidth}{!}{
-\begin{tikzpicture}[
-    font=\small,
-    stage/.style={
-        draw,
-        rounded corners,
-        minimum width=1.65cm,
-        minimum height=0.9cm,
-        align=center,
-        thick
-    },
-    reg/.style={
-        draw,
-        minimum width=0.75cm,
-        minimum height=0.75cm,
-        align=center,
-        font=\scriptsize
-    },
-    unit/.style={
-        draw,
-        rounded corners,
-        minimum width=2.05cm,
-        minimum height=0.65cm,
-        align=center,
-        font=\scriptsize
-    },
-    hazard/.style={
-        draw,
-        rounded corners,
-        minimum width=3.2cm,
-        minimum height=0.65cm,
-        align=center,
-        font=\scriptsize
-    },
-    dataarrow/.style={
-        -{Stealth[length=2mm]},
-        thick
-    },
-    ctrlarrow/.style={
-        -{Stealth[length=2mm]},
-        dashed,
-        thick,
-        rounded corners=3pt
-    }
-]
+	\centering
+	\resizebox{0.96\textwidth}{!}{
+		\begin{tikzpicture}[
+			font=\small,
+			stage/.style={
+					draw,
+					rounded corners,
+					minimum width=1.65cm,
+					minimum height=0.9cm,
+					align=center,
+					thick
+				},
+			reg/.style={
+					draw,
+					minimum width=0.75cm,
+					minimum height=0.75cm,
+					align=center,
+					font=\scriptsize
+				},
+			unit/.style={
+					draw,
+					rounded corners,
+					minimum width=2.05cm,
+					minimum height=0.65cm,
+					align=center,
+					font=\scriptsize
+				},
+			hazard/.style={
+					draw,
+					rounded corners,
+					minimum width=3.2cm,
+					minimum height=0.65cm,
+					align=center,
+					font=\scriptsize
+				},
+			dataarrow/.style={
+			-{Stealth[length=2mm]},
+			thick
+			},
+			ctrlarrow/.style={
+			-{Stealth[length=2mm]},
+			dashed,
+			thick,
+			rounded corners=3pt
+			}
+			]
 
-% ================= 主流水线阶段 =================
-\node[stage] (IF) at (0,0) {IF\\取指};
-\node[reg]   (IFID) at (1.75,0) {IF/ID};
-\node[stage] (ID) at (3.50,0) {ID\\译码};
-\node[reg]   (IDEX) at (5.25,0) {ID/EX};
-\node[stage] (EX) at (7.00,0) {EX\\执行};
-\node[reg]   (EXMEM) at (8.85,0) {EX/MEM};
-\node[stage] (MEM) at (10.75,0) {MEM\\访存};
-\node[reg]   (MEMWB) at (12.65,0) {MEM/WB};
-\node[stage] (WB) at (14.40,0) {WB\\写回};
+			% ================= 主流水线阶段 =================
+			\node[stage] (IF) at (0,0) {IF\\取指};
+			\node[reg]   (IFID) at (1.75,0) {IF/ID};
+			\node[stage] (ID) at (3.50,0) {ID\\译码};
+			\node[reg]   (IDEX) at (5.25,0) {ID/EX};
+			\node[stage] (EX) at (7.00,0) {EX\\执行};
+			\node[reg]   (EXMEM) at (8.85,0) {EX/MEM};
+			\node[stage] (MEM) at (10.75,0) {MEM\\访存};
+			\node[reg]   (MEMWB) at (12.65,0) {MEM/WB};
+			\node[stage] (WB) at (14.40,0) {WB\\写回};
 
-% ================= 主数据通路 =================
-\draw[dataarrow] (IF.east) -- (IFID.west);
-\draw[dataarrow] (IFID.east) -- (ID.west);
-\draw[dataarrow] (ID.east) -- (IDEX.west);
-\draw[dataarrow] (IDEX.east) -- (EX.west);
-\draw[dataarrow] (EX.east) -- (EXMEM.west);
-\draw[dataarrow] (EXMEM.east) -- (MEM.west);
-\draw[dataarrow] (MEM.east) -- (MEMWB.west);
-\draw[dataarrow] (MEMWB.east) -- (WB.west);
+			% ================= 主数据通路 =================
+			\draw[dataarrow] (IF.east) -- (IFID.west);
+			\draw[dataarrow] (IFID.east) -- (ID.west);
+			\draw[dataarrow] (ID.east) -- (IDEX.west);
+			\draw[dataarrow] (IDEX.east) -- (EX.west);
+			\draw[dataarrow] (EX.east) -- (EXMEM.west);
+			\draw[dataarrow] (EXMEM.east) -- (MEM.west);
+			\draw[dataarrow] (MEM.east) -- (MEMWB.west);
+			\draw[dataarrow] (MEMWB.east) -- (WB.west);
 
-% ================= 各阶段内部模块 =================
-\node[unit] (ifunit) at (0,-1.45) {PC / NPC\\IROM接口};
-\node[unit] (idunit) at (3.50,-1.45) {Control\\IMMGEN / RegFile};
-\node[unit] (exunit) at (7.00,-1.45) {ALU\\ALU\_src};
-\node[unit] (memunit) at (10.75,-1.45) {DRAM/外设接口\\Mask};
-\node[unit] (wbunit) at (14.40,-1.45) {写回选择\\RegFile写入};
+			% ================= 各阶段内部模块 =================
+			\node[unit] (ifunit) at (0,-1.45) {PC / NPC\\IROM接口};
+			\node[unit] (idunit) at (3.50,-1.45) {Control\\IMMGEN / RegFile};
+			\node[unit] (exunit) at (7.00,-1.45) {ALU\\ALU\_src};
+			\node[unit] (memunit) at (10.75,-1.45) {DRAM/外设接口\\Mask};
+			\node[unit] (wbunit) at (14.40,-1.45) {写回选择\\RegFile写入};
 
-% 各阶段模块到对应流水线阶段，短虚线，不跨框
-\draw[ctrlarrow] (ifunit.north) -- (IF.south);
-\draw[ctrlarrow] (idunit.north) -- (ID.south);
-\draw[ctrlarrow] (exunit.north) -- (EX.south);
-\draw[ctrlarrow] (memunit.north) -- (MEM.south);
-\draw[ctrlarrow] (wbunit.north) -- (WB.south);
+			% 各阶段模块到对应流水线阶段，短虚线，不跨框
+			\draw[ctrlarrow] (ifunit.north) -- (IF.south);
+			\draw[ctrlarrow] (idunit.north) -- (ID.south);
+			\draw[ctrlarrow] (exunit.north) -- (EX.south);
+			\draw[ctrlarrow] (memunit.north) -- (MEM.south);
+			\draw[ctrlarrow] (wbunit.north) -- (WB.south);
 
-% ================= 冒险处理单元 =================
-\node[hazard] (hazardunit) at (7.00,-2.85) {Forwarding Unit\\Hazard Detection Unit};
+			% ================= 冒险处理单元 =================
+			\node[hazard] (hazardunit) at (7.00,-2.85) {Forwarding Unit\\Hazard Detection Unit};
 
-% 冒险处理到EX阶段，短虚线
-\draw[ctrlarrow] (hazardunit.north) -- (exunit.south);
+			% 冒险处理到EX阶段，短虚线
+			\draw[ctrlarrow] (hazardunit.north) -- (exunit.south);
 
-% 冒险处理到IF/ID，路线从底部绕行，不压框
-\draw[ctrlarrow]
-    (hazardunit.west)
-    -- (1.75,-2.85)
-    -- (IFID.south);
+			% 冒险处理到IF/ID，路线从底部绕行，不压框
+			\draw[ctrlarrow]
+			(hazardunit.west)
+			-- (1.75,-2.85)
+			-- (IFID.south);
 
-% 冒险处理到ID/EX，路线走模块间隙，不压框
-\draw[ctrlarrow]
-    (hazardunit.west)
-    -- (5.25,-3.25)
-    -- (IDEX.south);
+			% 冒险处理到ID/EX，路线走模块间隙，不压框
+			\draw[ctrlarrow]
+			(hazardunit.west)
+			-- (5.25,-3.25)
+			-- (IDEX.south);
 
-% 写回反馈到寄存器堆，从右侧绕到底部，不穿过中间框图
-\draw[ctrlarrow]
-    (WB.east)
-    -- ++(0.45,0)
-    |- (3.50,-4.05)
-    -- (idunit.south);
+			% 写回反馈到寄存器堆，从右侧绕到底部，不穿过中间框图
+			\draw[ctrlarrow]
+			(WB.east)
+			-- ++(0.45,0)
+			|- (3.50,-4.05)
+			-- (idunit.south);
 
-\end{tikzpicture}
-}
-\caption{五级流水线 CPU 整体架构示意图}
-\label{fig:cpu_arch}
+		\end{tikzpicture}
+	}
+	\caption{五级流水线 CPU 整体架构示意图}
+	\label{fig:cpu_arch}
 \end{figure}
 本设计采用哈佛式存储结构，指令访问接口与数据/外设访问接口相互独立。取指阶段通过 \texttt{irom\_addr} 和 \texttt{irom\_data} 访问 IROM；访存阶段通过 \texttt{perip\_addr}、\texttt{perip\_wen}、\texttt{perip\_mask}、\texttt{perip\_wdata} 和 \texttt{perip\_rdata} 访问 DRAM 或外设。因此，IF 阶段取指和 MEM 阶段访存可以在接口层面分离，符合五级流水线 CPU 的设计需求。\
 \todo{更改后的cpu架构图}
@@ -288,23 +298,24 @@ J型指令 & \code{jal, jalr} & 已完成  \\
 本CPU顶层模块为\code{myCPU}，与企业模板中\code{Core\_cpu}实例连接。接口包括系统时钟复位、IROM指令存储器接口以及DRAM/外设统一接口。
 
 \begin{table}[H]
-\centering
-\caption{\code{myCPU}顶层接口说明}
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}p{2cm}X}
-\toprule
-信号名称 & 方向 & 位宽 & 功能说明 \\
-\midrule
-\code{cpu\_clk} & input & 1 & CPU工作时钟 \\
-\code{cpu\_rst} & input & 1 & CPU复位信号 \\
-\code{irom\_addr} & output & 32 & 指令存储器访问地址，由当前PC给出 \\
-\code{irom\_data} & input & 32 & 指令存储器返回的32位指令 \\
-\code{perip\_addr} & output & 32 & DRAM或外设访问地址，再由MEM阶段ALU结果给出 \\
-\code{perip\_wen} & output & 1 & 使能信号，store指令有效 \\
-\code{perip\_mask} & output & 2 & 访存宽度控制，00表示1字节，01表示2字节，10表示4字节 \\
-\code{perip\_wdata} & output & 32 & 写入DRAM或外设的数据 \\
-\code{perip\_rdata} & input & 32 & DRAM或外设返回的数据 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{\code{myCPU}顶层接口说明}
+	\begin{tabularx}{\textwidth}{p{3cm}p{2cm}p{2cm}X}
+		\toprule
+		信号名称                & 方向     & 位宽 & 功能说明                           \\
+		\midrule
+		\code{cpu\_clk}     & input  & 1  & CPU工作时钟                        \\
+		\code{cpu\_rst}     & input  & 1  & CPU复位信号                        \\
+		\code{irom\_addr}   & output & 32 & 指令存储器访问地址，由当前PC给出              \\
+		\code{irom\_data}   & input  & 32 & 指令存储器返回的32位指令                  \\
+		\code{perip\_addr}  & output & 32 & DRAM或外设访问地址，再由MEM阶段ALU结果给出     \\
+		\code{perip\_wen}   & output & 1  & 使能信号，store指令有效                 \\
+		\code{perip\_mask}  & output & 2  & 访存宽度控制，00表示1字节，01表示2字节，10表示4字节 \\
+		\code{perip\_wdata} & output & 32 & 写入DRAM或外设的数据                   \\
+		\code{perip\_rdata} & input  & 32 & DRAM或外设返回的数据                   \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
 
 
 \subsection{地址空间与外设访问方式}
@@ -312,27 +323,26 @@ J型指令 & \code{jal, jalr} & 已完成  \\
 根据企业提供的工程模板，CPU 通过独立的 IROM 接口访问指令存储器，通过统一的 \code{perip} 接口访问 DRAM 和外设地址空间。CPU 核心只负责输出访问地址、写使能、访问宽度和写入数据，具体地址译码由模板中的外部平台完成。因此，CPU 内部数据通路可以保持相对独立，不需要将数码管、LED 或按键等外设的译码逻辑写入 CPU 核心。
 
 \begin{table}[H]
-\centering
-\caption{企业平台地址空间映射}
-\footnotesize
-\renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{p{3cm}p{4.2cm}X}
-\toprule
-区域 & 地址范围 & 功能说明 \\
-\midrule
-IROM & \code{0x8000\_0000--0x800F\_FFFF} & 指令存储器地址空间，其中前 16KB 用于 IROM 初始化程序，只读。 \\
-DRAM & \code{0x8010\_0000--0x801F\_FFFF} & 数据存储器地址空间，其中前 256KB 用于 DRAM 初始化与读写访问。 \\
-SW & \code{0x8020\_0000--0x8020\_0007} & 开关输入区域，只读，用于读取开关状态。 \\
-KEY & \code{0x8020\_0010--0x8020\_0013} & 按键输入区域，只读，用于读取按键状态。 \\
-SEG & \code{0x8020\_0020--0x8020\_0023} & 七段数码管显示区域，读写，用于显示测试结果。 \\
-LED & \code{0x8020\_0040--0x8020\_0043} & LED 显示区域，只写，用于显示测试状态或结果。 \\
-COUNTER & \code{0x8020\_0050--0x8020\_0053} & 计数器区域，读写，用于记录测试程序运行时间。 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{企业平台地址空间映射}
+	\footnotesize
+	\renewcommand{\arraystretch}{1.2}
+	\begin{tabularx}{\textwidth}{p{3cm}p{4.2cm}X}
+		\toprule
+		区域      & 地址范围                              & 功能说明                                  \\
+		\midrule
+		IROM    & \code{0x8000\_0000--0x800F\_FFFF} & 指令存储器地址空间，其中前 16KB 用于 IROM 初始化程序，只读。  \\
+		DRAM    & \code{0x8010\_0000--0x801F\_FFFF} & 数据存储器地址空间，其中前 256KB 用于 DRAM 初始化与读写访问。 \\
+		SW      & \code{0x8020\_0000--0x8020\_0007} & 开关输入区域，只读，用于读取开关状态。                   \\
+		KEY     & \code{0x8020\_0010--0x8020\_0013} & 按键输入区域，只读，用于读取按键状态。                   \\
+		SEG     & \code{0x8020\_0020--0x8020\_0023} & 七段数码管显示区域，读写，用于显示测试结果。                \\
+		LED     & \code{0x8020\_0040--0x8020\_0043} & LED 显示区域，只写，用于显示测试状态或结果。              \\
+		COUNTER & \code{0x8020\_0050--0x8020\_0053} & 计数器区域，读写，用于记录测试程序运行时间。                \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 在访存类指令执行时，ALU 计算出的地址通过 \code{perip\_addr} 输出。对于 Store 指令，\code{perip\_wen} 置位，\code{perip\_mask} 指示写入宽度，\code{perip\_wdata} 输出待写入数据；对于 Load 指令，外部平台将读出数据通过 \code{perip\_rdata} 返回 CPU，并在后续写回阶段由 \code{Mask} 模块完成符号扩展或零扩展。
-\end{table}
 
 \subsection{数据通路各模块的设计}
 
@@ -492,93 +502,93 @@ hazard\_detection\_unit 的输入包括 EX 阶段下一 PC 控制信号、ALU �
 为了说明五级流水线数据通路的工作方式，本节以 R 型运算指令、Load 指令、Store 指令、Branch 指令和跳转指令为例，概括不同指令在各流水线阶段中的主要行为。
 
 \begin{table}[H]
-\centering
-\caption{典型指令的流水线执行过程}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{p{2cm}p{2.2cm}p{2.4cm}p{2.4cm}p{2.4cm}X}
-\toprule
-指令类型 & IF阶段 & ID阶段 & EX阶段 & MEM阶段 & WB阶段 \\
-\midrule
-R型运算 & 取指并计算 PC+4 & 译码，读取 rs1、rs2 & ALU 完成寄存器间运算 & 不访问数据存储器 & ALU 结果写回 rd \\
-Load & 取指并计算 PC+4 & 译码，读取 rs1，生成 I 型立即数 & 计算地址 rs1+imm & 读取 DRAM 或外设数据 & 经 Mask 扩展后写回 rd \\
-Store & 取指并计算 PC+4 & 译码，读取 rs1、rs2，生成 S 型立即数 & 计算地址 rs1+imm & 将 rs2 数据写入 DRAM 或外设 & 不写回寄存器 \\
-Branch & 取指并计算 PC+4 & 译码，读取 rs1、rs2，生成 B 型立即数 & 比较 rs1 和 rs2，判断是否分支 & 不访问数据存储器 & 不写回寄存器 \\
-Jal/Jalr & 取指并计算 PC+4 & 译码并生成跳转立即数 & 计算跳转目标地址 & 不访问数据存储器 & PC+4 写回 rd \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{典型指令的流水线执行过程}
+	\footnotesize
+	\setlength{\tabcolsep}{3pt}
+	\renewcommand{\arraystretch}{1.2}
+	\begin{tabularx}{\textwidth}{p{2cm}p{2.2cm}p{2.4cm}p{2.4cm}p{2.4cm}X}
+		\toprule
+		指令类型     & IF阶段       & ID阶段                    & EX阶段                & MEM阶段               & WB阶段            \\
+		\midrule
+		R型运算     & 取指并计算 PC+4 & 译码，读取 rs1、rs2           & ALU 完成寄存器间运算        & 不访问数据存储器            & ALU 结果写回 rd     \\
+		Load     & 取指并计算 PC+4 & 译码，读取 rs1，生成 I 型立即数     & 计算地址 rs1+imm        & 读取 DRAM 或外设数据       & 经 Mask 扩展后写回 rd \\
+		Store    & 取指并计算 PC+4 & 译码，读取 rs1、rs2，生成 S 型立即数 & 计算地址 rs1+imm        & 将 rs2 数据写入 DRAM 或外设 & 不写回寄存器          \\
+		Branch   & 取指并计算 PC+4 & 译码，读取 rs1、rs2，生成 B 型立即数 & 比较 rs1 和 rs2，判断是否分支 & 不访问数据存储器            & 不写回寄存器          \\
+		Jal/Jalr & 取指并计算 PC+4 & 译码并生成跳转立即数              & 计算跳转目标地址            & 不访问数据存储器            & PC+4 写回 rd      \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsection{数据通路信号表}
 
 \begin{table}[H]
-\centering
-\caption{不同指令类型的数据通路信号表}
-\label{tab:datapath_signals}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{
->{\centering\arraybackslash}p{1.35cm}
->{\raggedright\arraybackslash}p{2.4cm}
->{\centering\arraybackslash}p{0.9cm}
->{\centering\arraybackslash}p{1.1cm}
->{\centering\arraybackslash}p{1.1cm}
->{\centering\arraybackslash}p{1.35cm}
->{\centering\arraybackslash}p{1.2cm}
-X}
-\toprule
-指令类型 & 指令示例 & Imm & ALU A & ALU B & ALU功能 & 写回 & 简要说明 \\
-\midrule
+	\centering
+	\caption{不同指令类型的数据通路信号表}
+	\label{tab:datapath_signals}
+	\scriptsize
+	\setlength{\tabcolsep}{3pt}
+	\renewcommand{\arraystretch}{1.15}
+	\begin{tabularx}{\textwidth}{
+		>{\centering\arraybackslash}p{1.35cm}
+		>{\raggedright\arraybackslash}p{2.4cm}
+		>{\centering\arraybackslash}p{0.9cm}
+		>{\centering\arraybackslash}p{1.1cm}
+		>{\centering\arraybackslash}p{1.1cm}
+		>{\centering\arraybackslash}p{1.35cm}
+		>{\centering\arraybackslash}p{1.2cm}
+		X}
+		\toprule
+		指令类型                                                          & 指令示例 & Imm & ALU A   & ALU B & ALU功能 & 写回 & 简要说明 \\
+		\midrule
 
-R型运算 &
-\texttt{add, sub, sll, slt, sltu, xor, srl, sra, or, and} &
-无 & rs1 & rs2 & funct决定 & ALU &
-寄存器间运算，结果写回rd。 \\
+		R型运算                                                          &
+		\texttt{add, sub, sll, slt, sltu, xor, srl, sra, or, and}     &
+		无                                                             & rs1  & rs2 & funct决定 & ALU   &
+		寄存器间运算，结果写回rd。                                                                                                   \\
 
-I型运算 &
-\texttt{addi, slti, sltiu, xori, ori, andi, slli, srli, srai} &
-I型 & rs1 & imm & funct决定 & ALU &
-寄存器与立即数运算，结果写回rd。 \\
+		I型运算                                                          &
+		\texttt{addi, slti, sltiu, xori, ori, andi, slli, srli, srai} &
+		I型                                                            & rs1  & imm & funct决定 & ALU   &
+		寄存器与立即数运算，结果写回rd。                                                                                                \\
 
-Load &
-\texttt{lb, lh, lw, lbu, lhu} &
-I型 & rs1 & imm & 地址计算 & MEM &
-计算地址，读取DRAM/外设，经Mask扩展后写回rd。 \\
+		Load                                                          &
+		\texttt{lb, lh, lw, lbu, lhu}                                 &
+		I型                                                            & rs1  & imm & 地址计算    & MEM   &
+		计算地址，读取DRAM/外设，经Mask扩展后写回rd。                                                                                     \\
 
-Store &
-\texttt{sb, sh, sw} &
-S型 & rs1 & imm & 地址计算 & 无 &
-计算地址，将rs2写入DRAM/外设。 \\
+		Store                                                         &
+		\texttt{sb, sh, sw}                                           &
+		S型                                                            & rs1  & imm & 地址计算    & 无     &
+		计算地址，将rs2写入DRAM/外设。                                                                                              \\
 
-Branch &
-\texttt{beq, bne, blt, bge, bltu, bgeu} &
-B型 & rs1 & rs2 & 条件比较 & 无 &
-条件成立时跳转到PC+imm，否则顺序执行。 \\
+		Branch                                                        &
+		\texttt{beq, bne, blt, bge, bltu, bgeu}                       &
+		B型                                                            & rs1  & rs2 & 条件比较    & 无     &
+		条件成立时跳转到PC+imm，否则顺序执行。                                                                                           \\
 
-\texttt{lui} &
-\texttt{lui} &
-U型 & 无 & imm & 无 & IMM &
-立即数写回rd。 \\
+		\texttt{lui}                                                  &
+		\texttt{lui}                                                  &
+		U型                                                            & 无    & imm & 无       & IMM   &
+		立即数写回rd。                                                                                                         \\
 
-\texttt{auipc} &
-\texttt{auipc} &
-U型 & PC & imm & 加法 & ALU &
-计算PC+imm并写回rd。 \\
+		\texttt{auipc}                                                &
+		\texttt{auipc}                                                &
+		U型                                                            & PC   & imm & 加法      & ALU   &
+		计算PC+imm并写回rd。                                                                                                   \\
 
-\texttt{jal} &
-\texttt{jal} &
-J型 & 无 & 无 & 无 & PC+4 &
-PC跳转到PC+imm，PC+4写回rd。 \\
+		\texttt{jal}                                                  &
+		\texttt{jal}                                                  &
+		J型                                                            & 无    & 无   & 无       & PC+4  &
+		PC跳转到PC+imm，PC+4写回rd。                                                                                            \\
 
-\texttt{jalr} &
-\texttt{jalr} &
-I型 & rs1 & imm & 地址计算 & PC+4 &
-PC跳转到rs1+imm，PC+4写回rd。 \\
+		\texttt{jalr}                                                 &
+		\texttt{jalr}                                                 &
+		I型                                                            & rs1  & imm & 地址计算    & PC+4  &
+		PC跳转到rs1+imm，PC+4写回rd。                                                                                           \\
 
-\bottomrule
-\end{tabularx}
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsection{控制器设计}
@@ -586,43 +596,43 @@ PC跳转到rs1+imm，PC+4写回rd。 \\
 \subsubsection{控制信号表}
 
 \begin{table}[H]
-\centering
-\caption{主要控制信号含义}
-\begin{tabularx}{\textwidth}{p{3cm}p{3cm}X}
-\toprule
-控制信号 & 取值 & 含义 \\
-\midrule
-\code{NpcOp} & 00/01/10/11 & 顺序执行/条件分支/\code{jalr}/\code{jal} \\
-\code{RegWrite} & 0/1 & 是否写回寄存器堆 \\
-\code{MemToReg\_sel} & 00/01/10/11 & PC+4/ALU结果/访存数据/立即数 \\
-\code{MemWrite} & 0/1 & 是否向DRAM或外设写入数据 \\
-\code{ALUSrcA} & 0/1 & ALU输入A选择rs1或PC \\
-\code{ALUSrcB} & 0/1 & ALU输入B选择rs2或立即数 \\
-\code{ALUControl} & 14位独热/组合信号 & 控制ALU执行加、减、逻辑、移位或比较操作 \\
-\code{mask} & funct3 & 指示访存宽度和load扩展方式 \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{主要控制信号含义}
+	\begin{tabularx}{\textwidth}{p{3cm}p{3cm}X}
+		\toprule
+		控制信号                 & 取值          & 含义                               \\
+		\midrule
+		\code{NpcOp}         & 00/01/10/11 & 顺序执行/条件分支/\code{jalr}/\code{jal} \\
+		\code{RegWrite}      & 0/1         & 是否写回寄存器堆                         \\
+		\code{MemToReg\_sel} & 00/01/10/11 & PC+4/ALU结果/访存数据/立即数              \\
+		\code{MemWrite}      & 0/1         & 是否向DRAM或外设写入数据                   \\
+		\code{ALUSrcA}       & 0/1         & ALU输入A选择rs1或PC                   \\
+		\code{ALUSrcB}       & 0/1         & ALU输入B选择rs2或立即数                  \\
+		\code{ALUControl}    & 14位独热/组合信号  & 控制ALU执行加、减、逻辑、移位或比较操作            \\
+		\code{mask}          & funct3      & 指示访存宽度和load扩展方式                  \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \begin{table}[H]
-\centering
-\caption{各类指令控制信号表}
-\scriptsize
-\begin{tabularx}{\textwidth}{p{2cm}p{1.2cm}p{1.4cm}p{1.6cm}p{1.4cm}p{1.4cm}p{1.4cm}X}
-\toprule
-指令类型 & NpcOp & RegWrite & MemToReg & MemWrite & ALUSrcA & ALUSrcB & ALUControl \\
-\midrule
-R型 & 00 & 1 & 01 & 0 & 0 & 0 & funct决定 \\
-I型运算 & 00 & 1 & 01 & 0 & 0 & 1 & funct决定 \\
-Load & 00 & 1 & 10 & 0 & 0 & 1 & add \\
-Store & 00 & 0 & -- & 1 & 0 & 1 & add \\
-Branch & 01 & 0 & -- & 0 & 0 & 0 & funct决定比较 \\
-\code{lui} & 00 & 1 & 11 & 0 & -- & -- & -- \\
-\code{auipc} & 00 & 1 & 01 & 0 & 1 & 1 & add \\
-\code{jal} & 11 & 1 & 00 & 0 & -- & -- & -- \\
-\code{jalr} & 10 & 1 & 00 & 0 & 0 & 1 & add \\
-\bottomrule
-\end{tabularx}
+	\centering
+	\caption{各类指令控制信号表}
+	\scriptsize
+	\begin{tabularx}{\textwidth}{p{2cm}p{1.2cm}p{1.4cm}p{1.6cm}p{1.4cm}p{1.4cm}p{1.4cm}X}
+		\toprule
+		指令类型         & NpcOp & RegWrite & MemToReg & MemWrite & ALUSrcA & ALUSrcB & ALUControl \\
+		\midrule
+		R型           & 00    & 1        & 01       & 0        & 0       & 0       & funct决定    \\
+		I型运算         & 00    & 1        & 01       & 0        & 0       & 1       & funct决定    \\
+		Load         & 00    & 1        & 10       & 0        & 0       & 1       & add        \\
+		Store        & 00    & 0        & --       & 1        & 0       & 1       & add        \\
+		Branch       & 01    & 0        & --       & 0        & 0       & 0       & funct决定比较  \\
+		\code{lui}   & 00    & 1        & 11       & 0        & --      & --      & --         \\
+		\code{auipc} & 00    & 1        & 01       & 0        & 1       & 1       & add        \\
+		\code{jal}   & 11    & 1        & 00       & 0        & --      & --      & --         \\
+		\code{jalr}  & 10    & 1        & 00       & 0        & 0       & 1       & add        \\
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 \subsubsection{控制器设计说明}
@@ -714,34 +724,34 @@ ALU中将加减、逻辑、移位和比较运算分别计算，再通过\code{ca
 \subsection{代码清单}
 
 \begin{longtable}{p{5cm}p{9cm}}
-\caption{主要工程文件说明}\\
-\toprule
-文件名称 & 功能说明 \\
-\midrule
-\endfirsthead
-\toprule
-文件名称 & 功能说明 \\
-\midrule
-\endhead
-\code{myCPU.sv} & CPU顶层模块，连接五级流水线各模块和外部接口 \\
-\code{defines.sv} & 定义RV32I主要opcode宏 \\
-\code{PC.sv} & 程序计数器模块 \\
-\code{NPC.sv} & 下一PC生成模块 \\
-\code{IF\_ID.sv} & IF/ID流水线寄存器 \\
-\code{ID\_EX.sv} & ID/EX流水线寄存器 \\
-\code{EX\_MEM.sv} & EX/MEM流水线寄存器 \\
-\code{MEM\_WB.sv} & MEM/WB流水线寄存器 \\
-\code{Control.sv} & 控制器模块 \\
-\code{IMMGEN.sv} & 立即数生成模块 \\
-\code{RegFile.sv} & 寄存器堆模块 \\
-\code{ALU.sv} & 算术逻辑单元 \\
-\code{ALU\_src.sv} & ALU操作数选择模块，包含前递选择 \\
-\code{forwarding\_unit.sv} & 数据前递单元 \\
-\code{hazard\_detection\_unit.sv} & 冒险检测单元 \\
-\code{Mask.sv} & load数据扩展模块 \\
-\code{ex\_mux.sv} & MEM阶段写回候选数据选择模块 \\
-\code{mem\_mux.sv} & WB阶段最终写回数据选择模块 \\
-\bottomrule
+	\caption{主要工程文件说明}                                          \\
+	\toprule
+	文件名称                              & 功能说明                    \\
+	\midrule
+	\endfirsthead
+	\toprule
+	文件名称                              & 功能说明                    \\
+	\midrule
+	\endhead
+	\code{myCPU.sv}                   & CPU顶层模块，连接五级流水线各模块和外部接口 \\
+	\code{defines.sv}                 & 定义RV32I主要opcode宏        \\
+	\code{PC.sv}                      & 程序计数器模块                 \\
+	\code{NPC.sv}                     & 下一PC生成模块                \\
+	\code{IF\_ID.sv}                  & IF/ID流水线寄存器             \\
+	\code{ID\_EX.sv}                  & ID/EX流水线寄存器             \\
+	\code{EX\_MEM.sv}                 & EX/MEM流水线寄存器            \\
+	\code{MEM\_WB.sv}                 & MEM/WB流水线寄存器            \\
+	\code{Control.sv}                 & 控制器模块                   \\
+	\code{IMMGEN.sv}                  & 立即数生成模块                 \\
+	\code{RegFile.sv}                 & 寄存器堆模块                  \\
+	\code{ALU.sv}                     & 算术逻辑单元                  \\
+	\code{ALU\_src.sv}                & ALU操作数选择模块，包含前递选择       \\
+	\code{forwarding\_unit.sv}        & 数据前递单元                  \\
+	\code{hazard\_detection\_unit.sv} & 冒险检测单元                  \\
+	\code{Mask.sv}                    & load数据扩展模块              \\
+	\code{ex\_mux.sv}                 & MEM阶段写回候选数据选择模块         \\
+	\code{mem\_mux.sv}                & WB阶段最终写回数据选择模块          \\
+	\bottomrule
 \end{longtable}
 
 \subsection{工程目录结构}
@@ -775,8 +785,8 @@ project/
 \subsection{参考资料}
 
 \begin{enumerate}
-    \item RISC-V Unprivileged ISA Specification, Version 2024.04.
-    \item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
+	\item RISC-V Unprivileged ISA Specification, Version 2024.04.
+	\item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
 
 \end{enumerate}
 
