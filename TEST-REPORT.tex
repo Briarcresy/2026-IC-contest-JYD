@@ -119,7 +119,7 @@ rm -r $TARGET
 cp -r $SOURCE $TARGET
 
 cat > "$TARGET/miniRV_SoC.sv" << __EOF__
-... # 省略硬编码的用于适配cdp-tests测试的入口点文件
+... # 见附录：cdp-tests测试的入口点
 __EOF__
 
 cd "$TARGET/.."
@@ -554,7 +554,27 @@ cdp-tests的测试方法大致是在WB阶段令CPU输出五个调试值：是否
     \end{enumerate}
 \end{enumerate}
 
-% \subsection{RV32I CPU 性能测试}
+\subsection{RV32I CPU 性能测试}
+
+我们使用Vivado运行Simulation来测试Cpu的实际CPI
+
+\begin{table}[H]
+\centering
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2cm}p{12cm}X}
+    \toprule
+    \midrule
+    测试平台 & Vivado 2023.2 仿真环境 \\
+    测试频率 & 外设50MHz、核心120MHz \\
+    测试激励 & 冒泡排序示例程序 \\
+    仿真工具 & Vivado 2023.2 Simulator / Testbench 波形与统计脚本 \\
+    测量方式 & 在测试顶层模块统计总指令数和总周期数，$\text{CPI} = \text{总周期数}/\text{总指令数}$ \\
+    \bottomrule
+\end{tabularx}
+\end{table}
+
+将冒泡排序示例程序编译转换成.coe文件，并编写合适的Testbench顶层模块、设定合适的终止信号（见附录：性能测试Testbench），在Vivado 2023.2中模拟运行并观察波形，统计CPU总周期数和总指令数。
+
 % \subsection{RV32I CPU 其他测试}
 
 \section{仿真测试结果}
@@ -568,16 +588,187 @@ cdp-tests的测试方法大致是在WB阶段令CPU输出五个调试值：是否
     \includegraphics[width=0.8\textwidth]{test-summary.png}
 \end{figure}
 
-% \subsection{RV32I CPU 性能测试结果}
+\subsection{RV32I CPU 性能测试结果}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{eff-test.png}
+\end{figure}
+
+
+\begin{table}[H]
+\centering
+\scriptsize
+\begin{tabularx}{0.7\textwidth}{p{2cm}p{8cm}X}
+    \toprule
+    信号 & 意义 \\
+    \midrule
+    pc（上方） & 统计CPU核心经过的总周期数 \\
+    pc（下方） & CPU内部的程序计数器 \\
+    eff & 统计CPU实际执行的总指令数 \\
+    \bottomrule
+\end{tabularx}
+\end{table}
+
+观察波形和图和统计结果，结果显示\code{pc}（上方）和\code{eff}寄存器根据CPU频率（120MHz）分别统计到了正确的总周期数0x57（87）和总指令数0x3c（60）结果。根据公式，我们的CPU在该冒泡排序示例程序上的CPI为1.45。
+
 % \subsection{RV32I CPU 其他测试结果}
+\section{附录}
 
-% \clearpage
-% \subsection{参考资料}
+\subsection{cdp-tests测试入口点}
 
-% \begin{enumerate}
-    % \item RISC-V Unprivileged ISA Specification, Version 2024.04.
-    % \item 戴维·A.帕特森，约翰·L.亨尼斯. 计算机组成与设计：硬件/软件接口 RISC-V 版[M]. 易江芳，刘先华，等译. 第2版. 北京：机械工业出版社，2023.
+\begin{lstlisting}[language=verilog]
+define ENABLE_DEBUG_TRACE
 
-% \end{enumerate}
+module miniRV_SoC (
+    input  logic         fpga_rst,
+    input  logic         fpga_clk,
+
+    output logic         debug_wb_have_inst,
+    output logic [31:0]  debug_wb_pc,
+    output               debug_wb_ena,
+    output logic [ 4:0]  debug_wb_reg,
+    output logic [31:0]  debug_wb_value
+);
+    logic cpu_clk;
+    assign cpu_clk = fpga_clk;
+
+    logic [31:0] cpu_irom_addr;
+    logic [31:0] cpu_irom_rdata;
+    logic [31:0] cpu_dram_addr;
+    logic        cpu_dram_we;
+    logic [31:0] cpu_dram_wdata;
+    logic [31:0] cpu_dram_rdata;
+    logic [ 1:0] cpu_dram_mask;
+    logic [ 3:0] dram_we_4bit;
+    logic [31:0] dram_raw;
+    logic [31:0] dram_write;
+
+    myCPU Core_cpu (
+        .cpu_rst            (fpga_rst),
+        .cpu_clk            (cpu_clk),
+
+        .irom_addr          (cpu_irom_addr),
+        .irom_data          (cpu_irom_rdata),
+
+        .perip_addr         (cpu_dram_addr),
+        .perip_wen          (cpu_dram_we),
+        .perip_mask         (cpu_dram_mask),
+        .perip_wdata        (cpu_dram_wdata),
+        .perip_rdata        (cpu_dram_rdata),
+
+        .debug_wb_have_inst (debug_wb_have_inst),
+        .debug_wb_pc        (debug_wb_pc),
+        .debug_wb_ena       (debug_wb_ena),
+        .debug_wb_reg       (debug_wb_reg),
+        .debug_wb_value     (debug_wb_value)
+    );
+
+    IROM Mem_IROM (
+        .a   (cpu_irom_addr[15:2]),  // 假设IROM深度为16K字，取14位
+        .spo (cpu_irom_rdata)
+    );
+
+    DRAM Mem_DRAM (
+        .clk (fpga_clk),
+        .a   (cpu_dram_addr[15:2]),  // 同样取14位地址
+        .spo (dram_raw),
+        .we  (dram_we_4bit),
+        .d   (dram_write)
+    );
+
+    always_comb begin
+        if (cpu_dram_we) begin
+            dram_write = cpu_dram_wdata;
+            case ({cpu_dram_mask, cpu_dram_addr[1:0]})
+                // SB (Store Byte) - 根据偏移选择字节
+                {2'b00, 2'b00}: dram_we_4bit = 4'b0001;  // 偏移0: 写byte0
+                {2'b00, 2'b01}: begin dram_we_4bit = 4'b0010; dram_write = cpu_dram_wdata << 8; end  // 偏移1: 写byte1
+                {2'b00, 2'b10}: begin dram_we_4bit = 4'b0100; dram_write = cpu_dram_wdata << 16; end  // 偏移2: 写byte2
+                {2'b00, 2'b11}: begin dram_we_4bit = 4'b1000; dram_write = cpu_dram_wdata << 24; end  // 偏移3: 写byte3
+
+                // SH (Store Halfword) - 必须2字节对齐
+                {2'b01, 2'b00}: dram_we_4bit = 4'b0011;  // 偏移0: 写byte0,1
+                {2'b01, 2'b10}: begin dram_we_4bit = 4'b1100; dram_write = cpu_dram_wdata << 16; end  // 偏移2: 写byte2,3
+
+                // SW (Store Word) - 必须4字节对齐
+                {2'b10, 2'b00}: dram_we_4bit = 4'b1111;  // 偏移0: 写所有字节
+                {2'b11, 2'b00}: dram_we_4bit = 4'b1111;  // 偏移0: 写所有字节
+
+                default: dram_we_4bit = 4'b0000;  // 不对齐的访问，抛出异常
+            endcase
+        end else begin
+            dram_we_4bit = 4'b0000;             // 读操作
+        end
+
+        // case (cpu_dram_addr[1:0]) begin
+        //    2'01: assign cpu_dram_rdata = dram_raw >> 8;
+        //    default: assign cpu_dram_rdata = dram_raw;
+        // endcase
+    end
+    assign cpu_dram_rdata = dram_raw >> ((cpu_dram_addr[1:0] & 5'h3) << 3);
+endmodule
+\end{lstlisting}
+
+\subsection{性能测试Testbench}
+
+\begin{lstlisting}[language=verilog]
+`timescale 1ns / 1ps
+
+module tb_myCPU;
+    reg clk;
+    logic rst;
+   
+    logic [31:0] pc;
+    logic [31:0] eff;
+
+    top uut (
+        .i_sys_clk_p(clk),
+        .i_sys_clk_n(~clk),
+        .i_uart_rx(1'b1),
+        .o_uart_tx(),
+        .virtual_led(),  
+        .virtual_seg()
+    );
+    
+    initial begin
+        clk = 0;
+        forever #2.5 clk = ~clk;
+    end
+     
+    always_ff @(posedge uut.student_top_inst.Core_cpu.cpu_clk or posedge rst) begin
+        if (rst || uut.student_top_inst.Core_cpu.cpu_rst) begin
+            pc <= 32'b0;         // 复位时清零
+            eff <= 32'b0;
+        end else begin
+            pc <= pc + 32'b1;    // 正常计数
+            
+            if (uut.student_top_inst.Core_cpu.debug_wb_have_inst) begin
+                eff <= eff + 32'b1;
+            end
+        end
+    end
+
+    //  clock 50MHz=2.5 20ns
+    initial begin
+        rst = 1;
+        #20;
+        rst = 0;
+        
+        #100;
+        
+        wait(uut.student_top_inst.Core_cpu.mem_pre_pc4 == 32'h80000058);
+        $display("PC:%d(0x%h)", pc, pc);
+        $finish;
+    end
+endmodule
+
+\end{lstlisting}
+
+\section{AI使用声明}
+
+CPU测试中，由AI生成的内容占比在约5\%，主要包括冒泡排序示例程序、指令集测试的脚本模板。
+
+本文中，由AI生成的内容占比在10\%，主要包括指令集测试的用例代码理解、部分附录中的源码辅助编写。其余整理汇总工作由队员完成。
 
 \end{document}
