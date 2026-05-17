@@ -32,12 +32,12 @@ Thumbs.db
 
 # *.srcs/constrs_1/
 *.srcs/sources_1/ip/
-*.srcs/sources_1/new/
+# *.srcs/sources_1/new/
 *.srcs/sources_1/imports/Desktop/
 *.srcs/sources_1/imports/rv32i-cpu/
 *.srcs/sources_1/imports/test_src/
 *.srcs/sources_1/imports/JYD2025/
-*.srcs/sim_1/
+*.srcs/sim_1/imports/
 *.srcs/utils_1/
 
 *.mif
