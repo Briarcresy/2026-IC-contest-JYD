@@ -31,7 +31,7 @@
 Thumbs.db
 
 # *.srcs/constrs_1/
-*.srcs/sources_1/ip/
+# *.srcs/sources_1/ip/
 # *.srcs/sources_1/new/
 *.srcs/sources_1/imports/Desktop/
 *.srcs/sources_1/imports/rv32i-cpu/

@@ -37,7 +37,7 @@ module dram_driver (
     assign offset = perip_addr[1:0];
     assign perip_rdata = dout;
 
-    (* ram_style = "block" *)
+    // (* ram_style = "block" *)
     DRAM Mem_DRAM (
         .clk(clk),
         .a  (dram_addr),
