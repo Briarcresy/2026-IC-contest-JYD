@@ -1,1 +1,8 @@
 *.bkp
+
+*.bbl
+*.pdf
+*.gz
+*.log
+*.aux
+*.out

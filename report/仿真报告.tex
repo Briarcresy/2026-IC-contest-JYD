@@ -1,0 +1,774 @@
+
+\documentclass[12pt,a4paper]{ctexart}
+\usepackage{xeCJK}
+\setCJKmainfont{Noto Serif CJK SC}
+% ===================== 基本版式 =====================
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{pdfpages}
+
+% 页面设置
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% 字体与行距
+\setCJKmainfont{Noto Serif CJK SC}
+% \setmainfont{Times New Roman} % 英文正文 Times New Roman
+\linespread{1.5}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0pt}
+
+% 列表格式
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, topsep=2pt}
+\setlist[enumerate]{noitemsep, topsep=2pt}
+
+% 图形
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+
+% 超链接
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+
+% 章节标题格式
+\ctexset{
+  section={format=\zihao{3}\heiti\bfseries\centering, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip},
+  subsection={format=\zihao{4}\heiti\bfseries, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip},
+  subsubsection={format=\zihao{-4}\heiti\bfseries, beforeskip=0.5\baselineskip, afterskip=0.5\baselineskip}
+}
+
+% 自定义命令
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{【待补充：#1】}}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\lstdefinestyle{bashstyle}{
+    language=bash,
+    backgroundcolor=\color{black!5},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=10pt,
+    tabsize=4,
+    showspaces=false,
+    showstringspaces=false,
+    breaklines=true,
+    breakatwhitespace=true,
+    frame=single,
+    frameround=tttt,
+    rulecolor=\color{black!30},
+}
+\begin{document}
+
+\includepdf[pages=1]{cover.pdf}
+
+\tableofcontents
+
+\newpage
+
+\section{仿真平台介绍}
+
+\subsection{仿真工具}
+
+
+我们采用运行于Linux系统上的Verilator仿真器仿真测试。我们使用的Verilator版本号是\code{Verilator 5.049 devel rev v5.048-25-gec03edcdd}
+
+Verilator配合哈工大设计开发的开源cdp-tests使用，环境配置完成后，单次测试非常方便快捷，单行指令即可启动并完成测试，单次测试总时间在1秒以内。
+
+\subsection{测试环境说明}
+
+\subsubsection{测试环境搭建}
+
+环境搭建可以完全使用脚本完成。在项目仓库所在文件夹运行脚本完成搭建。
+
+\begin{lstlisting}[style=bashstyle]
+sudo apt-get install git perl python3 make autoconf g++ flex bison ccache
+sudo apt-get install libgoogle-perftools-dev numactl perl-doc help2man
+sudo apt-get install libfl2
+sudo apt-get install libfl-dev
+sudo apt-get install zlibc zlib1g zlib1g-dev
+git clone https://gitee.com/hitsz-cslab/cdp-tests.git
+\end{lstlisting}
+
+\subsubsection{测试环境使用}
+
+为方便测试，我们编写了一套测试脚本，并将入口点硬编码在脚本中，运行脚本即可完成测试。
+
+\begin{lstlisting}[style=bashstyle]
+
+SOURCE="./project/digital_twin.srcs/sources_1/imports/new"
+TARGET="./cdp-tests/mySoC"
+
+rm -r $TARGET
+cp -r $SOURCE $TARGET
+
+cat > "$TARGET/miniRV_SoC.sv" << __EOF__
+... # 见附录：cdp-tests测试的入口点
+__EOF__
+
+cd "$TARGET/.."
+make && python3 run_all_tests.py
+
+\end{lstlisting}
+
+cdp-tests的测试方法大致是在WB阶段令CPU输出五个调试值：是否有有效指令被执行、对应的PC值、是否有数据被写回寄存器、写回的目标寄存器、写回值。只要所有检查点的结果均与cdp-tests内置的正确CPU对照核心完全相同，即被测CPU的行为正确。
+
+为适配cdp-tests的测试，我们对CPU进行了小部分的接口修改，包括上述5个调试输出。通过定义\code{ENABLE\_TRACE\_DEBUG}宏控制仿真测试部分的代码，使仿真能正常运行并且仿真代码不影响最终烧录的CPU结果。
+
+由于我们设计的CPU将\code{ecall}等指令实现为空指令，cdp-tests中原有的部分输出提示功能无法使用，这不影响最终测试结果的正确性。
+
+\section{仿真测试设计}
+
+\subsection{RV32I 指令集测试}
+
+对指令集的测试和单一指令测试，我们使用了cdp-tests中提供的针对所有37条被测试的指令的开源测试。
+
+\subsubsection{测试基本流程}
+
+\textbf{运算指令}
+
+\begin{enumerate}
+    \item 加载操作数到\code{x1}、\code{x2}
+    \item 运行待测运算指令，结果保存到\code{x14}或写回\code{x1}、\code{x2}
+    \item 加载预期结果，保存到\code{x7}
+    \item 比较验证，如果结果错误则跳转到\code{<fail>}
+    \item 记录测试序号，失败时用于标记位置
+\end{enumerate}
+
+\textbf{分支指令}
+
+\begin{enumerate}
+    \item 加载比较值到\code{x1}、\code{x2}
+    \item 执行分支指令，条件满足时跳转到目标地址
+    \item 验证分支跳转路径正确性：
+    \begin{enumerate}
+        \item 若分支条件应成立但未跳转，则跳转到\code{<fail>}
+        \item 若分支条件应不成立但跳转了，则跳转到\code{<fail>}
+    \end{enumerate}
+    \item 验证分支偏移量计算正确（向前/向后跳转）
+    \item 记录测试序号，失败时用于标记位置
+\end{enumerate}
+
+\textbf{跳转指令}
+
+\begin{enumerate}
+    \item 执行跳转指令，跳转到目标地址
+    \item 链接寄存器（\code{x1}、\code{x4}、\code{x5}等）保存返回地址
+    \item 在目标地址处验证返回地址的正确性
+    \item 通过\code{JALR x0, x1, 0}或其他方式返回
+    \item 验证执行流程正确性
+    \item 记录测试序号，失败时用于标记位置
+\end{enumerate}
+
+\textbf{内存加载指令}
+
+\begin{enumerate}
+    \item 设置基址寄存器指向测试数据区
+    \item 执行加载指令，从内存读取数据到\code{x14}
+    \item 加载预期结果到\code{x7}
+    \item 比较验证，如果结果错误则跳转到\code{<fail>}
+    \item 测试不同地址偏移（正偏移、负偏移）
+    \item 验证符号扩展（LB、LH）或零扩展（LBU、LHU）
+    \item 记录测试序号，失败时用于标记位置
+\end{enumerate}
+
+\textbf{内存存储指令}
+
+\begin{enumerate}
+    \item 设置基址寄存器指向数据区
+    \item 设置待存储的值到\code{x2}
+    \item 执行存储指令，将数据写入内存
+    \item 执行加载指令读取同一地址到\code{x14}
+    \item 加载预期结果到\code{x7}
+    \item 比较验证，如果写入值与读出值不一致则跳转到\code{<fail>}
+    \item 测试不同地址偏移（正偏移、负偏移）
+    \item 验证写掩码功能（SB/SH只更新目标字节/半字）
+    \item 记录测试序号，失败时用于标记位置
+\end{enumerate}
+
+\textbf{立即数加载指令}
+
+\begin{enumerate}
+    \item 执行\code{LUI}或\code{AUIPC}指令，结果保存到\code{x1}
+    \item 计算预期结果：
+    \begin{enumerate}
+        \item LUI：预期值 = 20位立即数 $<<$ 12
+        \item AUIPC：预期值 = PC + (20位立即数 $<<$ 12)
+    \end{enumerate}
+    \item 加载预期结果到\code{x7}
+    \item 比较验证，如果结果错误则跳转到\code{<fail>}
+    \item 测试边界值（0、0x80000、0xfffff）
+    \item 记录测试序号，失败时用于标记位置
+\end{enumerate}
+
+\textbf{流水线冒险测试}
+
+\begin{enumerate}
+    \item 初始化循环计数器\code{x4 = 0}
+    \item 加载操作数到\code{x1}、\code{x2}
+    \item 执行待测运算指令
+    \item 在指令间插入不同数量的NOP（\code{addi x0, x0, 0}），数量为0$\sim$3个
+    \item 将结果暂存到\code{x6}
+    \item 循环计数器加1
+    \item 重复步骤2$\sim$6共2次
+    \item 加载预期结果到\code{x7}
+    \item 比较验证，如果结果错误则跳转到\code{<fail>}
+    \item 记录测试序号，失败时用于标记位置
+\end{enumerate}
+
+\subsubsection{测试基本内容}
+
+\textbf{算术运算指令测试（\code{add, addi, sub}）}
+
+\begin{enumerate}
+    \item \textbf{基础功能验证}
+    \begin{enumerate}
+        \item 测试正整数加法：$1+1=2$，$3+7=10$
+        \item 测试与0的运算：$x+0=x$
+        \item 测试负数运算：$-1+(-1)=-2$，$-1+1=0$
+    \end{enumerate}
+    
+    \item \textbf{边界值测试}
+    \begin{enumerate}
+        \item 大立即数组合测试（LUI + ADD/ADDI）
+        \item 最大值/最小值边界测试（$\texttt{0x7fffffff} + 1 = \texttt{0x80000000}$）
+    \end{enumerate}
+    
+    \item \textbf{流水线冒险测试}
+    \begin{enumerate}
+        \item 在连续指令间插入不同数量的NOP（0$\sim$3个）
+        \item 重新排列指令顺序
+        \item 验证数据前推（forwarding）是否正确
+    \end{enumerate}
+    
+    \item \textbf{特殊寄存器测试}
+    \begin{enumerate}
+        \item x0（恒零寄存器）作为源操作数测试
+        \item x0作为目标寄存器测试（结果丢弃）
+    \end{enumerate}
+    
+    \item \textbf{SUB指令特有测试}
+    \begin{enumerate}
+        \item 正数减正数、正数减负数、负数减正数、负数减负数
+        \item 0减去负数得到正数
+        \item 验证借位/溢出行为
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{逻辑运算指令测试（\code{and, andi, or, ori, xori, xor}）}
+
+\begin{enumerate}
+    \item \textbf{基础逻辑功能验证}
+    \begin{enumerate}
+        \item AND：\texttt{0xff00ff00 \& 0xf0f0f0f = 0xf000f00}
+        \item OR：\texttt{0xff00ff00 | 0xf0f0f0f = 0xff0fff0f}
+        \item XOR：\texttt{0xff00ff00 \^{} 0xf0f0f0f = 0xf00ff00f}
+    \end{enumerate}
+    
+    \item \textbf{立即数范围测试}
+    \begin{enumerate}
+        \item 使用不同的立即数（正数、负数、边界值）
+        \item 验证立即数符号扩展
+    \end{enumerate}
+    
+    \item \textbf{特殊值测试}
+    \begin{enumerate}
+        \item 全0、全1与任何值的运算
+        \item 与自身运算（$x \& x = x$，$x | x = x$，$x \^{} x = 0$）
+    \end{enumerate}
+    
+    \item \textbf{流水线冒险测试}
+    \begin{enumerate}
+        \item 插入不同数量NOP
+        \item 重新排列指令顺序
+    \end{enumerate}
+    
+    \item \textbf{x0寄存器测试}
+    \begin{enumerate}
+        \item $0 \& x = 0$，$0 | x = x$，$0 \^{} x = x$
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{移位运算指令测试（\code{sll, slli, srl, srli, sra, srai}）}
+
+\begin{enumerate}
+    \item \textbf{基础移位功能验证}
+    \begin{enumerate}
+        \item 左移（SLL/SLLI）：$1 \ll 0 = 1$，$1 \ll 1 = 2$，$1 \ll 7 = 128$
+        \item 逻辑右移（SRL/SRLI）：\texttt{0x80000000 > > 1 = 0x40000000}
+        \item 算术右移（SRA/SRAI）：\texttt{0x80000000 > > 1 = 0xc0000000}
+    \end{enumerate}
+    
+    \item \textbf{移位量为0测试}
+    \begin{enumerate}
+        \item 任何数移位0位不变
+    \end{enumerate}
+    
+    \item \textbf{移位量为31测试}
+    \begin{enumerate}
+        \item $1 \ll 31 = \texttt{0x80000000}$
+        \item $-1 \gg 31 = -1$（算术右移保持符号）
+    \end{enumerate}
+    
+    \item \textbf{移位量超出范围测试}
+    \begin{enumerate}
+        \item 移位量 $\ge 32$ 时，实际只取低5位
+        \item 验证移位量取模行为
+    \end{enumerate}
+    
+    \item \textbf{负数移位测试}
+    \begin{enumerate}
+        \item 算术右移保持符号位
+        \item 逻辑右移高位补0
+    \end{enumerate}
+    
+    \item \textbf{流水线冒险测试}
+    \begin{enumerate}
+        \item 插入不同数量NOP
+    \end{enumerate}
+    
+    \item \textbf{x0寄存器测试}
+    \begin{enumerate}
+        \item $0 \ll x = 0$，$0 \gg x = 0$
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{比较指令测试（\code{slt, slti, sltu, sltiu}）}
+
+\begin{enumerate}
+    \item \textbf{基础比较功能}
+    \begin{enumerate}
+        \item 相等时返回0：$3 < 3 \Rightarrow 0$
+        \item 小于时返回1：$3 < 7 \Rightarrow 1$
+        \item 大于时返回0：$7 < 3 \Rightarrow 0$
+    \end{enumerate}
+    
+    \item \textbf{有符号比较（SLT/SLTI）}
+    \begin{enumerate}
+        \item 正数 $<$ 正数
+        \item 负数 $<$ 正数（如 $-1 < 1$ 返回1）
+        \item 正数 $<$ 负数（如 $1 < -1$ 返回0）
+        \item 负数 $<$ 负数（如 $-2 < -1$ 返回1）
+    \end{enumerate}
+    
+    \item \textbf{无符号比较（SLTU/SLTIU）}
+    \begin{enumerate}
+        \item 将操作数视为无符号数比较
+        \item $0 < \texttt{0xffffffff}$ 返回1（无符号下0xffffffff很大）
+        \item $-\!1$（\texttt{0xffffffff}）作为无符号时 $> 1$
+    \end{enumerate}
+    
+    \item \textbf{边界值测试}
+    \begin{enumerate}
+        \item 测试边界值：0、1、-1、0x7fffffff、0x80000000
+    \end{enumerate}
+    
+    \item \textbf{流水线冒险测试}
+    \begin{enumerate}
+        \item 插入NOP测试
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{分支指令测试（\code{beq, bne, blt, bge, bltu, bgeu}）}
+
+\begin{enumerate}
+    \item \textbf{分支条件验证}
+    \begin{enumerate}
+        \item BEQ：相等时跳转，不相等不跳转
+        \item BNE：不相等时跳转，相等不跳转
+        \item BLT：有符号小于时跳转
+        \item BGE：有符号大于等于时跳转
+        \item BLTU：无符号小于时跳转
+        \item BGEU：无符号大于等于时跳转
+    \end{enumerate}
+    
+    \item \textbf{分支偏移测试}
+    \begin{enumerate}
+        \item 向前跳转、向后跳转
+        \item 分支到紧邻的下一条指令
+        \item 验证偏移量计算正确
+    \end{enumerate}
+    
+    \item \textbf{边界条件测试}
+    \begin{enumerate}
+        \item 比较边界值（0、1、-1、最大值、最小值）
+        \item 无符号比较的特殊情况（-1 vs 0）
+    \end{enumerate}
+    
+    \item \textbf{流水线冒险测试}
+    \begin{enumerate}
+        \item 分支之前/之后插入NOP
+        \item 验证分支预测/刷新逻辑
+    \end{enumerate}
+    
+    \item \textbf{循环测试}
+    \begin{enumerate}
+        \item 使用分支指令实现简单循环
+        \item 验证循环次数正确
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{跳转指令测试（\code{jal, jalr}）}
+
+\begin{enumerate}
+    \item \textbf{JAL测试}
+    \begin{enumerate}
+        \item 跳转到目标地址
+        \item 验证返回地址（ra）正确
+        \item 测试立即数范围（$\pm 1$MB）
+    \end{enumerate}
+    
+    \item \textbf{JALR测试}
+    \begin{enumerate}
+        \item 使用寄存器间接跳转
+        \item 验证返回地址正确
+        \item 测试立即数偏移
+    \end{enumerate}
+    
+    \item \textbf{跳转与流水线}
+    \begin{enumerate}
+        \item 跳转后插入NOP验证控制冒险处理
+        \item JALR的时序测试
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{立即数加载指令测试（\code{lui, auipc}）}
+
+\begin{enumerate}
+    \item \textbf{LUI测试}
+    \begin{enumerate}
+        \item 加载20位立即数到高20位
+        \item 测试边界值（0、0x80000、0xfffff）
+        \item 与ADDI配合构造32位立即数
+    \end{enumerate}
+    
+    \item \textbf{AUIPC测试}
+    \begin{enumerate}
+        \item 将20位立即数左移12位后加到PC上
+        \item 验证PC相对寻址正确性
+        \item 计算实际地址与预期地址比较
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{内存加载指令测试（\code{lb, lbu, lh, lhu, lw}）}
+
+\begin{enumerate}
+    \item \textbf{基础加载功能}
+    \begin{enumerate}
+        \item LW：加载32位字
+        \item LH/LHU：加载16位半字（有符号/无符号）
+        \item LB/LBU：加载8位字节（有符号/无符号）
+    \end{enumerate}
+    
+    \item \textbf{符号扩展验证}
+    \begin{enumerate}
+        \item LB/LH：符号位扩展到32位
+        \item LBU/LHU：零扩展到32位
+    \end{enumerate}
+    
+    \item \textbf{地址偏移测试}
+    \begin{enumerate}
+        \item 基址 $+$ 正偏移（0、4、8等）
+        \item 基址 $+$ 负偏移（使用负立即数）
+        \item 使用AUIPC计算地址
+    \end{enumerate}
+    
+    \item \textbf{未对齐访问测试}
+    \begin{enumerate}
+        \item 测试非对齐地址是否正常工作或触发异常
+    \end{enumerate}
+    
+    \item \textbf{流水线冒险测试}
+    \begin{enumerate}
+        \item 加载后立即使用数据
+        \item 验证加载-使用冒险处理
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{内存存储指令测试（\code{sb, sh, sw}）}
+
+\begin{enumerate}
+    \item \textbf{基础存储功能}
+    \begin{enumerate}
+        \item SW：存储32位字
+        \item SH：存储16位半字
+        \item SB：存储8位字节
+    \end{enumerate}
+    
+    \item \textbf{存储后读取验证}
+    \begin{enumerate}
+        \item 存储后立即读取同一地址
+        \item 验证数据正确写入
+    \end{enumerate}
+    
+    \item \textbf{地址偏移测试}
+    \begin{enumerate}
+        \item 正偏移、负偏移
+        \item 使用不同基址寄存器
+    \end{enumerate}
+    
+    \item \textbf{部分字写入测试}
+    \begin{enumerate}
+        \item SB/SH只更新目标字节/半字，不影响其他位
+        \item 验证写掩码功能
+    \end{enumerate}
+    
+    \item \textbf{流水线冒险测试}
+    \begin{enumerate}
+        \item 存储后立即读取同一地址
+        \item 验证写后读数据一致性
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{综合测试（\code{start, simple}）}
+
+\begin{enumerate}
+    \item \textbf{start测试流程}
+    \begin{enumerate}
+        \item 初始化：设置测试状态寄存器，写入特定内存地址
+        \item 按顺序执行各指令测试（ADD → ADDI → AND → ANDI → BEQ → BGE → BLT → BNE → JAL → JALR → LUI → LW → OR → ORI → SLL → SLLI → SRA → SRAI → SRL → SRLI → SUB → SW → XOR → XORI → AUIPC → BGEU → BLTU → LB → LBU → LH → LHU → SB → SH → SLT → SLTI → SLTIU → SLTU）
+        \item 每项测试间插入等待（wait\_1s延时函数）
+        \item 最终ecall退出（x10=0表示所有测试通过）
+    \end{enumerate}
+    
+    \item \textbf{simple测试流程}
+    \begin{enumerate}
+        \item 直接设置成功状态（x3=1）
+        \item 通过ecall退出（x10=0）
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{RV32I CPU 性能测试}
+
+我们使用Vivado运行Simulation来测试Cpu的实际CPI
+
+\begin{table}[H]
+\centering
+\scriptsize
+\begin{tabularx}{\textwidth}{p{2cm}p{12cm}X}
+    \toprule
+    \midrule
+    测试平台 & Vivado 2023.2 仿真环境 \\
+    测试频率 & 外设50MHz、核心120MHz \\
+    测试激励 & 冒泡排序示例程序 \\
+    仿真工具 & Vivado 2023.2 Simulator / Testbench 波形与统计脚本 \\
+    测量方式 & 在测试顶层模块统计总指令数和总周期数，$\text{CPI} = \text{总周期数}/\text{总指令数}$ \\
+    \bottomrule
+\end{tabularx}
+\end{table}
+
+将冒泡排序示例程序编译转换成.coe文件，并编写合适的Testbench顶层模块、设定合适的终止信号（见附录：性能测试Testbench），在Vivado 2023.2中模拟运行并观察波形，统计CPU总周期数和总指令数。
+
+% \subsection{RV32I CPU 其他测试}
+
+\section{仿真测试结果}
+
+\subsection{RV32I 指令集测试结果}
+
+观察测试脚本的运行输出，对每一条指令的结果及综合测试的结果均显示\code{Test Passed}，总结果显示\code{Failed Test}下无失败的测试项。所有测试均通过。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{test-summary.png}
+\end{figure}
+
+\subsection{RV32I CPU 性能测试结果}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{eff-test.png}
+\end{figure}
+
+
+\begin{table}[H]
+\centering
+\scriptsize
+\begin{tabularx}{0.7\textwidth}{p{2cm}p{8cm}X}
+    \toprule
+    信号 & 意义 \\
+    \midrule
+    pc（上方） & 统计CPU核心经过的总周期数 \\
+    pc（下方） & CPU内部的程序计数器 \\
+    eff & 统计CPU实际执行的总指令数 \\
+    \bottomrule
+\end{tabularx}
+\end{table}
+
+观察波形和图和统计结果，结果显示\code{pc}（上方）和\code{eff}寄存器根据CPU频率（120MHz）分别统计到了正确的总周期数0x57（87）和总指令数0x3c（60）结果。根据公式，我们的CPU在该冒泡排序示例程序上的CPI为1.45。
+
+% \subsection{RV32I CPU 其他测试结果}
+\section{附录}
+
+\subsection{cdp-tests测试入口点}
+
+\begin{lstlisting}[language=verilog]
+define ENABLE_DEBUG_TRACE
+
+module miniRV_SoC (
+    input  logic         fpga_rst,
+    input  logic         fpga_clk,
+
+    output logic         debug_wb_have_inst,
+    output logic [31:0]  debug_wb_pc,
+    output               debug_wb_ena,
+    output logic [ 4:0]  debug_wb_reg,
+    output logic [31:0]  debug_wb_value
+);
+    logic cpu_clk;
+    assign cpu_clk = fpga_clk;
+
+    logic [31:0] cpu_irom_addr;
+    logic [31:0] cpu_irom_rdata;
+    logic [31:0] cpu_dram_addr;
+    logic        cpu_dram_we;
+    logic [31:0] cpu_dram_wdata;
+    logic [31:0] cpu_dram_rdata;
+    logic [ 1:0] cpu_dram_mask;
+    logic [ 3:0] dram_we_4bit;
+    logic [31:0] dram_raw;
+    logic [31:0] dram_write;
+
+    myCPU Core_cpu (
+        .cpu_rst            (fpga_rst),
+        .cpu_clk            (cpu_clk),
+
+        .irom_addr          (cpu_irom_addr),
+        .irom_data          (cpu_irom_rdata),
+
+        .perip_addr         (cpu_dram_addr),
+        .perip_wen          (cpu_dram_we),
+        .perip_mask         (cpu_dram_mask),
+        .perip_wdata        (cpu_dram_wdata),
+        .perip_rdata        (cpu_dram_rdata),
+
+        .debug_wb_have_inst (debug_wb_have_inst),
+        .debug_wb_pc        (debug_wb_pc),
+        .debug_wb_ena       (debug_wb_ena),
+        .debug_wb_reg       (debug_wb_reg),
+        .debug_wb_value     (debug_wb_value)
+    );
+
+    IROM Mem_IROM (
+        .a   (cpu_irom_addr[15:2]),  // 假设IROM深度为16K字，取14位
+        .spo (cpu_irom_rdata)
+    );
+
+    DRAM Mem_DRAM (
+        .clk (fpga_clk),
+        .a   (cpu_dram_addr[15:2]),  // 同样取14位地址
+        .spo (dram_raw),
+        .we  (dram_we_4bit),
+        .d   (dram_write)
+    );
+
+    always_comb begin
+        if (cpu_dram_we) begin
+            dram_write = cpu_dram_wdata;
+            case ({cpu_dram_mask, cpu_dram_addr[1:0]})
+                // SB (Store Byte) - 根据偏移选择字节
+                {2'b00, 2'b00}: dram_we_4bit = 4'b0001;  // 偏移0: 写byte0
+                {2'b00, 2'b01}: begin dram_we_4bit = 4'b0010; dram_write = cpu_dram_wdata << 8; end  // 偏移1: 写byte1
+                {2'b00, 2'b10}: begin dram_we_4bit = 4'b0100; dram_write = cpu_dram_wdata << 16; end  // 偏移2: 写byte2
+                {2'b00, 2'b11}: begin dram_we_4bit = 4'b1000; dram_write = cpu_dram_wdata << 24; end  // 偏移3: 写byte3
+
+                // SH (Store Halfword) - 必须2字节对齐
+                {2'b01, 2'b00}: dram_we_4bit = 4'b0011;  // 偏移0: 写byte0,1
+                {2'b01, 2'b10}: begin dram_we_4bit = 4'b1100; dram_write = cpu_dram_wdata << 16; end  // 偏移2: 写byte2,3
+
+                // SW (Store Word) - 必须4字节对齐
+                {2'b10, 2'b00}: dram_we_4bit = 4'b1111;  // 偏移0: 写所有字节
+                {2'b11, 2'b00}: dram_we_4bit = 4'b1111;  // 偏移0: 写所有字节
+
+                default: dram_we_4bit = 4'b0000;  // 不对齐的访问，抛出异常
+            endcase
+        end else begin
+            dram_we_4bit = 4'b0000;             // 读操作
+        end
+
+        // case (cpu_dram_addr[1:0]) begin
+        //    2'01: assign cpu_dram_rdata = dram_raw >> 8;
+        //    default: assign cpu_dram_rdata = dram_raw;
+        // endcase
+    end
+    assign cpu_dram_rdata = dram_raw >> ((cpu_dram_addr[1:0] & 5'h3) << 3);
+endmodule
+\end{lstlisting}
+
+\subsection{性能测试Testbench}
+
+\begin{lstlisting}[language=verilog]
+`timescale 1ns / 1ps
+
+module tb_myCPU;
+    reg clk;
+    logic rst;
+   
+    logic [31:0] pc;
+    logic [31:0] eff;
+
+    top uut (
+        .i_sys_clk_p(clk),
+        .i_sys_clk_n(~clk),
+        .i_uart_rx(1'b1),
+        .o_uart_tx(),
+        .virtual_led(),  
+        .virtual_seg()
+    );
+    
+    initial begin
+        clk = 0;
+        forever #2.5 clk = ~clk;
+    end
+     
+    always_ff @(posedge uut.student_top_inst.Core_cpu.cpu_clk or posedge rst) begin
+        if (rst || uut.student_top_inst.Core_cpu.cpu_rst) begin
+            pc <= 32'b0;         // 复位时清零
+            eff <= 32'b0;
+        end else begin
+            pc <= pc + 32'b1;    // 正常计数
+            
+            if (uut.student_top_inst.Core_cpu.debug_wb_have_inst) begin
+                eff <= eff + 32'b1;
+            end
+        end
+    end
+
+    //  clock 50MHz=2.5 20ns
+    initial begin
+        rst = 1;
+        #20;
+        rst = 0;
+        
+        #100;
+        
+        wait(uut.student_top_inst.Core_cpu.mem_pre_pc4 == 32'h80000058);
+        $display("PC:%d(0x%h)", pc, pc);
+        $finish;
+    end
+endmodule
+
+\end{lstlisting}
+
+\section{AI使用声明}
+
+CPU测试中，由AI生成的内容占比在约5\%，主要包括冒泡排序示例程序、指令集测试的脚本模板。
+
+本文中，由AI生成的内容占比在10\%，主要包括指令集测试的用例代码理解、部分附录中的源码辅助编写。其余整理汇总工作由队员完成。
+
+\end{document}
