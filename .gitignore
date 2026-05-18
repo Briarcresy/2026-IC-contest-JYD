@@ -6,3 +6,4 @@
 *.log
 *.aux
 *.out
+xsim.dir/*
