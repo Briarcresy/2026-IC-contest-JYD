@@ -11,6 +11,7 @@ module MEM_WB #(
 // `endif
     input  logic             clk,
     input  logic             rst,
+    input  logic             flush,
     input  logic [WIDTH-1:0] mem_alu_result,
     input  logic [WIDTH-1:0] mem_mdata,
     input  logic [      4:0] mem_rd_addr,
@@ -36,6 +37,13 @@ module MEM_WB #(
             wb_mask       <= '0;
             wb_reg_write  <= '0;
             wb_regwrmux   <= '0;
+        end else if (flush) begin
+            wb_alu_result <= '0;
+            wb_mdata      <= '0;
+            wb_rd_addr    <= '0;
+            wb_mask       <= '0;
+            wb_reg_write  <= '0;
+            wb_regwrmux   <= '0;
         end else begin
             wb_alu_result <= mem_alu_result;
             wb_mdata      <= mem_mdata;
@@ -49,6 +57,8 @@ module MEM_WB #(
 // `ifdef ENABLE_DEBUG_TRACE
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
+            wb_pc4 <= '0;
+        end else if (flush) begin
             wb_pc4 <= '0;
         end else begin
             wb_pc4 <= mem_pc4;

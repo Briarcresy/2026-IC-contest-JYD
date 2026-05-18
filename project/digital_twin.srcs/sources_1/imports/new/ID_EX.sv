@@ -6,6 +6,7 @@ module ID_EX #(
     input  logic             clk,
     input  logic             rst,
     input  logic             id_stall,
+    input  logic             id_hold,
     input  logic             id_flush,
     input  logic [WIDTH-1:0] id_pc,
     input  logic [WIDTH-1:0] id_pc4,
@@ -74,7 +75,7 @@ module ID_EX #(
             ex_alusrcA   <= '0;
             ex_alusrcB   <= '0;
             ex_alu_op    <= '0;
-        end else begin
+        end else if (!id_hold) begin
             ex_pc       <= id_pc;
             ex_rs1v     <= id_rs1v;
             ex_rs2v     <= id_rs2v;

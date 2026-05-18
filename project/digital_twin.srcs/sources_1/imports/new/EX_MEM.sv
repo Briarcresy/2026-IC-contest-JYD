@@ -5,6 +5,7 @@ module EX_MEM #(
 ) (
     input logic             clk,
     input logic             rst,
+    input logic             stall,
     input logic [WIDTH-1:0] ex_alu_result,
     input logic [WIDTH-1:0] ex_rs2_val,
     input logic [WIDTH-1:0] ex_imm,
@@ -43,7 +44,7 @@ module EX_MEM #(
             mem_reg_write  <= '0;
             mem_mem_write  <= '0;
             // mem_mask_memread <= '0;
-        end else begin
+        end else if (!stall) begin
             mem_alu_result <= ex_alu_result;
             mem_rs2_val    <= ex_rs2_val;
             mem_imm        <= ex_imm;

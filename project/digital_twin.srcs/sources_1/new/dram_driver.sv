@@ -33,15 +33,13 @@ module dram_driver (
     logic [ 1:0] offset;
     logic [ 3:0] dram_we;
     logic [31:0] dram_wdata, dram_rdata_raw, dout;
-    logic        bram_clk;
 
     assign dram_addr = perip_addr[17:2];
     assign offset = perip_addr[1:0];
     assign perip_rdata = dout;
-    assign bram_clk = ~clk;
 
     blk_mem_DRAM Mem_DRAM (
-        .clka (bram_clk),
+        .clka (clk),
         .ena  (1'b1),
         .wea  (dram_we),
         .addra(dram_addr),

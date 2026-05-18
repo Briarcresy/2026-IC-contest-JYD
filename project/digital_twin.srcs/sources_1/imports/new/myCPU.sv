@@ -180,8 +180,30 @@ module myCPU (
     logic [DATAWIDTH-1:0] wb_pre_dram_rdata;
     logic [          1:0] wb_pre_regwrmux;
 
+    logic                 hazard_stall;
+    logic                 hazard_flush;
+    logic                 bram_read_wait;
+    logic                 bram_read_waited;
     logic                 pipeline_stall;
     logic                 pipeline_flush;
+    logic                 pipeline_hold;
+    logic                 mem_load_in_mem;
+
+    assign mem_load_in_mem = mem_thru_regwrite && (mem_thru_regwrmux == 2'b10) && !mem_pre_memwrite;
+    assign bram_read_wait  = mem_load_in_mem && !bram_read_waited;
+    assign pipeline_hold   = bram_read_wait;
+    assign pipeline_stall  = hazard_stall || bram_read_wait;
+    assign pipeline_flush  = hazard_flush;
+
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            bram_read_waited <= 1'b0;
+        end else if (bram_read_wait) begin
+            bram_read_waited <= 1'b1;
+        end else begin
+            bram_read_waited <= 1'b0;
+        end
+    end
 
 `ifdef ENABLE_DEBUG_TRACE
     logic [DATAWIDTH-1:0] _D_wb_pre_pc4;
@@ -203,7 +225,8 @@ module myCPU (
     ID_EX #(DATAWIDTH) id_ex (
         .clk(clk),
         .rst(rst),
-        .id_stall(pipeline_stall),
+        .id_stall(hazard_stall),
+        .id_hold(pipeline_hold),
         .id_flush(pipeline_flush),
         .id_pc(id_thru_pc),
         .id_pc4(id_thru_pc4),
@@ -242,6 +265,7 @@ module myCPU (
     EX_MEM #(DATAWIDTH) ex_mem (
         .clk(clk),
         .rst(rst),
+        .stall(pipeline_hold),
         .ex_alu_result(ex_post_result),
         .ex_rs2_val(ex_post_rs2v),
         .ex_imm(ex_thru_imm),
@@ -270,6 +294,7 @@ module myCPU (
 `endif
         .clk(clk),
         .rst(rst),
+        .flush(pipeline_hold),
         .mem_alu_result(mem_post_result_mem_mux),
         .mem_mdata(DRAM_rdata),
         .mem_rd_addr(mem_thru_rd),
@@ -330,8 +355,8 @@ module myCPU (
         .rd(ex_thru_rd),
         .rs1(id_post_rs1),
         .rs2(id_post_rs2),
-        .trigger_stall(pipeline_stall),
-        .trigger_flush(pipeline_flush)
+        .trigger_stall(hazard_stall),
+        .trigger_flush(hazard_flush)
     );
 
     // pipeline END
@@ -339,6 +364,7 @@ module myCPU (
     PC #(DATAWIDTH, RESET_VAL) pc_inst (
         .clk(clk),
         .rst(rst),
+        .stall(pipeline_stall),
         .npc(npc),
         .pc (pc)
     );
@@ -475,4 +501,3 @@ module myCPU (
     end
 `endif
 endmodule
-
