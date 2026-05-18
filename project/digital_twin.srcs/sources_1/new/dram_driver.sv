@@ -31,19 +31,22 @@ module dram_driver (
 );
     logic [15:0] dram_addr;
     logic [ 1:0] offset;
-    logic [31:0] dram_data, dram_rdata_raw, dout;
+    logic [ 3:0] dram_we;
+    logic [31:0] dram_wdata, dram_rdata_raw, dout;
+    logic        bram_clk;
 
     assign dram_addr = perip_addr[17:2];
     assign offset = perip_addr[1:0];
     assign perip_rdata = dout;
+    assign bram_clk = ~clk;
 
-    // (* ram_style = "block" *)
-    DRAM Mem_DRAM (
-        .clk(clk),
-        .a  (dram_addr),
-        .spo(dram_rdata_raw),
-        .we (dram_wen),
-        .d  (dram_data)
+    blk_mem_DRAM Mem_DRAM (
+        .clka (bram_clk),
+        .ena  (1'b1),
+        .wea  (dram_we),
+        .addra(dram_addr),
+        .dina (dram_wdata),
+        .douta(dram_rdata_raw)
     );
 
     // dram_rdata_raw process, lh lb
@@ -59,35 +62,45 @@ module dram_driver (
             endcase
             2'b01:  // lh/lhu
             case (offset[1])
-                1'b0: dout = {24'b0, dram_rdata_raw[15:0]};
-                1'b1: dout = {24'b0, dram_rdata_raw[31:16]};
+                1'b0: dout = {16'b0, dram_rdata_raw[15:0]};
+                1'b1: dout = {16'b0, dram_rdata_raw[31:16]};
             endcase
             2'b10: dout = dram_rdata_raw;
             default: dout = 0;
         endcase
     end
 
-    // dram_data_raw process, sh, sb
+    // Native BRAM byte write enables avoid read-modify-write on stores.
     always_comb begin
+        dram_we = 4'b0000;
+        dram_wdata = 32'b0;
+
         case (perip_mask)
-            2'b10:   dram_data = perip_wdata;  // sw
+            2'b10: begin  // sw
+                dram_we = {4{dram_wen}};
+                dram_wdata = perip_wdata;
+            end
             2'b01: begin  // sh
+                dram_wdata = offset[1] ? {perip_wdata[15:0], 16'b0} :
+                                        {16'b0, perip_wdata[15:0]};
                 case (offset[1])
-                    1'b0: dram_data = {dram_rdata_raw[31:16], perip_wdata[15:0]};
-                    1'b1: dram_data = {perip_wdata[15:0], dram_rdata_raw[15:0]};
+                    1'b0: dram_we = dram_wen ? 4'b0011 : 4'b0000;
+                    1'b1: dram_we = dram_wen ? 4'b1100 : 4'b0000;
                 endcase
             end
             2'b00: begin  // sb
+                dram_wdata = {4{perip_wdata[7:0]}};
                 case (offset)
-                    2'b00: dram_data = {dram_rdata_raw[31:8], perip_wdata[7:0]};
-                    2'b01:
-                    dram_data = {dram_rdata_raw[31:16], perip_wdata[7:0], dram_rdata_raw[7:0]};
-                    2'b10:
-                    dram_data = {dram_rdata_raw[31:24], perip_wdata[7:0], dram_rdata_raw[15:0]};
-                    2'b11: dram_data = {perip_wdata[7:0], dram_rdata_raw[23:0]};
+                    2'b00: dram_we = dram_wen ? 4'b0001 : 4'b0000;
+                    2'b01: dram_we = dram_wen ? 4'b0010 : 4'b0000;
+                    2'b10: dram_we = dram_wen ? 4'b0100 : 4'b0000;
+                    2'b11: dram_we = dram_wen ? 4'b1000 : 4'b0000;
                 endcase
             end
-            default: dram_data = perip_wdata;
+            default: begin
+                dram_we = 4'b0000;
+                dram_wdata = perip_wdata;
+            end
         endcase
     end
 endmodule
