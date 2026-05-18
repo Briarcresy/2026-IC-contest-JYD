@@ -13,20 +13,17 @@ module hazard_detection_unit #(
     output logic       trigger_stall,
     output logic       trigger_flush
 );
+    logic jump_or_branch_taken;
+    logic load_use_hazard;
+
+    assign jump_or_branch_taken = (npcop == 2'b01 && alu_is_true) || npcop[1];
+    assign load_use_hazard = (regwrmux == 2'b10) &&
+                             (rd != 5'b0) &&
+                             reg_write &&
+                             (rs1 == rd || rs2 == rd);
+
     always_comb begin
-        if (  // npcop = 00 => no jal-jalr-b. ref Control NpcOp
-            (npcop == 2'b01 && alu_is_true)
-            || (npcop[1])) begin  // jump haappens. discard load-use hazard
-            trigger_stall = 0;
-            trigger_flush = 1;
-        end else if (regwrmux == 2'b10  // regwrmux = 10 => memdata selected.
-            && rd != 0 && reg_write && (rs1 == rd || rs2 == rd)) begin
-            // load-use hazard occurred.
-            trigger_stall = 1;
-            trigger_flush = 0;
-        end else begin
-            trigger_stall = 0;
-            trigger_flush = 0;
-        end
+        trigger_flush = jump_or_branch_taken;
+        trigger_stall = load_use_hazard && !jump_or_branch_taken;
     end
 endmodule
