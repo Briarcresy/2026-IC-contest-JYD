@@ -19,8 +19,8 @@ module Mask #(
 
     assign mdata = {32{op_lbu}} & {{24'b0}, dout[7:0]} |
                 {32{op_lhu}} & {{16'b0}, dout[15:0]} |
-                {32{op_lb}} & {{25{dout[7]}}, dout[6:0]} |
-                {32{op_lh}} & {{17{dout[15]}}, dout[14:0]} |
+                {32{op_lb}} & {{24{dout[7]}}, dout[7:0]} |
+                {32{op_lh}} & {{16{dout[15]}}, dout[15:0]} |
                 {32{op_other}} & dout;
 
 endmodule

@@ -23,43 +23,27 @@
 module NPC #(
     parameter DATAWIDTH = 32
 ) (
-    input logic       isTrue,
     input logic       stall,
-    input logic [1:0] npc_op,
+    input logic       predict_taken,
+    input logic       redirect_taken,
 
     input logic [DATAWIDTH - 1:0] pc,
     input logic [DATAWIDTH - 1:0] pc_add_4,
-    input logic [DATAWIDTH - 1:0] pc_add_imm,
-    input logic [DATAWIDTH - 1:0] alu_result,
+    input logic [DATAWIDTH - 1:0] predict_target,
+    input logic [DATAWIDTH - 1:0] redirect_target,
 
     output logic [DATAWIDTH - 1:0] npc
 );
-    // logic op_branch, op_add4, op_jalr, op_jal;
-    logic [DATAWIDTH-1:0] next_addr, branch_addr, jalr_addr, jal_addr;
-
-    // assign op_add4 = (npc_op == 2'b00);
-    // assign op_branch = (npc_op == 2'b01);
-    // assign op_jalr = (npc_op == 2'b10);
-    // assign op_jal = (npc_op == 2'b11);
-
-    assign next_addr = stall ? pc : pc_add_4;
-    assign branch_addr = isTrue ? pc_add_imm : pc_add_4;
-    assign jalr_addr = {alu_result[DATAWIDTH-1:1], 1'b0};
-    assign jal_addr = pc_add_imm;
-
     always_comb begin
-        unique case (npc_op)
-            2'b00:   npc = next_addr;
-            2'b01:   npc = branch_addr;
-            2'b10:   npc = jalr_addr;
-            2'b11:   npc = jal_addr;
-            default: npc = pc_add_4;
-        endcase
+        if (redirect_taken) begin
+            npc = redirect_target;
+        end else if (stall) begin
+            npc = pc;
+        end else if (predict_taken) begin
+            npc = predict_target;
+        end else begin
+            npc = pc_add_4;
+        end
     end
-
-    // assign npc = {32{op_add4}} & pcadd4 |
-    //         {32{op_branch}} & branch_addr |
-    //         {32{op_jalr}} & jalr_addr |
-    //         {32{op_jal}} & jal_addr;
 
 endmodule

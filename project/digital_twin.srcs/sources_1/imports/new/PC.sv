@@ -35,14 +35,9 @@ module PC #(
     output logic [DATAWIDTH - 1:0] pc
 );
     logic [DATAWIDTH - 1:0] reg_pc;
-    logic rst_delay;
-
-    always_ff @(posedge clk) begin
-        rst_delay <= rst;
-    end
 
     always_ff @(posedge clk, posedge rst) begin
-        if (rst | rst_delay) reg_pc <= RESET_VAL;
+        if (rst) reg_pc <= RESET_VAL;
         else if (!stall) reg_pc <= npc;
     end
 

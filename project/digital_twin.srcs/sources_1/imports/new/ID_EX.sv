@@ -30,6 +30,8 @@ module ID_EX #(
     input  logic [      2:0] id_mask,
     input  logic [      1:0] id_regwrmux,
     input  logic             id_reg_write,
+    input  logic             id_pred_taken,
+    input  logic [WIDTH-1:0] id_pred_target,
     // ...
     output logic [WIDTH-1:0] ex_pc,
     output logic [WIDTH-1:0] ex_pc4,
@@ -52,7 +54,9 @@ module ID_EX #(
     //Control signal WB
     output logic [      2:0] ex_mask,
     output logic [      1:0] ex_regwrmux,
-    output logic             ex_reg_write
+    output logic             ex_reg_write,
+    output logic             ex_pred_taken,
+    output logic [WIDTH-1:0] ex_pred_target
 );
 
     always_ff @(posedge clk or posedge rst) begin
@@ -75,6 +79,8 @@ module ID_EX #(
             ex_alusrcA   <= '0;
             ex_alusrcB   <= '0;
             ex_alu_op    <= '0;
+            ex_pred_taken <= '0;
+            ex_pred_target <= '0;
         end else if (!id_hold) begin
             ex_pc       <= id_pc;
             ex_rs1v     <= id_rs1v;
@@ -95,11 +101,15 @@ module ID_EX #(
                 ex_mem_write <= '0;
                 ex_npcop     <= '0;
                 ex_pc4       <= '0;
+                ex_pred_taken <= '0;
+                ex_pred_target <= '0;
             end else begin
                 ex_reg_write <= id_reg_write;
                 ex_mem_write <= id_mem_write;
                 ex_npcop     <= id_npcop;
                 ex_pc4       <= id_pc4;
+                ex_pred_taken <= id_pred_taken;
+                ex_pred_target <= id_pred_target;
             end
         end
     end

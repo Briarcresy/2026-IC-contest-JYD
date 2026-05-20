@@ -29,6 +29,8 @@ module Control (
     // output logic        pc_offset_sel,
     output logic        ALUSrcA,
     output logic        ALUSrcB,
+    output logic        uses_rs1,
+    output logic        uses_rs2,
     output logic [13:0] ALUControl,
     output logic [ 2:0] mask
 );
@@ -56,16 +58,19 @@ module Control (
     // assign op_call_ret = 0;
 
     assign NpcOp = {2{jalr}} & 2'b10 | {2{branch}} & 2'b01 | {2{jal}} & 2'b11;
-    assign RegWrite = !(branch || store);
+    assign RegWrite = rtype || itype || load || auipc || lui || jal || jalr;
     assign MemToReg_sel = {2{rtype}} & 2'b01 |
-                    {2{itype}} & 2'b01 | 
-                    {2{auipc}} & 2'b01 | 
+                    {2{itype}} & 2'b01 |
+                    {2{auipc}} & 2'b01 |
                     {2{load}} & 2'b10 |
-                    {2{lui}} & 2'b11;
+                    {2{lui}} & 2'b11 |
+                    {2{jal || jalr}} & 2'b00;
     assign MemWrite = store;
     // assign pc_offset_sel = jalr;
     assign ALUSrcA = auipc;
     assign ALUSrcB = !(rtype || branch);
+    assign uses_rs1 = rtype || itype || load || store || branch || jalr;
+    assign uses_rs2 = rtype || store || branch;
 
     localparam ERR = 14'h0;
 

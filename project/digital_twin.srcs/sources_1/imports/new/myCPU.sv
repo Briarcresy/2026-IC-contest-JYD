@@ -131,7 +131,13 @@ module myCPU (
     logic [          1:0] id_post_regwrmux;
     logic                 id_post_alusrcA;
     logic                 id_post_alusrcB;
+    logic                 id_post_uses_rs1;
+    logic                 id_post_uses_rs2;
     logic [         13:0] id_post_alu_op;
+    logic                 id_is_branch;
+    logic                 id_is_jal;
+    logic                 id_predict_taken;
+    logic [DATAWIDTH-1:0] id_predict_target;
     assign id_post_rs1 = id_pre_instruction[19:15];  // for forwarding
     assign id_post_rs2 = id_pre_instruction[24:20];  // for forwarding
     assign id_post_rd  = id_pre_instruction[11:7];  // save reg-write-target
@@ -156,6 +162,12 @@ module myCPU (
     logic [          1:0] ex_thru_regwrmux;
     logic [DATAWIDTH-1:0] ex_post_result;
     logic [DATAWIDTH-1:0] ex_post_rs2v;
+    logic                 ex_pred_taken;
+    logic [DATAWIDTH-1:0] ex_pred_target;
+    logic                 ex_actual_taken;
+    logic [DATAWIDTH-1:0] ex_actual_target;
+    logic [DATAWIDTH-1:0] ex_correct_npc;
+    logic                 ex_mispredict;
 
     logic [DATAWIDTH-1:0] mem_pre_rs2v;
     logic                 mem_pre_memwrite;
@@ -181,29 +193,37 @@ module myCPU (
     logic [          1:0] wb_pre_regwrmux;
 
     logic                 hazard_stall;
-    logic                 hazard_flush;
-    logic                 bram_read_wait;
-    logic                 bram_read_waited;
     logic                 pipeline_stall;
-    logic                 pipeline_flush;
-    logic                 pipeline_hold;
-    logic                 mem_load_in_mem;
+    logic                 pc_stall;
+    logic                 if_id_flush;
+    logic                 id_ex_flush;
 
-    assign mem_load_in_mem = mem_thru_regwrite && (mem_thru_regwrmux == 2'b10) && !mem_pre_memwrite;
-    assign bram_read_wait  = mem_load_in_mem && !bram_read_waited;
-    assign pipeline_hold   = bram_read_wait;
-    assign pipeline_stall  = hazard_stall || bram_read_wait;
-    assign pipeline_flush  = hazard_flush;
+    assign pipeline_stall = hazard_stall;
+    assign pc_stall       = pipeline_stall && !ex_mispredict;
+    assign if_id_flush    = ex_mispredict || id_predict_taken;
+    assign id_ex_flush    = ex_mispredict;
 
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
-            bram_read_waited <= 1'b0;
-        end else if (bram_read_wait) begin
-            bram_read_waited <= 1'b1;
-        end else begin
-            bram_read_waited <= 1'b0;
-        end
+    assign id_is_branch      = (id_post_npc_op == 2'b01);
+    assign id_is_jal         = (id_post_npc_op == 2'b11);
+    assign id_predict_taken  = !pipeline_stall && (id_is_jal || (id_is_branch && id_post_imm[DATAWIDTH-1]));
+    assign id_predict_target = id_thru_pc + id_post_imm;
+
+    assign ex_actual_taken = ((ex_thru_npc_op == 2'b01) && isTrue) || ex_thru_npc_op[1];
+
+    always_comb begin
+        unique case (ex_thru_npc_op)
+            2'b01,
+            2'b11:   ex_actual_target = ex_pre_pc + ex_thru_imm;
+            2'b10:   ex_actual_target = {ex_post_result[DATAWIDTH-1:1], 1'b0};
+            default: ex_actual_target = ex_thru_pc4;
+        endcase
+
+        ex_correct_npc = ex_actual_taken ? ex_actual_target : ex_thru_pc4;
     end
+
+    assign ex_mispredict = (ex_thru_npc_op != 2'b00) &&
+                           ((ex_actual_taken != ex_pred_taken) ||
+                            (ex_actual_taken && ex_pred_taken && (ex_actual_target != ex_pred_target)));
 
 `ifdef ENABLE_DEBUG_TRACE
     logic [DATAWIDTH-1:0] _D_wb_pre_pc4;
@@ -213,7 +233,7 @@ module myCPU (
         .clk(clk),
         .rst(rst),
         .stall(pipeline_stall),
-        .flush(pipeline_flush),
+        .flush(if_id_flush),
         .if_pc(if_post_pc),
         .if_pc4(if_post_pc4),
         .if_instr(if_post_instruction),
@@ -226,8 +246,8 @@ module myCPU (
         .clk(clk),
         .rst(rst),
         .id_stall(hazard_stall),
-        .id_hold(pipeline_hold),
-        .id_flush(pipeline_flush),
+        .id_hold(1'b0),
+        .id_flush(id_ex_flush),
         .id_pc(id_thru_pc),
         .id_pc4(id_thru_pc4),
         .id_rs1v(id_post_rs1v),
@@ -243,6 +263,8 @@ module myCPU (
         .id_alusrcB(id_post_alusrcB),
         .id_reg_write(id_post_regwrite),
         .id_mem_write(id_post_memwrite),
+        .id_pred_taken(id_predict_taken),
+        .id_pred_target(id_predict_target),
         .id_alu_op(id_post_alu_op),
         .ex_pc(ex_pre_pc),
         .ex_pc4(ex_thru_pc4),
@@ -259,13 +281,15 @@ module myCPU (
         .ex_alusrcB(ex_pre_alusrcB),
         .ex_reg_write(ex_thru_regwrite),
         .ex_mem_write(ex_thru_memwrite),
+        .ex_pred_taken(ex_pred_taken),
+        .ex_pred_target(ex_pred_target),
         .ex_alu_op(ex_pre_alu_op)
     );
 
     EX_MEM #(DATAWIDTH) ex_mem (
         .clk(clk),
         .rst(rst),
-        .stall(pipeline_hold),
+        .stall(1'b0),
         .ex_alu_result(ex_post_result),
         .ex_rs2_val(ex_post_rs2v),
         .ex_imm(ex_thru_imm),
@@ -294,7 +318,7 @@ module myCPU (
 `endif
         .clk(clk),
         .rst(rst),
-        .flush(pipeline_hold),
+        .flush(1'b0),
         .mem_alu_result(mem_post_result_mem_mux),
         .mem_mdata(DRAM_rdata),
         .mem_rd_addr(mem_thru_rd),
@@ -348,15 +372,14 @@ module myCPU (
         end
     end
     hazard_detection_unit hazard_detection_unit_instance (
-        .npcop(ex_thru_npc_op),
-        .alu_is_true(isTrue),
         .regwrmux(ex_thru_regwrmux),
         .reg_write(ex_thru_regwrite),
         .rd(ex_thru_rd),
         .rs1(id_post_rs1),
         .rs2(id_post_rs2),
-        .trigger_stall(hazard_stall),
-        .trigger_flush(hazard_flush)
+        .uses_rs1(id_post_uses_rs1),
+        .uses_rs2(id_post_uses_rs2),
+        .trigger_stall(hazard_stall)
     );
 
     // pipeline END
@@ -364,7 +387,7 @@ module myCPU (
     PC #(DATAWIDTH, RESET_VAL) pc_inst (
         .clk(clk),
         .rst(rst),
-        .stall(pipeline_stall),
+        .stall(pc_stall),
         .npc(npc),
         .pc (pc)
     );
@@ -372,14 +395,14 @@ module myCPU (
     assign pcadd4 = pc + 4;
 
     NPC #(DATAWIDTH) npc_inst (
-        .isTrue    (isTrue),
-        .stall     (pipeline_stall),
-        .npc_op    (ex_thru_npc_op),
-        .pc        (pc),
-        .pc_add_4  (pcadd4),
-        .pc_add_imm(ex_thru_imm + ex_pre_pc),
-        .alu_result(ex_post_result),
-        .npc       (npc)
+        .stall          (pc_stall),
+        .predict_taken  (id_predict_taken),
+        .redirect_taken (ex_mispredict),
+        .pc             (pc),
+        .pc_add_4       (pcadd4),
+        .predict_target (id_predict_target),
+        .redirect_target(ex_correct_npc),
+        .npc            (npc)
     );
 
     // assign pc_offset = ex_post_result;
@@ -427,6 +450,8 @@ module myCPU (
         .MemWrite    (id_post_memwrite),
         .ALUSrcA     (id_post_alusrcA),
         .ALUSrcB     (id_post_alusrcB),
+        .uses_rs1    (id_post_uses_rs1),
+        .uses_rs2    (id_post_uses_rs2),
         .ALUControl  (id_post_alu_op),
         .mask        (id_post_mask)
     );
