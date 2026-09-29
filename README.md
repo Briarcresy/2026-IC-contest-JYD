@@ -1,3 +1,5 @@
+![Architecture](report/CPU2.0 pipeline.drawio.png)
+
 - 语言：SystemVerilog
 
 - git协作流程：
